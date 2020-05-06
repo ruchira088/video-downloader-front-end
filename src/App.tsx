@@ -1,14 +1,13 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import ServiceInformation from "./pages/service-information/ServiceInformation";
+import React from "react"
+import ServiceInformation from "./pages/service-information/ServiceInformation"
+import "./App.css"
+import Scheduling from "./pages/scheduling/Scheduling";
+import Videos from "./pages/videos/Videos";
 
-function App() {
-  return (
+export default () => (
     <div className="App">
       <ServiceInformation/>
+      <Scheduling/>
+      <Videos/>
     </div>
-  );
-}
-
-export default App;
+  )
