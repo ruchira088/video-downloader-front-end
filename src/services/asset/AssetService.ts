@@ -1,5 +1,6 @@
-import {List, NonEmptyList} from "monet";
-import configuration from "services/Configuration";
+import {List, NonEmptyList} from "monet"
+import memoize from "memoizee"
+import configuration from "services/Configuration"
 import {randomPickNonEmptyList} from "utils/Random"
 
 import image_01 from "images/image-01.jpg"
@@ -21,6 +22,9 @@ const SAFE_IMAGES: NonEmptyList<AssetUrl> =
         image_02, image_03, image_04, image_05, image_06, image_07, image_08, image_09, image_10, image_11
     ]))
 
+const safeImageMappings = memoize(key => randomPickNonEmptyList(SAFE_IMAGES), { max: 100, length: 1 })
+
 export const assetUrl =
     (id: string): AssetUrl =>
-        configuration.safeMode ? randomPickNonEmptyList(SAFE_IMAGES) : `${configuration.apiService}/assets/id/${id}`
+        configuration.safeMode ?
+            safeImageMappings(id) : `${configuration.apiService}/assets/id/${id}`

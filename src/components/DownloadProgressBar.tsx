@@ -1,5 +1,5 @@
 import React from "react"
-import {humanReadableSize} from "../utils/Formatter"
+import {humanReadableSize} from "utils/Formatter"
 
 export interface ProgressValue {
     completeValue: number
