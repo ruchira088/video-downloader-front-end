@@ -2,10 +2,10 @@ import FileResource from "./FileResource";
 
 export default interface VideoMetadata {
     url: string
-    key: string
+    id: string
     videoSite: VideoSite
     title: string
-    duration: string
+    duration: number
     size: number,
     thumbnail: FileResource
 }

@@ -10,3 +10,6 @@ export const searchVideos =
     (searchTerm: Maybe<string>, pageNumber: number, pageSize: number): Promise<SearchResult<Video>> =>
         axiosClient.get(`/videos/search?page-number=${pageNumber}&page-size=${pageSize}${searchTerm.fold(String())(term => `&search-term=${term}`)}`)
             .then(({ data }) => data)
+
+export const fetchVideoByKey = (videoKey: string): Promise<Maybe<Video>> =>
+    axiosClient.get(`/videos/key/${videoKey}`)

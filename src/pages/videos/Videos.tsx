@@ -14,7 +14,7 @@ export default () => {
 
     return (
         <div>
-            { videos.map(video => <VideoCard {...video} key={video.videoMetadata.key}/>) }
+            { videos.map(video => <VideoCard {...video} key={video.videoMetadata.id}/>) }
         </div>
     )
 }
