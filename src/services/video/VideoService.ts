@@ -1,8 +1,8 @@
 import axios, {AxiosInstance} from "axios";
-import configuration from "../Configuration";
 import {Maybe} from "monet";
-import SearchResult from "../models/ListResult";
-import Video from "../models/Video";
+import configuration from "services/Configuration";
+import SearchResult from "services/models/ListResult";
+import Video from "services/models/Video";
 
 const axiosClient: AxiosInstance = axios.create({ baseURL: configuration.apiService })
 

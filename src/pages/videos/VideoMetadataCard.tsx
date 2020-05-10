@@ -1,7 +1,7 @@
 import React from "react"
-import VideoMetadata from "../../services/models/VideoMetadata";
-import {assetUrl} from "../../services/asset/AssetService"
-import {humanReadableSize, humanReadableDuration} from "../../utils/Formatter"
+import VideoMetadata from "services/models/VideoMetadata";
+import {assetUrl} from "services/asset/AssetService"
+import {humanReadableSize, humanReadableDuration} from "utils/Formatter"
 
 export default (videoMetadata: VideoMetadata) => (
     <div className="vide-metadata-card">

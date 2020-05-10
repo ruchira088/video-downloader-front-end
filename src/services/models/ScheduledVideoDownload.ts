@@ -1,5 +1,4 @@
 import VideoMetadata from "./VideoMetadata";
-import {Moment} from "moment";
 
 export default interface ScheduledVideoDownload {
     scheduledAt: string

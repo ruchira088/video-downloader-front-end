@@ -1,8 +1,8 @@
 import React from "react"
-import ScheduledVideoDownload from "../../services/models/ScheduledVideoDownload";
-import {assetUrl} from "../../services/asset/AssetService";
-import ProgressBar from "../../components/DownloadProgressBar";
-import {humanReadableDuration} from "../../utils/Formatter";
+import ScheduledVideoDownload from "services/models/ScheduledVideoDownload";
+import {assetUrl} from "services/asset/AssetService";
+import ProgressBar from "components/DownloadProgressBar";
+import {humanReadableDuration} from "utils/Formatter";
 
 export default (activeDownload: ScheduledVideoDownload) => (
     <div className="active-download">

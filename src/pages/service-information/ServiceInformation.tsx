@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from "react"
 import {Maybe, None, Some} from "monet"
-import {apiServiceInformation} from "../../services/health/HealthCheckService"
-import ApiServiceInformation from "../../services/models/ApiServiceInformation"
-import loadableComponent from "../../components/hoc/loadableComponent"
+import {apiServiceInformation} from "services/health/HealthCheckService"
+import ApiServiceInformation from "services/models/ApiServiceInformation"
+import loadableComponent from "components/hoc/loadableComponent"
 import BackendServiceInformation, {ServiceInformationItem} from "./BackendServiceInformation"
-import configuration from "../../services/Configuration";
+import configuration from "services/Configuration";
 
 export default () => {
     const [service, setServiceInformation] = useState<Maybe<ApiServiceInformation>>(None())

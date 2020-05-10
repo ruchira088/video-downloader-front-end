@@ -1,7 +1,7 @@
 import axios, {AxiosInstance} from "axios"
 import moment from "moment";
-import ApiServiceInformation from "../models/ApiServiceInformation";
-import configuration from "../Configuration";
+import ApiServiceInformation from "services/models/ApiServiceInformation";
+import configuration from "services/Configuration";
 
 const axiosClient: AxiosInstance = axios.create({ baseURL: configuration.apiService })
 

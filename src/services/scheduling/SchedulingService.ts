@@ -1,7 +1,7 @@
 import axios from "axios";
 import {Maybe} from "monet"
-import configuration from "../Configuration";
-import ScheduledVideoDownload from "../models/ScheduledVideoDownload";
+import configuration from "services/Configuration";
+import ScheduledVideoDownload from "services/models/ScheduledVideoDownload";
 
 const axiosClient = axios.create({ baseURL: configuration.apiService })
 

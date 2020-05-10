@@ -1,6 +1,6 @@
 import React, {useState} from "react"
-import {scheduleVideo} from "../../services/scheduling/SchedulingService"
-import ScheduledVideoDownload from "../../services/models/ScheduledVideoDownload";
+import {scheduleVideo} from "services/scheduling/SchedulingService"
+import ScheduledVideoDownload from "services/models/ScheduledVideoDownload";
 
 export default () => {
     const [videoUrl, setVideoUrl] = useState(String())

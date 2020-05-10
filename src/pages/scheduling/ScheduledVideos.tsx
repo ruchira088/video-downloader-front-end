@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from "react"
 import {Maybe, None, Some} from "monet";
-import ScheduledVideoDownload from "../../services/models/ScheduledVideoDownload";
-import loadableComponent from "../../components/hoc/loadableComponent";
-import {fetchScheduledVideos} from "../../services/scheduling/SchedulingService";
+import ScheduledVideoDownload from "services/models/ScheduledVideoDownload";
+import loadableComponent from "components/hoc/loadableComponent";
+import {fetchScheduledVideos} from "services/scheduling/SchedulingService";
 
 interface ScheduledVideos {
     results: ScheduledVideoDownload[]

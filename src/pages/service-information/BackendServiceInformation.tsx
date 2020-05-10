@@ -1,5 +1,5 @@
 import React from "react";
-import ApiServiceInformation from "../../services/models/ApiServiceInformation";
+import ApiServiceInformation from "services/models/ApiServiceInformation";
 import moment from "moment";
 
 interface ServiceInformationItem {
