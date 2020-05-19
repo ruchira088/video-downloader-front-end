@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react"
-import { searchVideos } from "../../services/video/VideoService"
+import {Link} from "react-router-dom"
+import { searchVideos } from "services/video/VideoService"
 import {None} from "monet";
-import Video from "../../services/models/Video";
+import Video from "services/models/Video";
 import VideoCard from "./VideoCard";
 
 export default () => {
@@ -14,7 +15,11 @@ export default () => {
 
     return (
         <div className="video-list">
-            { videos.map(video => <VideoCard {...video} key={video.videoMetadata.id}/>) }
+            { videos.map(video =>
+                <Link to={`/video/${video.videoMetadata.id}`} key={video.videoMetadata.id}>
+                    <VideoCard {...video}/>
+                </Link>
+                ) }
         </div>
     )
 }

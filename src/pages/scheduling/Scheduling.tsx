@@ -7,6 +7,5 @@ export default () => (
     <div className="scheduling">
         <ScheduleVideo/>
         <ScheduledVideos/>
-        <ActiveDownloads/>
     </div>
 )

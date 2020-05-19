@@ -19,7 +19,7 @@ export default () => {
     const [scheduledVideos, setScheduledVideos] = useState<Maybe<ScheduledVideos>>(None())
 
     useEffect(() => {
-        fetchScheduledVideos(None(), 100, 0)
+        fetchScheduledVideos(None(), 0, 100)
             .then(results => setScheduledVideos(Some({ results })))
     }, [])
 
