@@ -8,12 +8,12 @@ export default () => {
     const [videos, setVideos] = useState<Video[]>([])
 
     useEffect(() => {
-        searchVideos(None(), 0, 10)
+        searchVideos(None(), 0, 50)
             .then(({ results }) => setVideos(results))
     }, [])
 
     return (
-        <div>
+        <div className="video-list">
             { videos.map(video => <VideoCard {...video} key={video.videoMetadata.id}/>) }
         </div>
     )

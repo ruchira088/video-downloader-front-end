@@ -15,7 +15,7 @@ export default () => {
 
     return (
         <div className="service-information">
-            <ServiceInformationItem label="API URL" value={configuration.apiService}/>
+            <ServiceInformationItem label="API URL" value={Some(configuration.apiService)}/>
             { loadableComponent(BackendServiceInformation, service) }
         </div>
     )
