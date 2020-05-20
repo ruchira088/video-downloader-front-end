@@ -14,24 +14,24 @@ export default () => {
             setActiveDownloads(active => active.set(scheduledVideoDownload.videoMetadata.id, scheduledVideoDownload))
 
     useEffect(() => {
-            const activeDownloads = active()
+        const activeDownloads = active()
 
-            activeDownloads.addEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, messageEvent => {
-                const {data} = messageEvent as unknown as { data: string }
+        activeDownloads.addEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, messageEvent => {
+            const {data} = messageEvent as unknown as { data: string }
 
-                Either.fromTry(() => JSON.parse(data))
-                    .fold(
-                        error => console.error(error),
-                        (scheduledVideoDownload: ScheduledVideoDownload) =>
-                            handleActiveDownload(scheduledVideoDownload)
-                    )
-            })
+            Either.fromTry(() => JSON.parse(data))
+                .fold(
+                    error => console.error(error),
+                    (scheduledVideoDownload: ScheduledVideoDownload) =>
+                        handleActiveDownload(scheduledVideoDownload)
+                )
+        })
 
-            return () => {
-                activeDownloads.removeEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, handleActiveDownload as unknown as EventListener)
-                activeDownloads.close()
-            }
-        }, [])
+        return () => {
+            activeDownloads.removeEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, handleActiveDownload as unknown as EventListener)
+            activeDownloads.close()
+        }
+    }, [])
 
     return (
         <div className="active-downloads">

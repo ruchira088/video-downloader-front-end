@@ -1,4 +1,3 @@
-
 export interface Configuration {
     apiService: string
     safeMode: boolean

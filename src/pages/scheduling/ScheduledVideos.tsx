@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react"
+import React, {useEffect, useState} from "react"
 import {Maybe, None, Some} from "monet";
 import ScheduledVideoDownload from "services/models/ScheduledVideoDownload";
 import loadableComponent from "components/hoc/loadableComponent";
@@ -20,12 +20,12 @@ export default () => {
 
     useEffect(() => {
         fetchScheduledVideos(None(), 0, 100)
-            .then(results => setScheduledVideos(Some({ results })))
+            .then(results => setScheduledVideos(Some({results})))
     }, [])
 
     return (
         <div className="scheduled-videos">
-            { loadableComponent(ScheduleVideosContainer, scheduledVideos) }
+            {loadableComponent(ScheduleVideosContainer, scheduledVideos)}
         </div>
     )
 }

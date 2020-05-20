@@ -37,7 +37,7 @@ const SAFE_PHRASES: NonEmptyList<string> =
     )
 
 export const imageMappings =
-    memoize(key => randomPickNonEmptyList(SAFE_IMAGES), { max: 100, length: 1 })
+    memoize(key => randomPickNonEmptyList(SAFE_IMAGES), {max: 100, length: 1})
 
 export const phraseMappings =
-    memoize(key => randomPickNonEmptyList(SAFE_PHRASES), { max: 100, length: 1 })
+    memoize(key => randomPickNonEmptyList(SAFE_PHRASES), {max: 100, length: 1})

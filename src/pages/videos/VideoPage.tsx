@@ -7,17 +7,17 @@ import {fetchVideoById} from "services/video/VideoService"
 import VideoPlay from "./Watch";
 
 export default () => {
-    const { videoId } = useParams()
+    const {videoId} = useParams()
     const [video, setVideo] = useState<Maybe<Video>>(None())
 
     useEffect(() => {
         fetchVideoById(videoId)
             .then(video => setVideo(Some(video)))
-    }, [ videoId ])
+    }, [videoId])
 
     return (
         <div className="video-page">
-            { loadableComponent(VideoPlay, video) }
+            {loadableComponent(VideoPlay, video)}
         </div>
     )
 }

@@ -4,6 +4,5 @@ import {imageMappings} from "services/sanitize/SanitizationService"
 export type AssetUrl = string
 
 export const assetUrl =
-    (id: string, forceUnsafe: boolean = false): AssetUrl =>
-        (!forceUnsafe && configuration.safeMode) ?
-            imageMappings(id) : `${configuration.apiService}/assets/id/${id}`
+    (id: string, safeMode: boolean): AssetUrl =>
+        (safeMode) ? imageMappings(id) : `${configuration.apiService}/assets/id/${id}`

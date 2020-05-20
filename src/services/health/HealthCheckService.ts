@@ -4,9 +4,9 @@ import configuration from "services/Configuration";
 import moment from "moment";
 import {Maybe} from "monet";
 
-const axiosClient: AxiosInstance = axios.create({ baseURL: configuration.apiService })
+const axiosClient: AxiosInstance = axios.create({baseURL: configuration.apiService})
 
-export const apiServiceInformation:  () => Promise<ApiServiceInformation> =
+export const apiServiceInformation: () => Promise<ApiServiceInformation> =
     () => axiosClient.get("/service")
         .then(({data}) => ({
             ...data,
