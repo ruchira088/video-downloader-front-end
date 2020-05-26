@@ -4,7 +4,7 @@ import ScheduledVideoDownload from "services/models/ScheduledVideoDownload";
 import {assetUrl} from "services/asset/AssetService";
 import translate from "services/translation/TranslationService";
 import ProgressBar from "components/DownloadProgressBar";
-import {humanReadableDuration} from "utils/Formatter";
+import {humanReadableDuration} from "utils/Formatter"
 
 export default (activeDownload: ScheduledVideoDownload) => (
     <ApplicationContext.Consumer>

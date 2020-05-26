@@ -1,4 +1,5 @@
-import {Maybe, None, Some} from "monet";
+import {Maybe} from "monet";
+import moment, {Duration, unitOfTime} from "moment";
 
 interface ByteSize {
     floor: number
@@ -25,26 +26,6 @@ const GIGA_BYTE: ByteSize = {
     suffix: "GB"
 }
 
-interface Duration {
-    seconds: number
-    suffix: string
-}
-
-const Hour: Duration = {
-    seconds: 3600,
-    suffix: "hours"
-}
-
-const Minute: Duration = {
-    seconds: 60,
-    suffix: "minutes"
-}
-
-const Second: Duration = {
-    seconds: 1,
-    suffix: "seconds"
-}
-
 export const humanReadableSize =
     (size: number): string => {
         const byteSize =
@@ -54,21 +35,25 @@ export const humanReadableSize =
         return `${(size / byteSize.floor).toFixed(2)}${byteSize.suffix}`
     }
 
-const displaySingleDuration =
-    (value: number, duration: Duration): Maybe<string> =>
-        (value === 0) ? None() : Some(`${value} ${duration.suffix}`)
-
 export const humanReadableDuration =
-    (duration: number): string => {
-        const hours = Math.floor(duration / Hour.seconds)
-        const minutes = Math.floor((duration % Hour.seconds) / Minute.seconds)
-        const seconds = Math.floor(duration % Minute.seconds)
+    (duration: Duration): string =>
+        (["hours", "minutes", "seconds"] as unitOfTime.Base[])
+            .reduce<{ remainingDuration: Duration, results: string[] }>(
+                ({remainingDuration, results}, unit) => {
+                    const unitLength = remainingDuration.get(unit)
 
-        const values = [
-            displaySingleDuration(hours, Hour),
-            displaySingleDuration(minutes, Minute),
-            displaySingleDuration(seconds, Second)
-        ]
+                    if (unitLength > 0) {
+                        return {
+                            remainingDuration: remainingDuration.subtract(moment.duration(unitLength, unit)),
+                            results: results.concat(`${unitLength} ${unit}`)
+                        }
+                    } else {
+                        return ({remainingDuration, results})
+                    }
+                }
+                ,
+                {remainingDuration: duration, results: []}
+            )
+            .results
+            .join(" ")
 
-        return values.reduce<string[]>((acc, value) => value.fold(acc)(text => acc.concat(text)), []).join(" ")
-    }

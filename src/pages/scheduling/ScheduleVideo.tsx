@@ -1,4 +1,5 @@
 import React, {useState} from "react"
+import {Button, TextField} from "@material-ui/core"
 import {scheduleVideo} from "services/scheduling/SchedulingService"
 import Preview from "./Preview";
 
@@ -19,6 +20,8 @@ export default () => {
 
     return (
         <div className="schedule-video">
+            <TextField label="Website URL"/>
+            <Button variant="contained" color="primary">Schedule Download</Button>
             <input onChange={handleTextChange} value={videoUrl}/>
             <button onClick={onScheduleButtonClick}>Schedule</button>
             <Preview url={videoUrl}/>

@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from "react"
+import {GridList, GridListTile} from "@material-ui/core"
 import {Link} from "react-router-dom"
 import {searchVideos} from "services/video/VideoService"
 import {None} from "monet";
@@ -14,12 +15,14 @@ export default () => {
     }, [])
 
     return (
-        <div className="video-list">
+        <GridList cols={3} cellHeight="auto">
             {videos.map(video =>
-                <Link to={`/video/${video.videoMetadata.id}`} key={video.videoMetadata.id}>
-                    <VideoCard {...video}/>
-                </Link>
+                <GridListTile cols={1} key={video.videoMetadata.id}>
+                    <Link to={`/video/${video.videoMetadata.id}`} key={video.videoMetadata.id}>
+                        <VideoCard {...video}/>
+                    </Link>
+                </GridListTile>
             )}
-        </div>
+        </GridList>
     )
 }

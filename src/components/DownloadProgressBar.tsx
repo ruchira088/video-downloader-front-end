@@ -1,4 +1,5 @@
 import React from "react"
+import {Line} from "rc-progress"
 import {humanReadableSize} from "utils/Formatter"
 
 export interface ProgressValue {
@@ -7,7 +8,8 @@ export interface ProgressValue {
 }
 
 export default (progressValue: ProgressValue) => {
-    const percentage = (progressValue.currentValue / progressValue.completeValue * 100).toFixed(2)
+    const percentage: number =
+        Number((progressValue.currentValue / progressValue.completeValue * 100).toFixed(2))
 
     return (
         <div className="download-progress-bar">
@@ -18,6 +20,7 @@ export default (progressValue: ProgressValue) => {
             <div>
                 {humanReadableSize(progressValue.currentValue)} / {humanReadableSize(progressValue.completeValue)}
             </div>
+            <Line percent={percentage}/>
         </div>
     )
 }

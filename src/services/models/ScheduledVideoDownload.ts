@@ -1,9 +1,11 @@
 import VideoMetadata from "./VideoMetadata";
+import {Moment} from "moment";
+import {Maybe} from "monet";
 
 export default interface ScheduledVideoDownload {
-    scheduledAt: string
-    lastUpdatedAt: string
+    scheduledAt: Moment
+    lastUpdatedAt: Moment
     videoMetadata: VideoMetadata
     downloadedBytes: number
-    completedAt: string
+    completedAt: Maybe<Moment>
 }

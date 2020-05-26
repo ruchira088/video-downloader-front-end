@@ -5,6 +5,7 @@ import {active} from "../../services/scheduling/SchedulingService"
 import {Either} from "monet";
 import ActiveDownload from "./ActiveDownload";
 import {EventStreamEventType} from "./EventStreamEventType";
+import {parseScheduledVideoDownload} from "services/models/ResponseParser"
 
 export default () => {
     const [activeDownloads, setActiveDownloads] = useState(Map<string, ScheduledVideoDownload>())
@@ -22,8 +23,8 @@ export default () => {
             Either.fromTry(() => JSON.parse(data))
                 .fold(
                     error => console.error(error),
-                    (scheduledVideoDownload: ScheduledVideoDownload) =>
-                        handleActiveDownload(scheduledVideoDownload)
+                    json =>
+                        handleActiveDownload(parseScheduledVideoDownload(json))
                 )
         })
 

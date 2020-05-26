@@ -1,13 +1,16 @@
 import React, {Dispatch, SetStateAction} from "react"
-import Toggle from "react-toggle"
+import {FormGroup, FormControlLabel, Switch} from "@material-ui/core"
 import {ApplicationContext} from "context/ApplicationContext";
 
 type QuickSettings = ApplicationContext & { setApplicationContext: Dispatch<SetStateAction<ApplicationContext>> }
 
 export default (settings: QuickSettings) => (
-    <div className="settings">
-        <Toggle checked={settings.safeMode}
-                onChange={({target}) => settings.setApplicationContext({safeMode: target.checked})}/>
-        {settings.safeMode.toString()}
-    </div>
+    <FormGroup className="settings">
+        <FormControlLabel
+            control={
+                <Switch checked={settings.safeMode}
+                        onChange={({target}) => settings.setApplicationContext({safeMode: target.checked})}/>
+            }
+            label="Safe Mode"/>
+    </FormGroup>
 )
