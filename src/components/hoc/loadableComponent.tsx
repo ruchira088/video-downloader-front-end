@@ -4,7 +4,7 @@ import {Maybe} from "monet";
 const LoadingComponent =
     () =>
         <div className="loading">
-
+            Loading
         </div>
 
 export default function loadableComponent<A>(Component: ComponentType<A>, mayBeValue: Maybe<A>) {

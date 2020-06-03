@@ -3,17 +3,17 @@ import memoize from "memoizee"
 import {randomPickNonEmptyList} from "utils/Random"
 import {AssetUrl} from "../asset/AssetService";
 
-import image_01 from "images/image-01.jpg"
-import image_02 from "images/image-02.jpg"
-import image_03 from "images/image-03.jpg"
-import image_04 from "images/image-04.jpg"
-import image_05 from "images/image-05.jpg"
-import image_06 from "images/image-06.jpg"
-import image_07 from "images/image-07.jpg"
-import image_08 from "images/image-08.jpg"
-import image_09 from "images/image-09.jpg"
-import image_10 from "images/image-10.jpg"
-import image_11 from "images/image-11.jpg"
+import image_01 from "images/safe-images/image-01.jpg"
+import image_02 from "images/safe-images/image-02.jpg"
+import image_03 from "images/safe-images/image-03.jpg"
+import image_04 from "images/safe-images/image-04.jpg"
+import image_05 from "images/safe-images/image-05.jpg"
+import image_06 from "images/safe-images/image-06.jpg"
+import image_07 from "images/safe-images/image-07.jpg"
+import image_08 from "images/safe-images/image-08.jpg"
+import image_09 from "images/safe-images/image-09.jpg"
+import image_10 from "images/safe-images/image-10.jpg"
+import image_11 from "images/safe-images/image-11.jpg"
 
 const SAFE_IMAGES: NonEmptyList<AssetUrl> =
     NonEmptyList(image_01, List.from([
@@ -41,3 +41,4 @@ export const imageMappings =
 
 export const phraseMappings =
     memoize(key => randomPickNonEmptyList(SAFE_PHRASES), {max: 100, length: 1})
+

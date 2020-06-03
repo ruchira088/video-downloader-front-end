@@ -2,7 +2,7 @@ import React, {Dispatch, SetStateAction} from "react"
 import {FormGroup, FormControlLabel, Switch} from "@material-ui/core"
 import {ApplicationContext} from "context/ApplicationContext";
 
-type QuickSettings = ApplicationContext & { setApplicationContext: Dispatch<SetStateAction<ApplicationContext>> }
+export type QuickSettings = ApplicationContext & { setApplicationContext: Dispatch<SetStateAction<ApplicationContext>> }
 
 export default (settings: QuickSettings) => (
     <FormGroup className="settings">

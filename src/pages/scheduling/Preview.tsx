@@ -1,25 +1,32 @@
 import React, {useEffect, useState} from "react"
+import {Maybe, None} from "monet";
+import loadableComponent from "components/hoc/loadableComponent"
+import {analyze} from "services/video/VideoService"
+import {VideoAnalysisResult} from "../../services/models/VideoAnalysisResult";
+import VideoMetadataCard from "../videos/VideoMetadataCard";
 
 export default ({url}: { url: string }) => {
     const [showPreview, setShowPreview] = useState(false)
-    const [isPreviewLoading, setIsPreviewLoading] = useState(false)
+    const [videoAnalysisResult, setVideoAnalysisResult] = useState<Maybe<VideoAnalysisResult>>(None())
 
     useEffect(() => {
         const timeoutId =
             setTimeout(() => {
-                setShowPreview(url.trim().length !== 0)
-                setIsPreviewLoading(true)
+                if (url.trim().length !== 0) {
+                    setShowPreview(true)
+                    analyze(url).then(result => setVideoAnalysisResult(Maybe.fromNull(result)))
+                }
             }, 500)
+
         setShowPreview(false)
+        setVideoAnalysisResult(None())
 
         return () => clearTimeout(timeoutId)
     }, [url])
 
     return (
         <div className="preview">
-            {showPreview && isPreviewLoading && <div>Loading</div>}
-            {showPreview && <iframe style={isPreviewLoading ? ({display: "none"}) : ({})} src={url}
-                                    onLoad={() => setIsPreviewLoading(false)}/>}
+            { showPreview && loadableComponent(VideoMetadataCard, videoAnalysisResult) }
         </div>
     )
 }

@@ -1,5 +1,6 @@
 import FileResource from "./FileResource";
 import {Duration} from "moment";
+import {VideoSite} from "./VideoSite";
 
 export default interface VideoMetadata {
     url: string
@@ -9,9 +10,4 @@ export default interface VideoMetadata {
     duration: Duration
     size: number,
     thumbnail: FileResource
-}
-
-enum VideoSite {
-    VPorn = "VPorn",
-    SpankBang = "SpankBang"
 }

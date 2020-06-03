@@ -20,10 +20,8 @@ export default () => {
 
     return (
         <div className="schedule-video">
-            <TextField label="Website URL"/>
-            <Button variant="contained" color="primary">Schedule Download</Button>
-            <input onChange={handleTextChange} value={videoUrl}/>
-            <button onClick={onScheduleButtonClick}>Schedule</button>
+            <TextField onChange={handleTextChange} value={videoUrl} label="Website URL"/>
+            <Button onClick={onScheduleButtonClick} variant="contained" color="primary">Schedule Download</Button>
             <Preview url={videoUrl}/>
         </div>
     )
