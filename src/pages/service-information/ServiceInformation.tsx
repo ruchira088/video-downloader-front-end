@@ -9,8 +9,16 @@ import configuration from "services/Configuration";
 export default () => {
     const [service, setServiceInformation] = useState<Maybe<ApiServiceInformation>>(None())
 
+    const fetchServerInformation =
+        () => apiServiceInformation().then(information => setServiceInformation(Some(information)))
+
     useEffect(() => {
-        apiServiceInformation().then(information => setServiceInformation(Some(information)))
+        fetchServerInformation()
+
+        const intervalId = setInterval(fetchServerInformation, 1000)
+
+        return () => clearTimeout(intervalId)
+
     }, [])
 
     return (

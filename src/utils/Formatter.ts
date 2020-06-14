@@ -57,3 +57,6 @@ export const humanReadableDuration =
             .results
             .join(" ")
 
+export const shortHumanReadableDuration =
+    (duration: Duration) =>
+        ((Math.floor(duration.asHours()) >= 1) ? `${duration.hours()}:` : "") + `${duration.minutes()}:${duration.seconds()}`
