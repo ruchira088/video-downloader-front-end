@@ -6,6 +6,7 @@ import SearchResult from "./ListResult";
 import ScheduledVideoDownload from "./ScheduledVideoDownload";
 import {Maybe} from "monet";
 import {VideoAnalysisResult} from "./VideoAnalysisResult";
+import {Snapshot} from "./Snapshot";
 
 const parseVideoMetadata =
     (json: any): VideoMetadata => ({
@@ -20,6 +21,12 @@ const parseFileResource =
 export const parseVideo = (json: any): Video => ({
     videoMetadata: parseVideoMetadata(json.videoMetadata),
     fileResource: parseFileResource(json.fileResource)
+})
+
+export const parseSnapshot = (json: any): Snapshot => ({
+    videoId: json.videoId,
+    fileResource: parseFileResource(json.fileResource),
+    videoTimestamp: moment.duration(json.videoTimestamp.length, json.videoTimestamp.unit)
 })
 
 export function searchResultParser<A>(parser: (json: any) => A): (json: any) => SearchResult<A> {
