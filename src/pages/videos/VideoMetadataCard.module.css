@@ -1,4 +1,20 @@
-.media {
-    max-height: 100em;
-    min-height: 15em;
+.thumbnail {
+    max-width: 100%;
+    min-height: 100%;
+    border-radius: 0.2em;
+}
+
+.imageContainer {
+    max-height: 80%;
+    max-width: 80%;
+    margin: auto;
+}
+
+.videoMetadataCard {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
 }

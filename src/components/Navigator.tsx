@@ -20,9 +20,9 @@ export default () => (
         {
             navigationTabs
                 .map((navigationTab, index) =>
-                    <Grid item xs={3} className={styles.navigatorTab} key={index}>
+                    <Grid item xs={3} key={index} className={styles.navigatorTab}>
                         <Link to={navigationTab.path}>
-                            <div>{navigationTab.label}</div>
+                            {navigationTab.label}
                         </Link>
                     </Grid>
                 )

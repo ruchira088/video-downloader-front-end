@@ -15,7 +15,7 @@ export default () => {
     }, [])
 
     return (
-        <GridList cols={3} cellHeight="auto">
+        <GridList cols={4} cellHeight="auto">
             {videos.map(video =>
                 <GridListTile cols={1} key={video.videoMetadata.id}>
                     <Link to={`/video/${video.videoMetadata.id}`} key={video.videoMetadata.id}>
