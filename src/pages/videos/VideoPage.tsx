@@ -4,7 +4,7 @@ import {Maybe, None, Some} from "monet";
 import Video from "services/models/Video"
 import loadableComponent from "components/hoc/loadableComponent"
 import {fetchVideoById, fetchVideoSnapshots} from "services/video/VideoService"
-import VideoPlay from "./Watch";
+import VideoPlay from "./watch/Watch";
 import {Snapshot} from "../../services/models/Snapshot";
 
 export default () => {

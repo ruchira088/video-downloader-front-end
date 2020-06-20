@@ -5,9 +5,10 @@ import Scheduling from "pages/scheduling/Scheduling";
 import Videos from "pages/videos/Videos";
 import VideoPage from "pages/videos/VideoPage";
 import ActiveDownloads from "pages/scheduling/ActiveDownloads";
+import styles from "./ContentBody.module.css"
 
 export default () => (
-    <div className="main-container">
+    <div className={styles.contentBody}>
         <Switch>
             <Route exact path="/">
                 <Videos/>

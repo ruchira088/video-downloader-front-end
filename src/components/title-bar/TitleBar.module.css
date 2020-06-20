@@ -1,4 +1,15 @@
+.titleBar {
+    display: flex;
+    align-items: center;
+    padding: 0.5em 3em 1.5em;
+}
+
 .smallLogo {
-    height: 3em;
-    width: 3em;
+    max-width: 4em;
+}
+
+.logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
