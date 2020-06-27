@@ -4,6 +4,8 @@ import configuration from "services/Configuration";
 import ScheduledVideoDownload from "services/models/ScheduledVideoDownload";
 import {parseScheduledVideoDownload} from "../models/ResponseParser";
 
+export type ScheduledVideoDownloadJson = object
+
 const axiosClient = axios.create({baseURL: configuration.apiService})
 
 export const scheduledVideoDownloadStream =
@@ -15,6 +17,6 @@ export const scheduleVideo =
             .then(({data}) => parseScheduledVideoDownload(data))
 
 export const fetchScheduledVideos =
-    (searchTerm: Maybe<string>, pageNumber: number, pageSize: number): Promise<ScheduledVideoDownload[]> =>
+    (searchTerm: Maybe<string>, pageNumber: number, pageSize: number): Promise<ScheduledVideoDownloadJson[]> =>
         axiosClient.get(`/schedule/search?page-size=${pageSize}&page-number=${pageNumber}${searchTerm.fold(String())(term => `&search-term=${term}`)}`)
-            .then(({data}) => data.results.map(parseScheduledVideoDownload))
+            .then(({data}) => data.results)

@@ -1,26 +1,29 @@
 import React, {useEffect, useState} from "react"
 import {Map} from "immutable"
 import {Either, None} from "monet";
-import ScheduledVideoDownload from "services/models/ScheduledVideoDownload";
-import {fetchScheduledVideos, scheduledVideoDownloadStream} from "services/scheduling/SchedulingService";
+import {
+    fetchScheduledVideos,
+    ScheduledVideoDownloadJson,
+    scheduledVideoDownloadStream
+} from "services/scheduling/SchedulingService";
 import {EventStreamEventType} from "./EventStreamEventType";
 import {parseScheduledVideoDownload} from "../../services/models/ResponseParser";
 import ActiveDownload from "./ScheduledVideoDownloadCard";
 
 export default () => {
-    const [scheduledVideoDownloads, setScheduledVideoDownloads] = useState(Map<string, ScheduledVideoDownload>())
+    const [scheduledVideoDownloadJsons, setScheduledVideoDownloadJsons] = useState(Map<string, ScheduledVideoDownloadJson>())
 
     useEffect(() => {
         fetchScheduledVideos(None(), 0, 100)
-            .then(results => {
-                    setScheduledVideoDownloads(scheduledVideoDownloads =>
-                        results.reduce(
-                            (videos, video) =>
-                                videos.set(video.videoMetadata.id, video),
-                            scheduledVideoDownloads
+            .then(results =>
+                setScheduledVideoDownloadJsons(
+                    scheduledVideoDownloadJsons =>
+                        results.reduce<Map<string, ScheduledVideoDownloadJson>>(
+                            (scheduledVideoDownloads, scheduledVideoDownload) =>
+                                scheduledVideoDownloads.set((scheduledVideoDownload as any).videoMetadata.id, scheduledVideoDownload),
+                            scheduledVideoDownloadJsons
                         )
-                    )
-                }
+                )
             )
     }, [])
 
@@ -34,12 +37,10 @@ export default () => {
                 .fold(
                     error => console.error(error),
                     json => {
-                        const scheduledVideoDownload = parseScheduledVideoDownload(json)
-
-                        setScheduledVideoDownloads(
-                            scheduledVideoDownloads =>
-                                scheduledVideoDownloads.set(
-                                    scheduledVideoDownload.videoMetadata.id, scheduledVideoDownload
+                        setScheduledVideoDownloadJsons(
+                            scheduledVideoDownloadJsons =>
+                                scheduledVideoDownloadJsons.set(
+                                    json.videoMetadata.id, json
                                 )
                         )
                     }
@@ -49,7 +50,8 @@ export default () => {
         return () => {
             downloadStream.removeEventListener(
                 EventStreamEventType.ACTIVE_DOWNLOAD,
-                (() => {}) as unknown as EventListener
+                (() => {
+                }) as unknown as EventListener
             )
             downloadStream.close()
         }
@@ -58,7 +60,7 @@ export default () => {
     return (
         <>
             {
-                scheduledVideoDownloads.valueSeq()
+                scheduledVideoDownloadJsons.valueSeq().map(parseScheduledVideoDownload)
                     .map((scheduledVideoDownload, index) =>
                         <ActiveDownload {...scheduledVideoDownload} key={index}/>
                     )

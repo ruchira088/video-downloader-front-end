@@ -7,12 +7,14 @@ import {parseSnapshot, parseVideo, parseVideoAnalysisResult, searchResultParser}
 import {VideoAnalysisResult} from "../models/VideoAnalysisResult";
 import {Snapshot} from "../models/Snapshot";
 
+export type VideoJson = object
+
 const axiosClient: AxiosInstance = axios.create({baseURL: configuration.apiService})
 
 export const searchVideos =
-    (searchTerm: Maybe<string>, pageNumber: number, pageSize: number): Promise<SearchResult<Video>> =>
+    (searchTerm: Maybe<string>, pageNumber: number, pageSize: number): Promise<SearchResult<VideoJson>> =>
         axiosClient.get(`/videos/search?page-number=${pageNumber}&page-size=${pageSize}${searchTerm.fold(String())(term => `&search-term=${term}`)}`)
-            .then(({data}) => searchResultParser(parseVideo)(data))
+            .then(({data}) => searchResultParser(json => json)(data))
 
 export const fetchVideoById = (videoId: string): Promise<Video> =>
     axiosClient.get(`/videos/id/${videoId}`).then(({data}) => parseVideo(data))
