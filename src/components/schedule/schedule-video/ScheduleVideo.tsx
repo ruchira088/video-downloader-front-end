@@ -1,7 +1,8 @@
 import React, {useState} from "react"
 import {Button, TextField} from "@material-ui/core"
 import {scheduleVideo} from "services/scheduling/SchedulingService"
-import Preview from "./Preview";
+import Preview from "components/schedule/preview/Preview";
+import styles from "./ScheduleVideo.module.css"
 
 export default () => {
     const [videoUrl, setVideoUrl] = useState(String())
@@ -19,10 +20,14 @@ export default () => {
         }
 
     return (
-        <div className="schedule-video">
-            <TextField onChange={handleTextChange} value={videoUrl} label="Website URL"/>
-            <Button onClick={onScheduleButtonClick} variant="contained" color="primary">Schedule Download</Button>
+        <>
+            <div className={styles.scheduleVideo}>
+                <TextField onChange={handleTextChange} value={videoUrl} label="Website URL" className={styles.inputUrl}/>
+                <Button onClick={onScheduleButtonClick} variant="contained" color="primary">
+                    Schedule Download
+                </Button>
+            </div>
             <Preview url={videoUrl}/>
-        </div>
+        </>
     )
 }

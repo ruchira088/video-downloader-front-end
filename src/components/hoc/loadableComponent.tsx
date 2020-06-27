@@ -1,16 +1,17 @@
 import React, {ComponentType} from "react"
 import {Maybe} from "monet";
+import loadingSvg from "./loading.svg"
 
 const LoadingComponent =
     () =>
-        <div className="loading">
-            Loading
-        </div>
+        <>
+            <img src={loadingSvg} alt="loading icon"/>
+        </>
 
 export default function loadableComponent<A>(Component: ComponentType<A>, mayBeValue: Maybe<A>) {
     return (
-        <div className="loadable-component">
+        <>
             {mayBeValue.fold(<LoadingComponent/>)(values => <Component {...values}/>)}
-        </div>
+        </>
     )
 }

@@ -1,0 +1,13 @@
+.scheduleVideo {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 5em;
+}
+
+div.inputUrl {
+    margin-bottom: 2em;
+    width: 40%;
+    min-width: 30em;
+}

@@ -4,7 +4,7 @@ import {Link} from "react-router-dom"
 import {searchVideos} from "services/video/VideoService"
 import {None} from "monet";
 import Video from "services/models/Video";
-import VideoCard from "./VideoCard";
+import VideoCard from "../../components/video/video-card/VideoCard";
 
 export default () => {
     const [videos, setVideos] = useState<Video[]>([])

@@ -4,8 +4,8 @@ import {Maybe, None, Some} from "monet";
 import Video from "services/models/Video"
 import loadableComponent from "components/hoc/loadableComponent"
 import {fetchVideoById, fetchVideoSnapshots} from "services/video/VideoService"
-import VideoPlay from "./watch/Watch";
-import {Snapshot} from "../../services/models/Snapshot";
+import Watch from "./watch/Watch";
+import {Snapshot} from "../../../services/models/Snapshot";
 
 export default () => {
     const {videoId} = useParams()
@@ -24,7 +24,7 @@ export default () => {
 
     return (
         <div className="video-page">
-            {loadableComponent(VideoPlay, video.map(value => ({...value, snapshots: videoSnapshots})))}
+            {loadableComponent(Watch, video.map(value => ({...value, snapshots: videoSnapshots})))}
         </div>
     )
 }

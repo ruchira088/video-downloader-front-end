@@ -2,8 +2,8 @@ import React, {useEffect, useState} from "react"
 import {Maybe, None} from "monet";
 import loadableComponent from "components/hoc/loadableComponent"
 import {analyze} from "services/video/VideoService"
-import {VideoAnalysisResult} from "../../services/models/VideoAnalysisResult";
-import VideoMetadataCard from "../videos/VideoMetadataCard";
+import {VideoAnalysisResult} from "services/models/VideoAnalysisResult";
+import VideoMetadataCard from "components/video/video-metadata-card/VideoMetadataCard";
 
 export default ({url}: { url: string }) => {
     const [showPreview, setShowPreview] = useState(false)

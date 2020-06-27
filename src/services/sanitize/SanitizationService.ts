@@ -32,7 +32,7 @@ const SAFE_PHRASES: NonEmptyList<string> =
             "Chuck Norris counted to infinity… twice.",
             "Chuck Norris can kill two stones with one bird.",
             "Chuck Norris can strangle you with a cordless phone.",
-            "Chuck Norris doesn’t wear a watch. He decides what time it is."
+            "Chuck Norris doesn’t wear a video-page. He decides what time it is."
         ])
     )
 
