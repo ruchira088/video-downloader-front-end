@@ -1,31 +1,68 @@
 import React, {useEffect, useState} from "react"
-import {Maybe, None, Some} from "monet";
+import {Map} from "immutable"
+import {Either, None} from "monet";
 import ScheduledVideoDownload from "services/models/ScheduledVideoDownload";
-import loadableComponent from "components/hoc/loadableComponent";
-import {fetchScheduledVideos} from "services/scheduling/SchedulingService";
-
-interface ScheduledVideos {
-    results: ScheduledVideoDownload[]
-}
-
-const ScheduleVideosContainer: React.ComponentType<ScheduledVideos> =
-    (scheduledVideos: ScheduledVideos) => (
-        <div>
-
-        </div>
-    )
+import {fetchScheduledVideos, scheduledVideoDownloadStream} from "services/scheduling/SchedulingService";
+import {EventStreamEventType} from "./EventStreamEventType";
+import {parseScheduledVideoDownload} from "../../services/models/ResponseParser";
+import ActiveDownload from "./ScheduledVideoDownloadCard";
 
 export default () => {
-    const [scheduledVideos, setScheduledVideos] = useState<Maybe<ScheduledVideos>>(None())
+    const [scheduledVideoDownloads, setScheduledVideoDownloads] = useState(Map<string, ScheduledVideoDownload>())
 
     useEffect(() => {
         fetchScheduledVideos(None(), 0, 100)
-            .then(results => setScheduledVideos(Some({results})))
+            .then(results => {
+                    setScheduledVideoDownloads(scheduledVideoDownloads =>
+                        results.reduce(
+                            (videos, video) =>
+                                videos.set(video.videoMetadata.id, video),
+                            scheduledVideoDownloads
+                        )
+                    )
+                }
+            )
+    }, [])
+
+    useEffect(() => {
+        const downloadStream = scheduledVideoDownloadStream()
+
+        downloadStream.addEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, messageEvent => {
+            const {data} = messageEvent as unknown as { data: string }
+
+            Either.fromTry(() => JSON.parse(data))
+                .fold(
+                    error => console.error(error),
+                    json => {
+                        const scheduledVideoDownload = parseScheduledVideoDownload(json)
+
+                        setScheduledVideoDownloads(
+                            scheduledVideoDownloads =>
+                                scheduledVideoDownloads.set(
+                                    scheduledVideoDownload.videoMetadata.id, scheduledVideoDownload
+                                )
+                        )
+                    }
+                )
+        })
+
+        return () => {
+            downloadStream.removeEventListener(
+                EventStreamEventType.ACTIVE_DOWNLOAD,
+                (() => {}) as unknown as EventListener
+            )
+            downloadStream.close()
+        }
     }, [])
 
     return (
         <>
-            {loadableComponent(ScheduleVideosContainer, scheduledVideos)}
+            {
+                scheduledVideoDownloads.valueSeq()
+                    .map((scheduledVideoDownload, index) =>
+                        <ActiveDownload {...scheduledVideoDownload} key={index}/>
+                    )
+            }
         </>
     )
 }

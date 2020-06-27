@@ -3,7 +3,6 @@ import {Route, Switch} from "react-router-dom"
 import ServiceInformation from "pages/service-information/ServiceInformation"
 import Videos from "pages/videos/Videos";
 import VideoPage from "pages/videos/video-page/VideoPage";
-import ActiveDownloads from "pages/pending/ActiveDownloads";
 import styles from "./ContentBody.module.css"
 import ScheduleVideo from "pages/schedule/Schedule";
 import ScheduledVideos from "pages/pending/ScheduledVideos";
