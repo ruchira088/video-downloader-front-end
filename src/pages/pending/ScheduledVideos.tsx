@@ -8,7 +8,7 @@ import {
 } from "services/scheduling/SchedulingService";
 import {EventStreamEventType} from "./EventStreamEventType";
 import {parseScheduledVideoDownload} from "../../services/models/ResponseParser";
-import ActiveDownload from "./ScheduledVideoDownloadCard";
+import ScheduledVideoDownloadCard from "./scheduled-video-download-card/ScheduledVideoDownloadCard";
 
 export default () => {
     const [scheduledVideoDownloadJsons, setScheduledVideoDownloadJsons] = useState(Map<string, ScheduledVideoDownloadJson>())
@@ -62,7 +62,7 @@ export default () => {
             {
                 scheduledVideoDownloadJsons.valueSeq().map(parseScheduledVideoDownload)
                     .map((scheduledVideoDownload, index) =>
-                        <ActiveDownload {...scheduledVideoDownload} key={index}/>
+                        <ScheduledVideoDownloadCard {...scheduledVideoDownload} key={index}/>
                     )
             }
         </>
