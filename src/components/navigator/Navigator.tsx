@@ -11,7 +11,7 @@ interface NavigationTab {
 const navigationTabs: NavigationTab[] = [
         {label: "Videos", path: "/"},
         {label: "Schedule", path: "/schedule"},
-        {label: "Active Downloads", path: "/active"},
+        {label: "Pending", path: "/pending"},
         {label: "Service Information", path: "/service-information"}
     ]
 

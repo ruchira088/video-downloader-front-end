@@ -24,8 +24,8 @@ export default () => {
     }, [])
 
     return (
-        <div className="scheduled-videos">
+        <>
             {loadableComponent(ScheduleVideosContainer, scheduledVideos)}
-        </div>
+        </>
     )
 }

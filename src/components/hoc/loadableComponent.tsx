@@ -2,7 +2,7 @@ import React, {ComponentType} from "react"
 import {Maybe} from "monet";
 import loadingSvg from "./loading.svg"
 
-const LoadingComponent =
+export const LoadingComponent =
     () =>
         <>
             <img src={loadingSvg} alt="loading icon"/>
