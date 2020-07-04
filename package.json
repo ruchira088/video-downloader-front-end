@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@material-ui/core": "^4.10.2",
+    "@material-ui/core": "^4.11.0",
     "axios": "^0.19.2",
     "immutable": "^4.0.0-rc.12",
     "memoizee": "^0.4.14",
@@ -48,6 +48,6 @@
     "@types/react-router-dom": "^5.1.5",
     "@types/react-toggle": "^4.0.2",
     "react-scripts": "3.4.1",
-    "typescript": "~3.9.5"
+    "typescript": "~3.9.6"
   }
 }
