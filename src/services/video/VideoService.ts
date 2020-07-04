@@ -24,3 +24,7 @@ export const fetchVideoSnapshots = (videoId: string): Promise<Snapshot[]> =>
 
 export const analyze = (url: string): Promise<VideoAnalysisResult> =>
     axiosClient.post("/videos/analyze", {url}).then(({data}) => parseVideoAnalysisResult(data))
+
+export const updateVideoTitle = (videoId: string, title: string): Promise<Video> =>
+    axiosClient.patch(`/videos/id/${videoId}/metadata`, {title})
+        .then(({data}) => parseVideo(data))
