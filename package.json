@@ -1,5 +1,5 @@
 {
-  "name": "video-downloader-web",
+  "name": "video-downloader-front-end",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -37,17 +37,17 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.11.0",
-    "@testing-library/react": "^10.4.3",
-    "@testing-library/user-event": "^12.0.11",
-    "@types/jest": "^26.0.3",
+    "@testing-library/jest-dom": "^5.11.2",
+    "@testing-library/react": "^10.4.8",
+    "@testing-library/user-event": "^12.1.1",
+    "@types/jest": "^26.0.9",
     "@types/memoizee": "^0.4.4",
-    "@types/node": "^14.0.14",
-    "@types/react": "^16.9.41",
+    "@types/node": "^14.0.27",
+    "@types/react": "^16.9.45",
     "@types/react-dom": "^16.9.0",
     "@types/react-router-dom": "^5.1.5",
     "@types/react-toggle": "^4.0.2",
     "react-scripts": "3.4.1",
-    "typescript": "~3.9.6"
+    "typescript": "~3.9.7"
   }
 }

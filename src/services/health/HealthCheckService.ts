@@ -7,7 +7,7 @@ import {Maybe} from "monet";
 const axiosClient: AxiosInstance = axios.create({baseURL: configuration.apiService})
 
 export const apiServiceInformation: () => Promise<ApiServiceInformation> =
-    () => axiosClient.get("/service")
+    () => axiosClient.get("/service/info")
         .then(({data}) => ({
             ...data,
             currentTimestamp: moment(data.currentTimestamp),
