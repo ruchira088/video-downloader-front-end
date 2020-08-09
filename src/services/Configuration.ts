@@ -4,7 +4,7 @@ export interface Configuration {
 }
 
 const configuration: Configuration = {
-    apiService: "http://web.video.ruchij.com",
+    apiService: "http://api.master.video.local.ruchij.com",
     safeMode: false
 }
 

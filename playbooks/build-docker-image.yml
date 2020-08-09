@@ -1,0 +1,7 @@
+---
+- hosts: localhost
+  connection: local
+
+  tasks:
+    - name: Build production Docker image
+      import_tasks: tasks/build-docker.yml
