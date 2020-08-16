@@ -20,3 +20,8 @@
       -t video-downloader-front-end:{{ git_commit }} \
       -t video-downloader-front-end:{{ git_branch }}-{{ ansible_date_time.iso8601_basic_short }} \
       ../
+
+- name: Clean up production bundle
+  file:
+    path: ../build
+    state: absent
