@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: front-end-deployment
-  namespace: video-downloder-front-end-{{ git_branch }}
+  namespace: video-downloader-front-end-{{ git_branch }}
 spec:
   selector:
     matchLabels:
