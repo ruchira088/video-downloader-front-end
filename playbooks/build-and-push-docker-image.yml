@@ -1,0 +1,18 @@
+---
+- hosts: localhost
+  connection: local
+
+  tasks:
+    - name: Fetch git information
+      import_tasks: tasks/git-info.yml
+
+    - name: Build production Docker image
+      import_tasks: tasks/build-docker.yml
+
+    - name: Push Docker image
+      shell: |
+        docker tag video-downloader-front-end:{{ git_commit }} {{ docker_registry }}/video-downloader-front-end:{{ git_commit }} && \
+        docker push {{ docker_registry }}/video-downloader-front-end:{{ git_commit }}
+      vars:
+        docker_registry: local.ruchij.com:32000
+

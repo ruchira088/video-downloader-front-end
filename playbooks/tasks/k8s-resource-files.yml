@@ -1,0 +1,21 @@
+- name: Fetch git information
+  import_tasks: tasks/git-info.yml
+
+- name: Create output directory
+  block:
+    - name: Delete exisiting output directory
+      file:
+        path: k8s-output
+        state: absent
+
+    - name: Create output directory
+      file:
+        path: k8s-output
+        state: directory
+
+- name: Render K8s resource files
+  template:
+    src: "{{ item }}"
+    dest: k8s-output/{{ item | basename }}
+  with_fileglob:
+    - k8s/*.yaml

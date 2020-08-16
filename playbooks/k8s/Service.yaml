@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: front-end-service
+  namespace: video-downloader-front-end-{{ git_branch }}
+spec:
+  selector:
+    app: front-end
+    branch: {{ git_branch }}
+  ports:
+    - name: http-port
+      port: 80
+

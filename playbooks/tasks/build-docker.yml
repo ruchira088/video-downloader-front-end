@@ -1,4 +1,4 @@
-- name: Import git information
+- name: Fetch git information
   import_tasks: tasks/git-info.yml
 
 - name: Remove existing production bundle
