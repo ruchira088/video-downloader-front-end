@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: front-end-deployment
-  namespace: video-downloader-front-end-{{ git_branch }}
+  namespace: {{ namespace }}
 spec:
   selector:
     matchLabels:
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: front-end-container
-          image: {{ docker_registry }}/video-downloader-front-end:{{ git_commit }}
+          image: ruchira088/video-downloader-front-end:{{ git_commit }}
           ports:
             - name: http-port
               containerPort: 80

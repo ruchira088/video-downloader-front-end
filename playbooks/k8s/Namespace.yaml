@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: video-downloader-front-end-{{ git_branch }}
+  name: {{ namespace }}
   labels:
     project: video-downloader-front-end
     branch: {{ git_branch }}

@@ -6,16 +6,16 @@
     - name: Fetch git information
       import_tasks: tasks/git-info.yml
 
+    - set_fact:
+        namespace: "{{ 'video-downloader-front-end' if  git_branch == 'master' else 'video-downloader-front-end-' + git_branch }}"
+
     - name: Create K8s resource files
       import_tasks: tasks/k8s-resource-files.yml
       vars:
-        docker_registry: localhost:32000
-        hostname: "{{ git_branch }}.video.local.ruchij.com"
+        hostname: "{{ 'video.home.ruchij.com' if  git_branch == 'master' else git_branch + '.video.home.ruchij.com' }}"
 
     - name: Create kubeconfig
       import_tasks: tasks/k8s-config.yml
-      vars:
-        aws_ssm_k8s_config_path: /k8s/config/ubuntu-vm
 
     - name: Deploy to K8s
       block:
@@ -26,7 +26,7 @@
           command: kubectl apply -f k8s-output --kubeconfig k8s-output/kubeconfig
 
         - name: Wait for successful deployment
-          command: kubectl rollout status deployment front-end-deployment --kubeconfig k8s-output/kubeconfig -n video-downloader-front-end-{{ git_branch }}
+          command: kubectl rollout status deployment front-end-deployment --kubeconfig k8s-output/kubeconfig -n {{ namespace }}
 
     - name: Delete output directory
       file:

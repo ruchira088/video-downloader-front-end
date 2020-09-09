@@ -2,8 +2,12 @@ apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: front-end-ingress
-  namespace: video-downloader-front-end-{{ git_branch }}
+  namespace: {{ namespace }}
 spec:
+  tls:
+    - secretName: front-end-tls-secret
+      hosts:
+        - {{ hostname }}
   rules:
     - host: {{ hostname }}
       http:
