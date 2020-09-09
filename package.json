@@ -4,12 +4,12 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.11.0",
-    "axios": "^0.19.2",
+    "axios": "^0.20.0",
     "immutable": "^4.0.0-rc.12",
     "memoizee": "^0.4.14",
     "moment": "^2.27.0",
     "monet": "^0.9.1",
-    "rc-progress": "^3.0.0",
+    "rc-progress": "^3.1.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
@@ -37,17 +37,17 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.11.2",
-    "@testing-library/react": "^10.4.8",
-    "@testing-library/user-event": "^12.1.1",
-    "@types/jest": "^26.0.9",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.0.2",
+    "@testing-library/user-event": "^12.1.4",
+    "@types/jest": "^26.0.13",
     "@types/memoizee": "^0.4.4",
-    "@types/node": "^14.0.27",
-    "@types/react": "^16.9.45",
+    "@types/node": "^14.6.4",
+    "@types/react": "^16.9.49",
     "@types/react-dom": "^16.9.0",
     "@types/react-router-dom": "^5.1.5",
     "@types/react-toggle": "^4.0.2",
-    "react-scripts": "3.4.1",
-    "typescript": "~3.9.7"
+    "react-scripts": "3.4.3",
+    "typescript": "~4.0.2"
   }
 }

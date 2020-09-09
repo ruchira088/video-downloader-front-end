@@ -8,7 +8,7 @@ import Watch from "./watch/Watch";
 import {Snapshot} from "services/models/Snapshot";
 
 export default () => {
-    const {videoId} = useParams()
+    const {videoId}: {videoId: string} = useParams()
     const [video, setVideo] = useState<Maybe<Video>>(None())
     const [videoSnapshots, setVideoSnapshots] = useState<Snapshot[]>([])
 
