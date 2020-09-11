@@ -1,40 +1,43 @@
-import React, {useEffect, useState} from "react"
+import React, {useState} from "react"
 import {GridList, GridListTile} from "@material-ui/core"
 import {Link} from "react-router-dom"
+import {None} from "monet";
 import {searchVideos, VideoJson} from "services/video/VideoService"
-import {Maybe, None} from "monet";
-import VideoCard from "components/video/video-card/VideoCard";
-import {parseVideo} from "services/models/ResponseParser";
+import InfiniteScroll from "react-infinite-scroller"
+import VideoCard from "components/video/video-card/VideoCard"
+import Video from "services/models/Video";
+import {parseVideo} from "../../services/models/ResponseParser";
+
+const PAGE_SIZE = 50
 
 export default () => {
     const [videos, setVideos] = useState<VideoJson[]>([])
+    const [hasMore, setHasMore] = useState<boolean>(true)
 
-    useEffect(() => {
-        const fetchVideos =
-            (searchTerm: Maybe<string>, pageNumber: number, pageSize: number): Promise<number> =>
-                searchVideos(searchTerm, pageNumber, pageSize)
-                    .then(({results}) => {
-                        setVideos(videos => videos.concat(results))
+    const fetchVideos =
+        (pageNumber: number): Promise<void> =>
+            searchVideos(None(), pageNumber - 1, PAGE_SIZE)
+                .then(({results}) => {
+                    if (results.length < PAGE_SIZE) {
+                        setHasMore(false)
+                    }
 
-                        if (results.length === pageSize) {
-                            return fetchVideos(searchTerm, pageNumber + 1, pageSize)
-                        } else {
-                            return Promise.resolve(pageNumber)
-                        }
-                    })
-
-        fetchVideos(None(), 0, 50)
-    }, [])
+                    setVideos(videos => videos.concat(results))
+                })
 
     return (
-        <GridList cols={4} cellHeight="auto">
-            {videos.map(parseVideo).map(video =>
-                <GridListTile cols={1} key={video.videoMetadata.id}>
-                    <Link to={`/video/${video.videoMetadata.id}`} key={video.videoMetadata.id}>
-                        <VideoCard {...video}/>
-                    </Link>
-                </GridListTile>
-            )}
-        </GridList>
+        <InfiniteScroll pageStart={0} loadMore={fetchVideos} hasMore={hasMore}>
+            <GridList cols={4} cellHeight="auto">
+                {
+                    videos.map(parseVideo).map((video, index) =>
+                        <GridListTile cols={1} key={index}>
+                            <Link to={`/video/${video.videoMetadata.id}`} key={index}>
+                                <VideoCard {...video}/>
+                            </Link>
+                        </GridListTile>
+                    )
+                }
+            </GridList>
+        </InfiniteScroll>
     )
 }
