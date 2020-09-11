@@ -5,8 +5,7 @@ import {None} from "monet";
 import {searchVideos, VideoJson} from "services/video/VideoService"
 import InfiniteScroll from "react-infinite-scroller"
 import VideoCard from "components/video/video-card/VideoCard"
-import Video from "services/models/Video";
-import {parseVideo} from "../../services/models/ResponseParser";
+import {parseVideo} from "services/models/ResponseParser";
 
 const PAGE_SIZE = 50
 
@@ -26,7 +25,7 @@ export default () => {
                 })
 
     return (
-        <InfiniteScroll pageStart={0} loadMore={fetchVideos} hasMore={hasMore}>
+        <InfiniteScroll pageStart={0} loadMore={fetchVideos} hasMore={hasMore} threshold={500}>
             <GridList cols={4} cellHeight="auto">
                 {
                     videos.map(parseVideo).map((video, index) =>
