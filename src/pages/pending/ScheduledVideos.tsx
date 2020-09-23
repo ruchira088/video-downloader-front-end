@@ -1,14 +1,21 @@
 import React, {useEffect, useState} from "react"
 import {Map} from "immutable"
-import {Either, None} from "monet";
+import {Either, Maybe, None} from "monet";
 import {
     fetchScheduledVideos,
+    fetchScheduledVideoById,
     ScheduledVideoDownloadJson,
     scheduledVideoDownloadStream
 } from "services/scheduling/SchedulingService";
 import {EventStreamEventType} from "./EventStreamEventType";
 import {parseScheduledVideoDownload} from "../../services/models/ResponseParser";
 import ScheduledVideoDownloadCard from "./scheduled-video-download-card/ScheduledVideoDownloadCard";
+
+interface DownloadProgress {
+    videoId: string
+    updatedAt: string
+    bytes: number
+}
 
 export default () => {
     const [scheduledVideoDownloadJsons, setScheduledVideoDownloadJsons] = useState(Map<string, ScheduledVideoDownloadJson>())
@@ -37,12 +44,23 @@ export default () => {
                 .fold(
                     error => console.error(error),
                     json => {
-                        setScheduledVideoDownloadJsons(
-                            scheduledVideoDownloadJsons =>
-                                scheduledVideoDownloadJsons.set(
-                                    json.videoMetadata.id, json
-                                )
-                        )
+                        const downloadProgress = json as DownloadProgress
+
+                        console.log(scheduledVideoDownloadJsons.get(downloadProgress.videoId))
+
+                        Maybe.fromNull(scheduledVideoDownloadJsons.get(downloadProgress.videoId))
+                            .map(value => Promise.resolve(value))
+                            .orLazy(() => fetchScheduledVideoById(downloadProgress.videoId))
+                            .then(json => {
+                                    setScheduledVideoDownloadJsons(
+                                        scheduledVideoDownloadJsons =>
+                                            scheduledVideoDownloadJsons.set(
+                                                downloadProgress.videoId,
+                                                {...json, downloadedBytes: downloadProgress.bytes}
+                                            )
+                                    )
+                                }
+                            )
                     }
                 )
         })
@@ -60,7 +78,9 @@ export default () => {
     return (
         <>
             {
-                scheduledVideoDownloadJsons.valueSeq().map(parseScheduledVideoDownload)
+                scheduledVideoDownloadJsons.valueSeq()
+                    .map(parseScheduledVideoDownload)
+                    .sortBy(value => -value.scheduledAt.unix())
                     .map((scheduledVideoDownload, index) =>
                         <ScheduledVideoDownloadCard {...scheduledVideoDownload} key={index}/>
                     )

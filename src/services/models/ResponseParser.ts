@@ -30,7 +30,7 @@ export const parseSnapshot = (json: any): Snapshot => ({
 })
 
 export function searchResultParser<A>(parser: (json: any) => A): (json: any) => SearchResult<A> {
-    return (json: any) => ({...json, results: json.results.map(parser) })
+    return (json: any) => ({...json, results: json.results.map(parser)})
 }
 
 export const parseVideoAnalysisResult =
@@ -40,10 +40,15 @@ export const parseVideoAnalysisResult =
     })
 
 export const parseScheduledVideoDownload =
-    (json: any): ScheduledVideoDownload => ({
-        scheduledAt: moment(json.scheduledAt),
-        lastUpdatedAt: moment(json.lastUpdatedAt),
-        videoMetadata: parseVideoMetadata(json.videoMetadata),
-        downloadedBytes: json.downloadedBytes,
-        completedAt: Maybe.fromNull(json.completedAt).map(moment)
-    })
+    (json: any): ScheduledVideoDownload => {
+        const completedAt = Maybe.fromNull(json.completedAt).map(moment)
+        const videoMetadata = parseVideoMetadata(json.videoMetadata)
+
+        return {
+            completedAt,
+            videoMetadata,
+            scheduledAt: moment(json.scheduledAt),
+            downloadedBytes: completedAt.map(() => videoMetadata.size).orElse(Maybe.fromNull(json.downloadedBytes)).getOrElse(0),
+        }
+    }
+

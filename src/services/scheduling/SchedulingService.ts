@@ -16,6 +16,10 @@ export const scheduleVideo =
         axiosClient.post("/schedule", {url: videoSiteUrl})
             .then(({data}) => parseScheduledVideoDownload(data))
 
+export const fetchScheduledVideoById =
+    (videoId: string): Promise<ScheduledVideoDownloadJson> => axiosClient.get(`schedule/videoId/${videoId}`)
+        .then(({data}) => data)
+
 export const fetchScheduledVideos =
     (searchTerm: Maybe<string>, pageNumber: number, pageSize: number): Promise<ScheduledVideoDownloadJson[]> =>
         axiosClient.get(`/schedule/search?page-size=${pageSize}&page-number=${pageNumber}${searchTerm.fold(String())(term => `&search-term=${term}`)}`)
