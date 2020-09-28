@@ -6,6 +6,7 @@ import {searchVideos, VideoJson} from "services/video/VideoService"
 import InfiniteScroll from "react-infinite-scroller"
 import VideoCard from "components/video/video-card/VideoCard"
 import {parseVideo} from "utils/ResponseParser";
+import LoginForm from "../../components/login-form/LoginForm";
 
 const PAGE_SIZE = 50
 
@@ -26,6 +27,7 @@ export default () => {
 
     return (
         <InfiniteScroll pageStart={0} loadMore={fetchVideos} hasMore={hasMore} threshold={500}>
+            <LoginForm/>
             <GridList cols={4} cellHeight="auto">
                 {
                     videos.map(parseVideo).map((video, index) =>
