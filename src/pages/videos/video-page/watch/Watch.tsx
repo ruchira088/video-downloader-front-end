@@ -1,8 +1,8 @@
 import React from "react"
 import ApplicationContext from "context/ApplicationContext";
-import Video from "services/models/Video";
+import Video from "models/Video";
 import {imageUrl, videoUrl} from "services/asset/AssetService"
-import {Snapshot} from "services/models/Snapshot";
+import {Snapshot} from "models/Snapshot";
 import translate from "services/translation/TranslationService"
 import VideoSnapshots from "components/video/video-snapshots/VideoSnapshots";
 import styles from "./Watch.module.css"

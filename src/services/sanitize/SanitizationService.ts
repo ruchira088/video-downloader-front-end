@@ -1,7 +1,7 @@
 import {List, NonEmptyList} from "monet"
 import memoize from "memoizee"
 import {randomPickNonEmptyList} from "utils/Random"
-import {AssetUrl} from "../asset/AssetService";
+import {AssetUrl} from "services/asset/AssetService";
 
 import image_01 from "images/safe-images/image-01.jpg"
 import image_02 from "images/safe-images/image-02.jpg"

@@ -3,8 +3,8 @@ import {Line} from "rc-progress"
 import {humanReadableSize} from "utils/Formatter"
 
 export interface ProgressValue {
-    completeValue: number
-    currentValue: number
+    readonly completeValue: number
+    readonly currentValue: number
 }
 
 export default (progressValue: ProgressValue) => {

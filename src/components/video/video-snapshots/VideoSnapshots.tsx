@@ -1,6 +1,6 @@
 import React from "react"
 import {imageUrl} from "services/asset/AssetService"
-import {Snapshot} from "services/models/Snapshot";
+import {Snapshot} from "models/Snapshot";
 import ApplicationContext from "context/ApplicationContext";
 import {shortHumanReadableDuration} from "utils/Formatter"
 import styles from "./VideoSnapshots.module.css"

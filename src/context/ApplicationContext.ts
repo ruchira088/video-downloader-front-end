@@ -1,12 +1,12 @@
 import React from "react"
-import configuration from "services/Configuration";
+import {CONFIGURATION} from "services/Configuration";
 
 export interface ApplicationContext {
-    safeMode: boolean
+    readonly safeMode: boolean
 }
 
-export const DEFAULT_CONTEXT: ApplicationContext = {
-    safeMode: configuration.safeMode
+export const defaultApplicationContext: ApplicationContext = {
+    safeMode: CONFIGURATION.safeMode
 }
 
-export default React.createContext<ApplicationContext>(DEFAULT_CONTEXT)
+export default React.createContext<ApplicationContext>(defaultApplicationContext)

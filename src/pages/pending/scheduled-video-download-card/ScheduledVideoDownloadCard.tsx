@@ -1,6 +1,6 @@
 import React from "react"
 import ApplicationContext from "context/ApplicationContext";
-import ScheduledVideoDownload from "services/models/ScheduledVideoDownload";
+import ScheduledVideoDownload from "models/ScheduledVideoDownload";
 import {imageUrl} from "services/asset/AssetService";
 import translate from "services/translation/TranslationService";
 import ProgressBar from "components/DownloadProgressBar";

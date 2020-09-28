@@ -1,5 +1,5 @@
 import React from "react"
-import Video from "services/models/Video";
+import Video from "models/Video";
 import VideoMetadataCard from "../video-metadata-card/VideoMetadataCard";
 
 export default (video: Video) => (

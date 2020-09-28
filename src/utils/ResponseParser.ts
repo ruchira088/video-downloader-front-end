@@ -1,12 +1,13 @@
-import VideoMetadata from "./VideoMetadata";
 import moment from "moment";
-import FileResource from "./FileResource";
-import Video from "./Video";
-import SearchResult from "./ListResult";
-import ScheduledVideoDownload from "./ScheduledVideoDownload";
 import {Maybe} from "monet";
-import {VideoAnalysisResult} from "./VideoAnalysisResult";
-import {Snapshot} from "./Snapshot";
+import VideoMetadata from "models/VideoMetadata";
+import FileResource from "models/FileResource";
+import Video from "models/Video";
+import SearchResult from "models/ListResult";
+import ScheduledVideoDownload from "models/ScheduledVideoDownload";
+import {VideoAnalysisResult} from "models/VideoAnalysisResult";
+import {Snapshot} from "models/Snapshot";
+import {AuthenticationToken} from "models/AuthenticationToken";
 
 const parseVideoMetadata =
     (json: any): VideoMetadata => ({
@@ -51,4 +52,13 @@ export const parseScheduledVideoDownload =
             downloadedBytes: completedAt.map(() => videoMetadata.size).orElse(Maybe.fromNull(json.downloadedBytes)).getOrElse(0),
         }
     }
+
+export const parseAuthenticationToken =
+    (json: any): AuthenticationToken => ({
+        secret: json.secret,
+        expiresAt: moment(json.expiresAt),
+        issuedAt: moment(json.issuedAt),
+        renewals: json.renewals
+    })
+
 

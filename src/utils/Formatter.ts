@@ -2,8 +2,8 @@ import {Maybe} from "monet";
 import moment, {Duration, unitOfTime} from "moment";
 
 interface ByteSize {
-    floor: number
-    suffix: string
+    readonly floor: number
+    readonly suffix: string
 }
 
 const BYTE: ByteSize = {

@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from "react"
 import {Maybe, None, Some} from "monet"
 import {apiServiceInformation} from "services/health/HealthCheckService"
-import ApiServiceInformation from "services/models/ApiServiceInformation"
+import ApiServiceInformation from "models/ApiServiceInformation"
 import loadableComponent from "components/hoc/loadableComponent"
 import BackendServiceInformation, {ServiceInformationItem} from "./BackendServiceInformation"
-import configuration from "services/Configuration";
+import {CONFIGURATION} from "services/Configuration";
 
 export default () => {
-    const [service, setServiceInformation] = useState<Maybe<ApiServiceInformation>>(None())
+    const [serviceInformation, setServiceInformation] = useState<Maybe<ApiServiceInformation>>(None())
 
     const fetchServerInformation =
         () => apiServiceInformation().then(information => setServiceInformation(Some(information)))
@@ -23,8 +23,8 @@ export default () => {
 
     return (
         <div className="service-information">
-            <ServiceInformationItem label="API URL" value={Some(configuration.apiService)}/>
-            {loadableComponent(BackendServiceInformation, service)}
+            <ServiceInformationItem label="API URL" value={Some(CONFIGURATION.apiService)}/>
+            {loadableComponent(BackendServiceInformation, serviceInformation)}
         </div>
     )
 }

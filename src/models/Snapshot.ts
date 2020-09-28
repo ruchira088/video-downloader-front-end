@@ -2,7 +2,7 @@ import FileResource from "./FileResource";
 import {Duration} from "moment";
 
 export interface Snapshot {
-    videoId: string
-    fileResource: FileResource
-    videoTimestamp: Duration
+    readonly videoId: string
+    readonly fileResource: FileResource
+    readonly videoTimestamp: Duration
 }

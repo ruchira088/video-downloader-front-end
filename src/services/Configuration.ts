@@ -1,11 +1,9 @@
 export interface Configuration {
-    apiService: string
-    safeMode: boolean
+    readonly apiService: string
+    readonly safeMode: boolean
 }
 
-const configuration: Configuration = {
-    apiService: "http://localhost:8000",
+export const CONFIGURATION: Configuration = {
+    apiService: "https://localhost",
     safeMode: false
 }
-
-export default configuration

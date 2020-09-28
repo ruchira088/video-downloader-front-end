@@ -1,10 +1,10 @@
 import React from "react";
-import ApiServiceInformation from "services/models/ApiServiceInformation";
+import ApiServiceInformation from "models/ApiServiceInformation";
 import {Maybe, Some} from "monet";
 
 interface ServiceInformationItem {
-    label: string
-    value: Maybe<string>
+    readonly label: string
+    readonly value: Maybe<string>
 }
 
 export const ServiceInformationItem =
@@ -26,10 +26,10 @@ export default (apiServiceInformation: ApiServiceInformation) => (
         <ServiceInformationItem label="Scala Version" value={Some(apiServiceInformation.scalaVersion)}/>
         <ServiceInformationItem label="sbt Version" value={Some(apiServiceInformation.sbtVersion)}/>
         <ServiceInformationItem label="Server Timestamp"
-                                value={Some(apiServiceInformation.currentTimestamp.toISOString())}/>
+                                value={Some(apiServiceInformation.currentTimestamp.toString())}/>
         <ServiceInformationItem label="git Branch" value={apiServiceInformation.gitBranch}/>
         <ServiceInformationItem label="git Commit" value={apiServiceInformation.gitCommit}/>
         <ServiceInformationItem label="Build Timestamp"
-                                value={apiServiceInformation.buildTimestamp.map(value => value.toISOString())}/>
+                                value={apiServiceInformation.buildTimestamp.map(value => value.toString())}/>
     </div>
 )

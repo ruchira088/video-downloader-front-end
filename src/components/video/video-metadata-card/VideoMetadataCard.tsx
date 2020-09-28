@@ -1,11 +1,11 @@
 import React from "react"
-import VideoMetadata from "services/models/VideoMetadata";
+import VideoMetadata from "models/VideoMetadata";
 import ApplicationContext from "context/ApplicationContext";
 import {thumbnailUrl} from "services/asset/AssetService"
 import translate from "services/translation/TranslationService"
 import {humanReadableDuration, humanReadableSize} from "utils/Formatter"
 import styles from "./VideoMetadataCard.module.css"
-import {VideoAnalysisResult} from "services/models/VideoAnalysisResult";
+import {VideoAnalysisResult} from "models/VideoAnalysisResult";
 
 export default (metadata: VideoMetadata | VideoAnalysisResult) => (
     <ApplicationContext.Consumer>

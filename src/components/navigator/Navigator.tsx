@@ -4,8 +4,8 @@ import {Grid} from "@material-ui/core";
 import styles from "./Navigator.module.css"
 
 interface NavigationTab {
-    label: string
-    path: string
+    readonly label: string
+    readonly path: string
 }
 
 const navigationTabs: NavigationTab[] = [

@@ -1,10 +1,7 @@
-import axios, {AxiosInstance} from "axios"
-import ApiServiceInformation from "services/models/ApiServiceInformation";
-import configuration from "services/Configuration";
+import ApiServiceInformation from "models/ApiServiceInformation";
 import moment from "moment";
 import {Maybe} from "monet";
-
-const axiosClient: AxiosInstance = axios.create({baseURL: configuration.apiService})
+import {axiosClient} from "http/HttpClient";
 
 export const apiServiceInformation: () => Promise<ApiServiceInformation> =
     () => axiosClient.get("/service/info")

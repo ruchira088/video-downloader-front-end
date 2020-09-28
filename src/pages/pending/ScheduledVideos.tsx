@@ -1,35 +1,34 @@
 import React, {useEffect, useState} from "react"
-import {Map} from "immutable"
 import {Either, Maybe, None} from "monet";
 import {
-    fetchScheduledVideos,
     fetchScheduledVideoById,
-    ScheduledVideoDownloadJson,
+    fetchScheduledVideos,
     scheduledVideoDownloadStream
 } from "services/scheduling/SchedulingService";
 import {EventStreamEventType} from "./EventStreamEventType";
-import {parseScheduledVideoDownload} from "../../services/models/ResponseParser";
 import ScheduledVideoDownloadCard from "./scheduled-video-download-card/ScheduledVideoDownloadCard";
+import ScheduledVideoDownload from "../../models/ScheduledVideoDownload";
+
+type Map<V> = { [key: string]: V }
 
 interface DownloadProgress {
-    videoId: string
-    updatedAt: string
-    bytes: number
+    readonly videoId: string
+    readonly updatedAt: string
+    readonly bytes: number
 }
 
 export default () => {
-    const [scheduledVideoDownloadJsons, setScheduledVideoDownloadJsons] = useState(Map<string, ScheduledVideoDownloadJson>())
+    const [scheduledVideoDownloads, setScheduledVideoDownloads] = useState<Map<ScheduledVideoDownload>>({})
 
     useEffect(() => {
         fetchScheduledVideos(None(), 0, 100)
             .then(results =>
-                setScheduledVideoDownloadJsons(
-                    scheduledVideoDownloadJsons =>
-                        results.reduce<Map<string, ScheduledVideoDownloadJson>>(
-                            (scheduledVideoDownloads, scheduledVideoDownload) =>
-                                scheduledVideoDownloads.set((scheduledVideoDownload as any).videoMetadata.id, scheduledVideoDownload),
-                            scheduledVideoDownloadJsons
-                        )
+                setScheduledVideoDownloads(
+                    scheduledVideoDownloads =>
+                        results.reduce<Map<ScheduledVideoDownload>>((output, scheduledVideoDownload) => ({
+                            ...output,
+                            [scheduledVideoDownload.videoMetadata.id]: scheduledVideoDownload
+                        }), scheduledVideoDownloads)
                 )
             )
     }, [])
@@ -46,18 +45,17 @@ export default () => {
                     json => {
                         const downloadProgress = json as DownloadProgress
 
-                        console.log(scheduledVideoDownloadJsons.get(downloadProgress.videoId))
-
-                        Maybe.fromNull(scheduledVideoDownloadJsons.get(downloadProgress.videoId))
+                        Maybe.fromNull(scheduledVideoDownloads[downloadProgress.videoId])
                             .map(value => Promise.resolve(value))
                             .orLazy(() => fetchScheduledVideoById(downloadProgress.videoId))
-                            .then(json => {
-                                    setScheduledVideoDownloadJsons(
-                                        scheduledVideoDownloadJsons =>
-                                            scheduledVideoDownloadJsons.set(
-                                                downloadProgress.videoId,
-                                                {...json, downloadedBytes: downloadProgress.bytes}
-                                            )
+                            .then(scheduledVideoDownload => {
+                                    setScheduledVideoDownloads(
+                                        scheduledVideoDownloads => ({...scheduledVideoDownloads,
+                                            [scheduledVideoDownload.videoMetadata.id]: {
+                                                ...scheduledVideoDownload,
+                                                downloadedBytes: downloadProgress.bytes
+                                            }
+                                        })
                                     )
                                 }
                             )
@@ -78,9 +76,7 @@ export default () => {
     return (
         <>
             {
-                scheduledVideoDownloadJsons.valueSeq()
-                    .map(parseScheduledVideoDownload)
-                    .sortBy(value => -value.scheduledAt.unix())
+                Object.values<ScheduledVideoDownload>(scheduledVideoDownloads)
                     .map((scheduledVideoDownload, index) =>
                         <ScheduledVideoDownloadCard {...scheduledVideoDownload} key={index}/>
                     )

@@ -5,7 +5,7 @@ import {None} from "monet";
 import {searchVideos, VideoJson} from "services/video/VideoService"
 import InfiniteScroll from "react-infinite-scroller"
 import VideoCard from "components/video/video-card/VideoCard"
-import {parseVideo} from "services/models/ResponseParser";
+import {parseVideo} from "utils/ResponseParser";
 
 const PAGE_SIZE = 50
 

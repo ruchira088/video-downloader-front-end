@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from "react"
 import {useParams} from "react-router-dom";
 import {Maybe, None, Some} from "monet";
-import Video from "services/models/Video"
+import Video from "models/Video"
 import loadableComponent from "components/hoc/loadableComponent"
 import {fetchVideoById, fetchVideoSnapshots} from "services/video/VideoService"
 import Watch from "./watch/Watch";
-import {Snapshot} from "services/models/Snapshot";
+import {Snapshot} from "models/Snapshot";
 
 export default () => {
     const {videoId}: {videoId: string} = useParams()
