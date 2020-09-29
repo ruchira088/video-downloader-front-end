@@ -5,8 +5,8 @@ export interface ApplicationContext {
     readonly safeMode: boolean
 }
 
-export const defaultApplicationContext: ApplicationContext = {
+export const DEFAULT_APPLICATION_CONTEXT: ApplicationContext = {
     safeMode: CONFIGURATION.safeMode
 }
 
-export default React.createContext<ApplicationContext>(defaultApplicationContext)
+export default React.createContext<ApplicationContext>(DEFAULT_APPLICATION_CONTEXT)
