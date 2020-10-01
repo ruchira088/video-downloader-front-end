@@ -4,6 +4,6 @@ export interface Configuration {
 }
 
 export const CONFIGURATION: Configuration = {
-    apiService: "https://localhost",
+    apiService: "https://api.video.home.ruchij.com",
     safeMode: false
 }
