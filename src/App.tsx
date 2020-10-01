@@ -1,5 +1,5 @@
 import React, {useState} from "react"
-import {Maybe, None, Some} from "monet";
+import {Maybe, Some} from "monet";
 import {AuthenticationToken} from "./models/AuthenticationToken";
 import AuthenticatedApp from "./pages/authenticated/AuthenticatedApp";
 import Login from "./pages/unauthenticated/LoginPage";
