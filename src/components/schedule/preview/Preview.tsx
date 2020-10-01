@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react"
 import {Maybe, None} from "monet";
-import loadableComponent from "components/hoc/loadableComponent"
+import loadableComponent from "components/hoc/loading/loadableComponent"
 import {analyze} from "services/video/VideoService"
 import {VideoAnalysisResult} from "models/VideoAnalysisResult";
 import VideoMetadataCard from "components/video/video-metadata-card/VideoMetadataCard";

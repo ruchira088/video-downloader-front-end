@@ -1,11 +1,11 @@
 import React from "react"
 import {Route, Switch} from "react-router-dom"
 import ServiceInformation from "pages/service-information/ServiceInformation"
-import Videos from "pages/videos/Videos";
-import VideoPage from "pages/videos/video-page/VideoPage";
+import Videos from "pages/authenticated/videos/Videos";
+import VideoPage from "pages/authenticated/videos/video-page/VideoPage";
 import styles from "./ContentBody.module.css"
-import ScheduleVideo from "pages/schedule/Schedule";
-import ScheduledVideos from "pages/pending/ScheduledVideos";
+import ScheduleVideo from "pages/authenticated/schedule/Schedule";
+import ScheduledVideos from "pages/authenticated/pending/ScheduledVideos";
 
 export default () => (
     <div className={styles.contentBody}>

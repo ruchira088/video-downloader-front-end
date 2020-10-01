@@ -7,7 +7,7 @@ import {
 } from "services/scheduling/SchedulingService";
 import {EventStreamEventType} from "./EventStreamEventType";
 import ScheduledVideoDownloadCard from "./scheduled-video-download-card/ScheduledVideoDownloadCard";
-import ScheduledVideoDownload from "../../models/ScheduledVideoDownload";
+import ScheduledVideoDownload from "../../../models/ScheduledVideoDownload";
 
 type Map<V> = { [key: string]: V }
 

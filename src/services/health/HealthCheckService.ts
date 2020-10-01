@@ -1,7 +1,7 @@
 import ApiServiceInformation from "models/ApiServiceInformation";
 import moment from "moment";
 import {Maybe} from "monet";
-import {axiosClient} from "http/HttpClient";
+import {axiosClient} from "services/http/HttpClient";
 
 export const apiServiceInformation: () => Promise<ApiServiceInformation> =
     () => axiosClient.get("/service/info")

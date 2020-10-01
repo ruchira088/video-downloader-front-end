@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react"
 import {Maybe, None, Some} from "monet"
 import {apiServiceInformation} from "services/health/HealthCheckService"
 import ApiServiceInformation from "models/ApiServiceInformation"
-import loadableComponent from "components/hoc/loadableComponent"
+import loadableComponent from "components/hoc/loading/loadableComponent"
 import BackendServiceInformation, {ServiceInformationItem} from "./BackendServiceInformation"
 import {CONFIGURATION} from "services/Configuration";
 

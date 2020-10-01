@@ -4,7 +4,7 @@ import Video from "models/Video";
 import {parseSnapshot, parseVideo, parseVideoAnalysisResult, searchResultParser} from "utils/ResponseParser"
 import {VideoAnalysisResult} from "models/VideoAnalysisResult";
 import {Snapshot} from "models/Snapshot";
-import {axiosClient} from "http/HttpClient";
+import {axiosClient} from "services/http/HttpClient";
 
 export type VideoJson = object
 

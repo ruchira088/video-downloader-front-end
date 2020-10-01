@@ -1,4 +1,4 @@
-import {axiosClient} from "http/HttpClient";
+import {axiosClient} from "services/http/HttpClient";
 import {AuthenticationToken} from "models/AuthenticationToken";
 import {parseAuthenticationToken} from "utils/ResponseParser";
 import {KeySpace, LocalStorage} from "../kv-store/KeyValueStore";
