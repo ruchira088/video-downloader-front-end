@@ -1,7 +1,7 @@
 import {Maybe} from "monet";
 import {Moment} from "moment";
 
-export default interface ApiServiceInformation {
+export default interface BackendServiceInformation {
     readonly serviceName: string
     readonly serviceVersion: string
     readonly organization: string
