@@ -52,7 +52,7 @@ export const humanReadableDuration =
                     }
                 }
                 ,
-                {remainingDuration: duration, results: []}
+                {remainingDuration: moment.duration(duration), results: []}
             )
             .results
             .join(" ")
