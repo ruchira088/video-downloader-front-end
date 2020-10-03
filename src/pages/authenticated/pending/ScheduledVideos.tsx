@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react"
 import {Either, None} from "monet";
+import {Map} from "immutable"
 import {
     fetchScheduledVideoById,
     fetchScheduledVideos,
@@ -9,8 +10,6 @@ import {EventStreamEventType} from "./EventStreamEventType";
 import ScheduledVideoDownloadCard from "./scheduled-video-download-card/ScheduledVideoDownloadCard";
 import ScheduledVideoDownload from "models/ScheduledVideoDownload";
 
-type Map<V> = { [key: string]: V }
-
 interface DownloadProgress {
     readonly videoId: string
     readonly updatedAt: string
@@ -18,17 +17,14 @@ interface DownloadProgress {
 }
 
 export default () => {
-    const [scheduledVideoDownloads, setScheduledVideoDownloads] = useState<Map<ScheduledVideoDownload>>({})
+    const [scheduledVideoDownloads, setScheduledVideoDownloads] = useState<Map<string, ScheduledVideoDownload>>(Map())
 
     useEffect(() => {
         fetchScheduledVideos(None(), 0, 100)
             .then(results =>
                 setScheduledVideoDownloads(
                     scheduledVideoDownloads =>
-                        results.reduce<Map<ScheduledVideoDownload>>((output, scheduledVideoDownload) => ({
-                            ...output,
-                            [scheduledVideoDownload.videoMetadata.id]: scheduledVideoDownload
-                        }), scheduledVideoDownloads)
+                        scheduledVideoDownloads.concat(Map(results.map(scheduledVideoDownload => [scheduledVideoDownload.videoMetadata.id, scheduledVideoDownload])))
                 )
             )
 
@@ -49,13 +45,11 @@ export default () => {
                         fetchScheduledVideoById(downloadProgress.videoId)
                             .then(scheduledVideoDownload => {
                                     setScheduledVideoDownloads(
-                                        scheduledVideoDownloads => ({
-                                            ...scheduledVideoDownloads,
-                                            [scheduledVideoDownload.videoMetadata.id]: {
+                                        scheduledVideoDownloads =>
+                                            scheduledVideoDownloads.set(scheduledVideoDownload.videoMetadata.id, {
                                                 ...scheduledVideoDownload,
                                                 downloadedBytes: downloadProgress.bytes
-                                            }
-                                        })
+                                            })
                                     )
                                 }
                             )
@@ -76,10 +70,10 @@ export default () => {
     return (
         <>
             {
-                Object.values<ScheduledVideoDownload>(scheduledVideoDownloads)
-                    .map((scheduledVideoDownload, index) =>
-                        <ScheduledVideoDownloadCard {...scheduledVideoDownload} key={index}/>
-                    )
+                scheduledVideoDownloads.map((scheduledVideoDownload, index) =>
+                    <ScheduledVideoDownloadCard {...scheduledVideoDownload} key={index}/>
+                )
+                    .toList()
             }
         </>
     )

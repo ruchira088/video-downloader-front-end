@@ -17,7 +17,8 @@ const unmemoizedFetchScheduledVideoById =
     (videoId: string): Promise<ScheduledVideoDownload> => axiosClient.get(`schedule/videoId/${videoId}`)
         .then(({data}) => parseScheduledVideoDownload(data))
 
-export const fetchScheduledVideoById = memoizee(unmemoizedFetchScheduledVideoById, { promise: true })
+export const fetchScheduledVideoById: (videoId: string) => Promise<ScheduledVideoDownload> =
+    memoizee(unmemoizedFetchScheduledVideoById, { promise: true })
 
 export const fetchScheduledVideos =
     (searchTerm: Maybe<string>, pageNumber: number, pageSize: number): Promise<ScheduledVideoDownload[]> =>
