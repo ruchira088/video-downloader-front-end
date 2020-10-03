@@ -17,5 +17,5 @@
 
     - name: Push Docker image
       shell: |
-        docker tag video-downloader-front-end:{{ git_commit }} ruchira088/video-downloader-front-end:{{ git_commit }} && \
-        docker push ruchira088/video-downloader-front-end:{{ git_commit }}
+        docker tag video-downloader-front-end:{{ git_branch }}-{{ git_commit }} ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} && \
+        docker push ruchira088/video-downloader-front-end:{{ git_branch}}-{{ git_commit }}

@@ -12,7 +12,6 @@
       REACT_APP_GIT_BRANCH={{ git_branch }}
       REACT_APP_GIT_COMMIT={{ git_commit }}
       REACT_APP_BUILD_TIMESTAMP={{ ansible_date_time.iso8601 }}
-      REACT_APP_API_URL=https://api.{{ git_branch }}.video.home.ruchij.com
     dest: ../.env.production
 
 - name: Build production bundle
@@ -26,7 +25,7 @@
     docker build \
       -f docker/Dockerfile \
       -t video-downloader-front-end:latest \
-      -t video-downloader-front-end:{{ git_commit }} \
+      -t video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
       -t video-downloader-front-end:{{ git_branch }}-{{ ansible_date_time.iso8601_basic_short }} \
       ../
 

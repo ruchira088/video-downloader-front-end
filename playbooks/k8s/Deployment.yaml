@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: front-end-container
-          image: ruchira088/video-downloader-front-end:{{ git_commit }}
+          image: ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }}
           ports:
             - name: http-port
               containerPort: 80
