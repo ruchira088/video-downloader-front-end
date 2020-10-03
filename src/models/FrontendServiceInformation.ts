@@ -1,10 +1,11 @@
 import {Moment} from "moment";
+import {Maybe} from "monet";
 
 export interface FrontendServiceInformation {
     name: string
     version: string
-    gitCommit: string
-    gitBranch: string
     timestamp: Moment
-    buildTimestamp: Moment
+    gitCommit: Maybe<string>
+    gitBranch: Maybe<string>
+    buildTimestamp: Maybe<Moment>
 }

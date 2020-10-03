@@ -3,7 +3,6 @@ import moment from "moment";
 import {Maybe} from "monet";
 import {axiosClient} from "services/http/HttpClient";
 import {name, version} from "../../../package.json"
-import {gitCommit, gitBranch, buildTimestamp} from "services/health/build-info.json"
 import {FrontendServiceInformation} from "models/FrontendServiceInformation";
 
 export const backendServiceInformation: () => Promise<BackendServiceInformation> =
@@ -16,6 +15,9 @@ export const backendServiceInformation: () => Promise<BackendServiceInformation>
             gitBranch: Maybe.fromNull(data.gitBranch)
         }))
 
-export const frontendServiceInformation: FrontendServiceInformation = {
-    name, version, gitCommit, gitBranch, timestamp: moment(), buildTimestamp: moment(buildTimestamp ?? undefined)
-}
+export const frontendServiceInformation: (env: any) => FrontendServiceInformation =
+    env => ({
+        name, version, timestamp: moment(), buildTimestamp: Maybe.fromFalsy(env.REACT_APP_BUILD_TIMESTAMP).map(moment),
+        gitBranch: Maybe.fromFalsy(env.REACT_APP_GIT_BRANCH),
+        gitCommit: Maybe.fromFalsy(env.REACT_APP_GIT_COMMIT)
+    })

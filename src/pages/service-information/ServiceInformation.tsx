@@ -25,7 +25,7 @@ export const ServiceInformationItem =
 
 export default () => {
     const [serviceInformation, setServiceInformation] = useState<Maybe<BackendServiceInformation>>(None())
-    const [frontendInformation, setFrontendInformation] = useState(frontendServiceInformation)
+    const [frontendInformation, setFrontendInformation] = useState(frontendServiceInformation(process.env))
 
     const fetchServerInformation =
         () => backendServiceInformation().then(information => setServiceInformation(Some(information)))

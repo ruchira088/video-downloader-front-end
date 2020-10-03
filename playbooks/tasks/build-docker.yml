@@ -6,6 +6,15 @@
     path: ../build
     state: absent
 
+- name: Set environment values in .env.production
+  copy:
+    content: |
+      REACT_APP_GIT_BRANCH={{ git_branch }}
+      REACT_APP_GIT_COMMIT={{ git_commit }}
+      REACT_APP_BUILD_TIMESTAMP={{ ansible_date_time.iso8601 }}
+      REACT_APP_API_URL=https://api.{{ git_branch }}.video.home.ruchij.com
+    dest: ../.env.production
+
 - name: Build production bundle
   shell: |
     cd ../ && \
@@ -21,7 +30,14 @@
       -t video-downloader-front-end:{{ git_branch }}-{{ ansible_date_time.iso8601_basic_short }} \
       ../
 
-- name: Clean up production bundle
-  file:
-    path: ../build
-    state: absent
+- name: Clean up
+  block:
+    - name: Clean up production bundle
+      file:
+        path: ../build
+        state: absent
+
+    - name: Clean up production env file
+      file:
+        path: ../.env.production
+        state: absent
