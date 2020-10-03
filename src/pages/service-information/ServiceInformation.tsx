@@ -4,7 +4,7 @@ import {apiServiceInformation} from "services/health/HealthCheckService"
 import ApiServiceInformation from "models/ApiServiceInformation"
 import loadableComponent from "components/hoc/loading/loadableComponent"
 import BackendServiceInformation, {ServiceInformationItem} from "./BackendServiceInformation"
-import {CONFIGURATION} from "services/Configuration";
+import {configuration} from "services/Configuration";
 
 export default () => {
     const [serviceInformation, setServiceInformation] = useState<Maybe<ApiServiceInformation>>(None())
@@ -23,7 +23,7 @@ export default () => {
 
     return (
         <div className="service-information">
-            <ServiceInformationItem label="API URL" value={Some(CONFIGURATION.apiService)}/>
+            <ServiceInformationItem label="API URL" value={Some(configuration.apiService)}/>
             {loadableComponent(BackendServiceInformation, serviceInformation)}
         </div>
     )

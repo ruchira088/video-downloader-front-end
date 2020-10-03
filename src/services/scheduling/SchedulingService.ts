@@ -1,11 +1,11 @@
 import {Maybe} from "monet"
-import {CONFIGURATION} from "services/Configuration";
+import {configuration} from "services/Configuration";
 import ScheduledVideoDownload from "models/ScheduledVideoDownload";
 import {parseScheduledVideoDownload} from "utils/ResponseParser";
 import {axiosClient} from "services/http/HttpClient";
 
 export const scheduledVideoDownloadStream =
-    (): EventSource => new EventSource(`${CONFIGURATION.apiService}/schedule/active`, {withCredentials: true})
+    (): EventSource => new EventSource(`${configuration.apiService}/schedule/active`, {withCredentials: true})
 
 export const scheduleVideo =
     (videoSiteUrl: string): Promise<ScheduledVideoDownload> =>

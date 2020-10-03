@@ -1,11 +1,11 @@
-import {CONFIGURATION} from "services/Configuration"
+import {configuration} from "services/Configuration"
 import {imageMappings} from "services/sanitize/SanitizationService"
 import FileResource from "models/FileResource";
 
 export type AssetUrl = string
 
 const assetUrl =
-    (id: string): AssetUrl => `${CONFIGURATION.apiService}/assets/id/${id}`
+    (id: string): AssetUrl => `${configuration.apiService}/assets/id/${id}`
 
 const isFileResource =
     (input: FileResource | string): input is FileResource => (input as FileResource).id !== undefined
