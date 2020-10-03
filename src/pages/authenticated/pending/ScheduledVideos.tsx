@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react"
-import {Either, Maybe, None} from "monet";
+import {Either, None} from "monet";
 import {
     fetchScheduledVideoById,
     fetchScheduledVideos,
@@ -31,6 +31,7 @@ export default () => {
                         }), scheduledVideoDownloads)
                 )
             )
+
     }, [])
 
     useEffect(() => {
@@ -45,12 +46,11 @@ export default () => {
                     json => {
                         const downloadProgress = json as DownloadProgress
 
-                        Maybe.fromNull(scheduledVideoDownloads[downloadProgress.videoId])
-                            .map(value => Promise.resolve(value))
-                            .orLazy(() => fetchScheduledVideoById(downloadProgress.videoId))
+                        fetchScheduledVideoById(downloadProgress.videoId)
                             .then(scheduledVideoDownload => {
                                     setScheduledVideoDownloads(
-                                        scheduledVideoDownloads => ({...scheduledVideoDownloads,
+                                        scheduledVideoDownloads => ({
+                                            ...scheduledVideoDownloads,
                                             [scheduledVideoDownload.videoMetadata.id]: {
                                                 ...scheduledVideoDownload,
                                                 downloadedBytes: downloadProgress.bytes
@@ -71,7 +71,7 @@ export default () => {
             )
             downloadStream.close()
         }
-    })
+    }, [])
 
     return (
         <>

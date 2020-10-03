@@ -1,4 +1,5 @@
 import {Maybe} from "monet"
+import memoizee from "memoizee"
 import {configuration} from "services/Configuration";
 import ScheduledVideoDownload from "models/ScheduledVideoDownload";
 import {parseScheduledVideoDownload} from "utils/ResponseParser";
@@ -12,9 +13,11 @@ export const scheduleVideo =
         axiosClient.post("/schedule", {url: videoSiteUrl})
             .then(({data}) => parseScheduledVideoDownload(data))
 
-export const fetchScheduledVideoById =
+const unmemoizedFetchScheduledVideoById =
     (videoId: string): Promise<ScheduledVideoDownload> => axiosClient.get(`schedule/videoId/${videoId}`)
         .then(({data}) => parseScheduledVideoDownload(data))
+
+export const fetchScheduledVideoById = memoizee(unmemoizedFetchScheduledVideoById, { promise: true })
 
 export const fetchScheduledVideos =
     (searchTerm: Maybe<string>, pageNumber: number, pageSize: number): Promise<ScheduledVideoDownload[]> =>
