@@ -1,11 +1,11 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { Grid } from "@material-ui/core";
-import styles from "./Navigator.module.css";
+import React from "react"
+import { Link } from "react-router-dom"
+import { Grid } from "@material-ui/core"
+import styles from "./Navigator.module.css"
 
 interface NavigationTab {
-  readonly label: string;
-  readonly path: string;
+  readonly label: string
+  readonly path: string
 }
 
 const navigationTabs: NavigationTab[] = [
@@ -13,7 +13,7 @@ const navigationTabs: NavigationTab[] = [
   { label: "Schedule", path: "/schedule" },
   { label: "Pending", path: "/pending" },
   { label: "Service Information", path: "/service-information" },
-];
+]
 
 export default () => (
   <Grid container className={styles.navigator}>
@@ -25,4 +25,4 @@ export default () => (
       </Grid>
     ))}
   </Grid>
-);
+)

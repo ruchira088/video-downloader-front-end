@@ -1,29 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Maybe, None, Some } from "monet";
-import Video from "models/Video";
-import loadableComponent from "components/hoc/loading/loadableComponent";
-import {
-  fetchVideoById,
-  fetchVideoSnapshots,
-} from "services/video/VideoService";
-import Watch from "./watch/Watch";
-import { Snapshot } from "models/Snapshot";
+import React, { useEffect, useState } from "react"
+import { useParams } from "react-router-dom"
+import { Maybe, None, Some } from "monet"
+import Video from "models/Video"
+import loadableComponent from "components/hoc/loading/loadableComponent"
+import { fetchVideoById, fetchVideoSnapshots } from "services/video/VideoService"
+import Watch from "./watch/Watch"
+import { Snapshot } from "models/Snapshot"
 
 export default () => {
-  const { videoId }: { videoId: string } = useParams();
-  const [video, setVideo] = useState<Maybe<Video>>(None());
-  const [videoSnapshots, setVideoSnapshots] = useState<Snapshot[]>([]);
+  const { videoId }: { videoId: string } = useParams()
+  const [video, setVideo] = useState<Maybe<Video>>(None())
+  const [videoSnapshots, setVideoSnapshots] = useState<Snapshot[]>([])
 
   useEffect(() => {
-    fetchVideoById(videoId).then((video) => setVideo(Some(video)));
-  }, [videoId]);
+    fetchVideoById(videoId).then((video) => setVideo(Some(video)))
+  }, [videoId])
 
   useEffect(() => {
-    fetchVideoSnapshots(videoId).then((snapshots) =>
-      setVideoSnapshots(snapshots)
-    );
-  }, [videoId]);
+    fetchVideoSnapshots(videoId).then((snapshots) => setVideoSnapshots(snapshots))
+  }, [videoId])
 
   return (
     <div className="video-page">
@@ -36,5 +31,5 @@ export default () => {
         }))
       )}
     </div>
-  );
-};
+  )
+}

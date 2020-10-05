@@ -1,6 +1,6 @@
-import React from "react";
+import React from "react"
 
-const ErrorMessage = ({ error }: { error: string }) => <div>{error}</div>;
+const ErrorMessage = ({ error }: { error: string }) => <div>{error}</div>
 
 export default ({ errors }: { errors: string[] }) => (
   <div>
@@ -8,4 +8,4 @@ export default ({ errors }: { errors: string[] }) => (
       <ErrorMessage error={error} key={index} />
     ))}
   </div>
-);
+)
