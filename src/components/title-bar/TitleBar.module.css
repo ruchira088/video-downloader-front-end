@@ -1,15 +1,15 @@
 .titleBar {
-    display: flex;
-    align-items: center;
-    padding: 0.5em 3em 1.5em;
+  display: flex;
+  align-items: center;
+  padding: 0.5em 3em 1.5em;
 }
 
 .smallLogo {
-    max-width: 4em;
+  max-width: 4em;
 }
 
 .logo {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }

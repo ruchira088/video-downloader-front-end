@@ -2,14 +2,14 @@ apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: front-end-ingress
-  namespace: {{ namespace }}
+  namespace: { { namespace } }
 spec:
   tls:
     - secretName: front-end-tls-secret
       hosts:
-        - {{ hostname }}
+        - { { hostname } }
   rules:
-    - host: {{ hostname }}
+    - host: { { hostname } }
       http:
         paths:
           - backend:

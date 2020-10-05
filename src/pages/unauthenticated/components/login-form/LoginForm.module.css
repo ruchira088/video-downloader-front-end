@@ -1,14 +1,14 @@
 .loginForm {
-    margin: auto;
-    width: 50%;
-    max-width: 25em;
+  margin: auto;
+  width: 50%;
+  max-width: 25em;
 }
 
 .loginButton {
-    display: flex;
-    margin: 1em;
+  display: flex;
+  margin: 1em;
 }
 
 .loginButton button {
-    margin: auto;
+  margin: auto;
 }

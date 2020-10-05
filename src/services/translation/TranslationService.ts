@@ -1,3 +1,4 @@
-import {phraseMappings} from "services/sanitize/SanitizationService"
+import { phraseMappings } from "services/sanitize/SanitizationService";
 
-export default (phrase: string, safeMode: boolean): string => safeMode ? phraseMappings(phrase) : phrase
+export default (phrase: string, safeMode: boolean): string =>
+  safeMode ? phraseMappings(phrase) : phrase;

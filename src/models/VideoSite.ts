@@ -1,4 +1,4 @@
 export enum VideoSite {
-    VPorn = "VPorn",
-    SpankBang = "SpankBang"
+  VPorn = "VPorn",
+  SpankBang = "SpankBang",
 }
