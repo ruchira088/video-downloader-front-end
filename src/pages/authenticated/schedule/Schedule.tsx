@@ -3,7 +3,7 @@ import { Button, TextField } from "@material-ui/core"
 import { scheduleVideo } from "services/scheduling/SchedulingService"
 import Preview from "components/schedule/preview/Preview"
 import styles from "./Schedule.module.css"
-import { LoadingComponent } from "../../../components/hoc/loading/loadableComponent"
+import { LoadingComponent } from "components/hoc/loading/loadableComponent"
 
 export default () => {
   const [videoUrl, setVideoUrl] = useState(String())

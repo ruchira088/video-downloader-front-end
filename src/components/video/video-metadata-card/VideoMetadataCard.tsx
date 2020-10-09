@@ -5,9 +5,8 @@ import { thumbnailUrl } from "services/asset/AssetService"
 import translate from "services/translation/TranslationService"
 import { humanReadableDuration, humanReadableSize } from "utils/Formatter"
 import styles from "./VideoMetadataCard.module.css"
-import { VideoAnalysisResult } from "models/VideoAnalysisResult"
 
-export default (metadata: VideoMetadata | VideoAnalysisResult) => (
+export default (metadata: VideoMetadata) => (
   <ApplicationContext.Consumer>
     {({ safeMode }) => (
       <div className={styles.videoMetadataCard}>
