@@ -3,7 +3,7 @@ import { Maybe, None } from "monet"
 import loadableComponent from "components/hoc/loading/loadableComponent"
 import { metadata } from "services/video/VideoService"
 import VideoMetadataCard from "components/video/video-metadata-card/VideoMetadataCard"
-import VideoMetadata from "models/VideoMetadata";
+import VideoMetadata from "models/VideoMetadata"
 
 export default ({ url }: { url: string }) => {
   const [showPreview, setShowPreview] = useState(false)

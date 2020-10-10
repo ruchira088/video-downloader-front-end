@@ -1,12 +1,13 @@
 import moment from "moment"
-import {Maybe} from "monet"
+import { Maybe } from "monet"
 import VideoMetadata from "models/VideoMetadata"
 import FileResource from "models/FileResource"
 import Video from "models/Video"
 import SearchResult from "models/ListResult"
 import ScheduledVideoDownload from "models/ScheduledVideoDownload"
-import {Snapshot} from "models/Snapshot"
-import {AuthenticationToken} from "models/AuthenticationToken"
+import { Snapshot } from "models/Snapshot"
+import { AuthenticationToken } from "models/AuthenticationToken"
+import { DownloadProgress } from "../models/DownloadProgress"
 
 export const parseVideoMetadata = (json: any): VideoMetadata => ({
   ...json,
@@ -55,3 +56,5 @@ export const parseAuthenticationToken = (json: any): AuthenticationToken => ({
   issuedAt: moment(json.issuedAt),
   renewals: json.renewals,
 })
+
+export const parseDownloadProgress = (json: any): DownloadProgress => ({ ...json, updatedAt: moment(json.updatedAt) })
