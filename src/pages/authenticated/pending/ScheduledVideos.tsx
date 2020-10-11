@@ -67,8 +67,8 @@ export default () => {
 
           fetchScheduledVideoById(downloadProgress.videoId).then((scheduledVideoDownload) => {
             setScheduledVideoDownloads((scheduledVideoDownloads) => {
-              const downloadHistory = Maybe.fromFalsy(scheduledVideoDownloads.get(downloadProgress.videoId)).map(
-                (existing) => {
+              const downloadHistory = Maybe.fromFalsy(scheduledVideoDownloads.get(downloadProgress.videoId))
+                .map((existing) => {
                   const currentRate = existing.lastUpdatedAt.map(
                     (lastUpdatedAt) =>
                       (1000 * (downloadProgress.bytes - existing.downloadedBytes)) /
@@ -76,10 +76,10 @@ export default () => {
                   )
 
                   return existing.downloadHistory
-                      .concat(currentRate.fold<BytesPerSecond[]>([])((value) => [value]))
-                      .slice(-1 * DOWNLOAD_HISTORY_SIZE)
-                }
-              ).getOrElse([])
+                    .concat(currentRate.fold<BytesPerSecond[]>([])((value) => [value]))
+                    .slice(-1 * DOWNLOAD_HISTORY_SIZE)
+                })
+                .getOrElse([])
 
               return scheduledVideoDownloads.set(scheduledVideoDownload.videoMetadata.id, {
                 ...scheduledVideoDownload,
@@ -103,6 +103,7 @@ export default () => {
   return (
     <>
       {scheduledVideoDownloads
+        .sortBy((value) => -1 * value.scheduledAt.unix())
         .map((scheduledVideoDownload, index) => <ScheduledVideoDownloadCard {...scheduledVideoDownload} key={index} />)
         .toList()}
     </>
