@@ -4,16 +4,18 @@ import Video from "models/Video"
 import { parseSnapshot, parseVideo, parseVideoMetadata, searchResultParser } from "utils/ResponseParser"
 import { Snapshot } from "models/Snapshot"
 import { axiosClient } from "services/http/HttpClient"
-import VideoMetadata from "../../models/VideoMetadata"
+import VideoMetadata from "models/VideoMetadata"
+import {SortBy} from "models/SortBy";
 
 export const searchVideos = (
   searchTerm: Maybe<string>,
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
+  sortBy: SortBy
 ): Promise<SearchResult<Video>> =>
   axiosClient
     .get(
-      `/videos/search?page-number=${pageNumber}&page-size=${pageSize}${searchTerm.fold(String())(
+      `/videos/search?page-number=${pageNumber}&page-size=${pageSize}&sort-by=${sortBy}${searchTerm.fold(String())(
         (term) => `&search-term=${term}`
       )}`
     )

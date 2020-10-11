@@ -4,6 +4,7 @@ import { configuration } from "services/Configuration"
 import ScheduledVideoDownload from "models/ScheduledVideoDownload"
 import { parseScheduledVideoDownload } from "utils/ResponseParser"
 import { axiosClient } from "services/http/HttpClient"
+import {SortBy} from "models/SortBy";
 
 export const scheduledVideoDownloadStream = (): EventSource =>
   new EventSource(`${configuration.apiService}/schedule/active`, {
@@ -23,11 +24,12 @@ export const fetchScheduledVideoById: (
 export const fetchScheduledVideos = (
   searchTerm: Maybe<string>,
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
+  sortBy: SortBy
 ): Promise<ScheduledVideoDownload[]> =>
   axiosClient
     .get(
-      `/schedule/search?page-size=${pageSize}&page-number=${pageNumber}${searchTerm.fold(String())(
+      `/schedule/search?page-size=${pageSize}&page-number=${pageNumber}&sort-by=${sortBy}${searchTerm.fold(String())(
         (term) => `&search-term=${term}`
       )}`
     )

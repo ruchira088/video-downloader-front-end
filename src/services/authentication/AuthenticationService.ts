@@ -1,7 +1,7 @@
 import { axiosClient } from "services/http/HttpClient"
 import { AuthenticationToken } from "models/AuthenticationToken"
 import { parseAuthenticationToken } from "utils/ResponseParser"
-import { KeySpace, LocalStorage } from "../kv-store/KeyValueStore"
+import { KeySpace, LocalStorage } from "services/kv-store/KeyValueStore"
 import { Maybe } from "monet"
 
 enum AuthenticationKey {

@@ -1,12 +1,13 @@
-import React, { useState } from "react"
-import { GridList, GridListTile } from "@material-ui/core"
-import { Link } from "react-router-dom"
-import { None } from "monet"
-import { List } from "immutable"
-import { searchVideos } from "services/video/VideoService"
+import React, {useState} from "react"
+import {GridList, GridListTile} from "@material-ui/core"
+import {Link} from "react-router-dom"
+import {None} from "monet"
+import {List} from "immutable"
+import {searchVideos} from "services/video/VideoService"
 import InfiniteScroll from "react-infinite-scroller"
 import VideoCard from "components/video/video-card/VideoCard"
 import Video from "models/Video"
+import {SortBy} from "../../../models/SortBy";
 
 const PAGE_SIZE = 50
 
@@ -15,7 +16,7 @@ export default () => {
   const [hasMore, setHasMore] = useState<boolean>(true)
 
   const fetchVideos = (pageNumber: number): Promise<void> =>
-    searchVideos(None(), pageNumber - 1, PAGE_SIZE).then(({ results }) => {
+    searchVideos(None(), pageNumber - 1, PAGE_SIZE, SortBy.Date).then(({ results }) => {
       if (results.length < PAGE_SIZE) {
         setHasMore(false)
       }

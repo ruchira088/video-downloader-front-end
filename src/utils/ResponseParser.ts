@@ -7,7 +7,7 @@ import SearchResult from "models/ListResult"
 import ScheduledVideoDownload from "models/ScheduledVideoDownload"
 import { Snapshot } from "models/Snapshot"
 import { AuthenticationToken } from "models/AuthenticationToken"
-import { DownloadProgress } from "../models/DownloadProgress"
+import { DownloadProgress } from "models/DownloadProgress"
 
 export const parseVideoMetadata = (json: any): VideoMetadata => ({
   ...json,
