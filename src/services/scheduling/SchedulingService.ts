@@ -4,7 +4,7 @@ import { configuration } from "services/Configuration"
 import ScheduledVideoDownload from "models/ScheduledVideoDownload"
 import { parseScheduledVideoDownload } from "utils/ResponseParser"
 import { axiosClient } from "services/http/HttpClient"
-import {SortBy} from "models/SortBy";
+import { SortBy } from "models/SortBy"
 
 export const scheduledVideoDownloadStream = (): EventSource =>
   new EventSource(`${configuration.apiService}/schedule/active`, {

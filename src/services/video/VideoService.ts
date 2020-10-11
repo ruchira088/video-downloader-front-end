@@ -5,7 +5,7 @@ import { parseSnapshot, parseVideo, parseVideoMetadata, searchResultParser } fro
 import { Snapshot } from "models/Snapshot"
 import { axiosClient } from "services/http/HttpClient"
 import VideoMetadata from "models/VideoMetadata"
-import {SortBy} from "models/SortBy";
+import { SortBy } from "models/SortBy"
 
 export const searchVideos = (
   searchTerm: Maybe<string>,

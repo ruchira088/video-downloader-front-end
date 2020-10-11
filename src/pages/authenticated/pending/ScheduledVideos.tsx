@@ -1,18 +1,18 @@
-import React, {useEffect, useState} from "react"
-import {Either, Maybe, None, Some} from "monet"
-import {Map} from "immutable"
+import React, { useEffect, useState } from "react"
+import { Either, Maybe, None, Some } from "monet"
+import { Map } from "immutable"
 import {
-    fetchScheduledVideoById,
-    fetchScheduledVideos,
-    scheduledVideoDownloadStream,
+  fetchScheduledVideoById,
+  fetchScheduledVideos,
+  scheduledVideoDownloadStream,
 } from "services/scheduling/SchedulingService"
-import {EventStreamEventType} from "./EventStreamEventType"
+import { EventStreamEventType } from "./EventStreamEventType"
 import ScheduledVideoDownloadCard from "./scheduled-video-download-card/ScheduledVideoDownloadCard"
 import ScheduledVideoDownload from "models/ScheduledVideoDownload"
-import {Moment} from "moment"
-import {DownloadProgress} from "models/DownloadProgress"
-import {parseDownloadProgress} from "utils/ResponseParser"
-import {SortBy} from "models/SortBy";
+import { Moment } from "moment"
+import { DownloadProgress } from "models/DownloadProgress"
+import { parseDownloadProgress } from "utils/ResponseParser"
+import { SortBy } from "models/SortBy"
 
 const DOWNLOAD_HISTORY_SIZE = 20
 

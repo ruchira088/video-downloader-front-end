@@ -1,6 +1,6 @@
 export enum SortBy {
-    Date = "date",
-    Size = "size",
-    Duration = "duration",
-    Title = "title"
+  Date = "date",
+  Size = "size",
+  Duration = "duration",
+  Title = "title",
 }

@@ -7,7 +7,7 @@ import {searchVideos} from "services/video/VideoService"
 import InfiniteScroll from "react-infinite-scroller"
 import VideoCard from "components/video/video-card/VideoCard"
 import Video from "models/Video"
-import {SortBy} from "../../../models/SortBy";
+import {SortBy} from "models/SortBy";
 
 const PAGE_SIZE = 50
 

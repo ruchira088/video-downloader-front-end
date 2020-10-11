@@ -7,7 +7,7 @@ import ProgressBar from "pages/authenticated/pending/download-progress-bar/Downl
 import { humanReadableDuration, humanReadableSize } from "utils/Formatter"
 import styles from "./ScheduledVideoDownloadCard.module.css"
 import { Downloadable } from "../ScheduledVideos"
-import DownloadInformation from "./DownloadInformation";
+import DownloadInformation from "./DownloadInformation"
 
 export default (scheduledVideoDownload: ScheduledVideoDownload & Downloadable) => (
   <ApplicationContext.Consumer>
@@ -23,7 +23,7 @@ export default (scheduledVideoDownload: ScheduledVideoDownload & Downloadable) =
               completeValue={scheduledVideoDownload.videoMetadata.size}
               currentValue={scheduledVideoDownload.downloadedBytes}
             />
-            <DownloadInformation {...scheduledVideoDownload}/>
+            <DownloadInformation {...scheduledVideoDownload} />
           </div>
         )}
       </div>
