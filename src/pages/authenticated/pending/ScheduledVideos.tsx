@@ -15,7 +15,7 @@ import { parseDownloadProgress } from "utils/ResponseParser"
 
 const DOWNLOAD_HISTORY_SIZE = 10
 
-type BytesPerSecond = number
+export type BytesPerSecond = number
 
 export interface Downloadable {
   downloadedBytes: number
