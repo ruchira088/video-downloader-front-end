@@ -1,23 +1,32 @@
 import { Maybe } from "monet"
 import SearchResult from "models/ListResult"
 import Video from "models/Video"
-import { parseSnapshot, parseVideo, parseVideoMetadata, searchResultParser } from "utils/ResponseParser"
+import {
+  parseSnapshot,
+  parseVideo,
+  parseVideoMetadata,
+  parseVideoServiceSummary,
+  searchResultParser,
+} from "utils/ResponseParser"
 import { Snapshot } from "models/Snapshot"
 import { axiosClient } from "services/http/HttpClient"
 import VideoMetadata from "models/VideoMetadata"
 import { SortBy } from "models/SortBy"
+import { VideoServiceSummary } from "models/VideoServiceSummary"
+import { DurationRange, durationRangeQueryParameter } from "models/DurationRange"
 
 export const searchVideos = (
   searchTerm: Maybe<string>,
+  durationRange: DurationRange,
   pageNumber: number,
   pageSize: number,
   sortBy: SortBy
 ): Promise<SearchResult<Video>> =>
   axiosClient
     .get(
-      `/videos/search?page-number=${pageNumber}&page-size=${pageSize}&sort-by=${sortBy}${searchTerm.fold(String())(
-        (term) => `&search-term=${term}`
-      )}`
+      `/videos/search?page-number=${pageNumber}&page-size=${pageSize}&sort-by=${sortBy}&duration=${durationRangeQueryParameter(
+        durationRange
+      )}${searchTerm.fold("")((term) => `&search-term=${term}`)}`
     )
     .then(({ data }) => searchResultParser(parseVideo)(data))
 
@@ -32,3 +41,6 @@ export const metadata = (url: string): Promise<VideoMetadata> =>
 
 export const updateVideoTitle = (videoId: string, title: string): Promise<Video> =>
   axiosClient.patch(`/videos/id/${videoId}/metadata`, { title }).then(({ data }) => parseVideo(data))
+
+export const videoServiceSummary = (): Promise<VideoServiceSummary> =>
+  axiosClient.get("/videos/summary").then(({ data }) => parseVideoServiceSummary(data))

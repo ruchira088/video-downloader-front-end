@@ -8,6 +8,7 @@ import ScheduledVideoDownload from "models/ScheduledVideoDownload"
 import { Snapshot } from "models/Snapshot"
 import { AuthenticationToken } from "models/AuthenticationToken"
 import { DownloadProgress } from "models/DownloadProgress"
+import { VideoServiceSummary } from "../models/VideoServiceSummary"
 
 export const parseVideoMetadata = (json: any): VideoMetadata => ({
   ...json,
@@ -55,6 +56,11 @@ export const parseAuthenticationToken = (json: any): AuthenticationToken => ({
   expiresAt: moment(json.expiresAt),
   issuedAt: moment(json.issuedAt),
   renewals: json.renewals,
+})
+
+export const parseVideoServiceSummary = (json: any): VideoServiceSummary => ({
+  ...json,
+  totalDuration: moment.duration(json.totalDuration.length, json.totalDuration.unit),
 })
 
 export const parseDownloadProgress = (json: any): DownloadProgress => ({ ...json, updatedAt: moment(json.updatedAt) })
