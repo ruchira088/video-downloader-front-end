@@ -5,6 +5,7 @@ import SortBySelection from "components/sort-by-selection/SortBySelection"
 import { Slider } from "@material-ui/core"
 import { duration } from "moment"
 import { Maybe } from "monet"
+import DurationRangeDisplay from "./DurationRangeDisplay"
 
 const MAX_RANGE = duration(75, "minutes")
 
@@ -40,6 +41,7 @@ export default ({
         onChange={(event, value) => setTransientDurationRange(fromChangeEvent(value))}
         onChangeCommitted={(event, value) => onDurationRangeChange(fromChangeEvent(value))}
       />
+      <DurationRangeDisplay durationRange={transientDurationRange} />
     </div>
   )
 }
