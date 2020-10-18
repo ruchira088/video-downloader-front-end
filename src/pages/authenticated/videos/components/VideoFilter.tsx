@@ -6,6 +6,7 @@ import { Slider } from "@material-ui/core"
 import { duration } from "moment"
 import { Maybe } from "monet"
 import DurationRangeDisplay from "./DurationRangeDisplay"
+import styles from "./VideoFilter.module.css"
 
 const MAX_RANGE = duration(75, "minutes")
 
@@ -33,7 +34,7 @@ export default ({
   const [transientDurationRange, setTransientDurationRange] = useState(durationRange)
 
   return (
-    <div>
+    <div className={styles.videoFilter}>
       <SortBySelection value={sortBy} onChange={onSortByChange} />
       <Slider
         max={MAX_RANGE.asMinutes()}
