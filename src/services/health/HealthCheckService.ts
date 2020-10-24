@@ -4,7 +4,7 @@ import { Maybe } from "monet"
 import { axiosClient } from "services/http/HttpClient"
 import { name, version } from "../../../package.json"
 import { FrontendServiceInformation } from "models/FrontendServiceInformation"
-import { parseBackendServiceInformation } from "../../utils/ResponseParser"
+import { parseBackendServiceInformation } from "utils/ResponseParser"
 
 export const backendServiceInformation: () => Promise<BackendServiceInformation> = () =>
   axiosClient.get("/service/info").then(({ data }) => parseBackendServiceInformation(data))
