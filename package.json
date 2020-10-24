@@ -1,6 +1,6 @@
 {
   "name": "video-downloader-front-end",
-  "version": "0.2.3",
+  "version": "0.2.4-SNAPSHOT",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.11.0",
