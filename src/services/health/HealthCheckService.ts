@@ -4,17 +4,12 @@ import { Maybe } from "monet"
 import { axiosClient } from "services/http/HttpClient"
 import { name, version } from "../../../package.json"
 import { FrontendServiceInformation } from "models/FrontendServiceInformation"
+import { parseBackendServiceInformation } from "../../utils/ResponseParser"
 
 export const backendServiceInformation: () => Promise<BackendServiceInformation> = () =>
-  axiosClient.get("/service/info").then(({ data }) => ({
-    ...data,
-    currentTimestamp: moment(data.currentTimestamp),
-    buildTimestamp: Maybe.fromNull(data.buildTimestamp).map(moment),
-    gitCommit: Maybe.fromNull(data.gitCommit),
-    gitBranch: Maybe.fromNull(data.gitBranch),
-  }))
+  axiosClient.get("/service/info").then(({ data }) => parseBackendServiceInformation(data))
 
-export const frontendServiceInformation: (env: any) => FrontendServiceInformation = (env) => ({
+export const frontendServiceInformation: (env: NodeJS.ProcessEnv) => FrontendServiceInformation = (env) => ({
   name,
   version,
   timestamp: moment(),

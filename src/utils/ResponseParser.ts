@@ -1,3 +1,5 @@
+/* eslint @typescript-eslint/no-explicit-any: ["off"] */
+
 import moment from "moment"
 import { Maybe } from "monet"
 import VideoMetadata from "models/VideoMetadata"
@@ -9,6 +11,7 @@ import { Snapshot } from "models/Snapshot"
 import { AuthenticationToken } from "models/AuthenticationToken"
 import { DownloadProgress } from "models/DownloadProgress"
 import { VideoServiceSummary } from "../models/VideoServiceSummary"
+import BackendServiceInformation from "../models/BackendServiceInformation"
 
 export const parseVideoMetadata = (json: any): VideoMetadata => ({
   ...json,
@@ -61,6 +64,14 @@ export const parseAuthenticationToken = (json: any): AuthenticationToken => ({
 export const parseVideoServiceSummary = (json: any): VideoServiceSummary => ({
   ...json,
   totalDuration: moment.duration(json.totalDuration.length, json.totalDuration.unit),
+})
+
+export const parseBackendServiceInformation = (json: any): BackendServiceInformation => ({
+  ...json,
+  currentTimestamp: moment(json.currentTimestamp),
+  buildTimestamp: Maybe.fromNull(json.buildTimestamp).map(moment),
+  gitCommit: Maybe.fromNull(json.gitCommit),
+  gitBranch: Maybe.fromNull(json.gitBranch),
 })
 
 export const parseDownloadProgress = (json: any): DownloadProgress => ({ ...json, updatedAt: moment(json.updatedAt) })

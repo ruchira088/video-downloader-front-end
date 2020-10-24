@@ -9,7 +9,7 @@ export default ({ value, onChange }: { value: SortBy; onChange: (value: SortBy) 
       onChange={(event: React.ChangeEvent<HTMLSelectElement>) => onChange(event.target.value as SortBy)}
     >
       {Object.keys(SortBy).map((key) => (
-        <option value={(SortBy as any)[key]} key={key}>
+        <option value={(SortBy as { [key: string]: string })[key]} key={key}>
           {key}
         </option>
       ))}

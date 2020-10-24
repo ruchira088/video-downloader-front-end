@@ -55,48 +55,50 @@ export default () => {
     )
   }, [])
 
+  const onMessageEvent = (messageEvent: Event) => {
+    const { data } = (messageEvent as unknown) as { data: string }
+
+    Either.fromTry(() => JSON.parse(data)).fold(
+      (error) => console.error(error),
+      (json) => {
+        const downloadProgress: DownloadProgress = parseDownloadProgress(json)
+
+        fetchScheduledVideoById(downloadProgress.videoId).then((scheduledVideoDownload) => {
+          setScheduledVideoDownloads((scheduledVideoDownloads) => {
+            const downloadHistory = Maybe.fromFalsy(scheduledVideoDownloads.get(downloadProgress.videoId))
+              .map((existing) => {
+                const currentRate = existing.lastUpdatedAt.map(
+                  (lastUpdatedAt) =>
+                    (1000 * (downloadProgress.bytes - existing.downloadedBytes)) /
+                    (downloadProgress.updatedAt.valueOf() - lastUpdatedAt.valueOf())
+                )
+
+                return existing.downloadHistory
+                  .concat(currentRate.fold<BytesPerSecond[]>([])((value) => [value]))
+                  .slice(-1 * DOWNLOAD_HISTORY_SIZE)
+              })
+              .getOrElse([])
+
+            return scheduledVideoDownloads.set(scheduledVideoDownload.videoMetadata.id, {
+              ...scheduledVideoDownload,
+              downloadedBytes: downloadProgress.bytes,
+              lastUpdatedAt: Some(downloadProgress.updatedAt),
+              downloadSpeed: average(downloadHistory),
+              downloadHistory,
+            })
+          })
+        })
+      }
+    )
+  }
+
   useEffect(() => {
     const downloadStream = scheduledVideoDownloadStream()
 
-    downloadStream.addEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, (messageEvent) => {
-      const { data } = (messageEvent as unknown) as { data: string }
-
-      Either.fromTry(() => JSON.parse(data)).fold(
-        (error) => console.error(error),
-        (json) => {
-          const downloadProgress: DownloadProgress = parseDownloadProgress(json)
-
-          fetchScheduledVideoById(downloadProgress.videoId).then((scheduledVideoDownload) => {
-            setScheduledVideoDownloads((scheduledVideoDownloads) => {
-              const downloadHistory = Maybe.fromFalsy(scheduledVideoDownloads.get(downloadProgress.videoId))
-                .map((existing) => {
-                  const currentRate = existing.lastUpdatedAt.map(
-                    (lastUpdatedAt) =>
-                      (1000 * (downloadProgress.bytes - existing.downloadedBytes)) /
-                      (downloadProgress.updatedAt.valueOf() - lastUpdatedAt.valueOf())
-                  )
-
-                  return existing.downloadHistory
-                    .concat(currentRate.fold<BytesPerSecond[]>([])((value) => [value]))
-                    .slice(-1 * DOWNLOAD_HISTORY_SIZE)
-                })
-                .getOrElse([])
-
-              return scheduledVideoDownloads.set(scheduledVideoDownload.videoMetadata.id, {
-                ...scheduledVideoDownload,
-                downloadedBytes: downloadProgress.bytes,
-                lastUpdatedAt: Some(downloadProgress.updatedAt),
-                downloadSpeed: average(downloadHistory),
-                downloadHistory,
-              })
-            })
-          })
-        }
-      )
-    })
+    downloadStream.addEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, onMessageEvent)
 
     return () => {
-      downloadStream.removeEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, ((() => {}) as unknown) as EventListener)
+      downloadStream.removeEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, onMessageEvent)
       downloadStream.close()
     }
   }, [])
