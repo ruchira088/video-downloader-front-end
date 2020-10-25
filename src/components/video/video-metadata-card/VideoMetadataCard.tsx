@@ -14,7 +14,7 @@ export default (metadata: VideoMetadata) => {
   const [intervalTimeout, setIntervalTimeout] = useState<Maybe<NodeJS.Timeout>>(None())
   const [index, setIndex] = useState<number>(0)
 
-  const retrieveSnapshots = (): Promise<Snapshot[]> =>
+  const initializeSnapshots = (): Promise<Snapshot[]> =>
     snapshots
       .map((values) => Promise.resolve(values))
       .orLazy(() =>
@@ -25,7 +25,13 @@ export default (metadata: VideoMetadata) => {
       )
 
   const onMouseOver = () =>
-    setIntervalTimeout(Some(setInterval(() => retrieveSnapshots().then(() => setIndex((index) => index + 1)), 400)))
+    setIntervalTimeout(
+      Some(
+        setInterval(() => {
+          setIndex((index) => index + 1)
+        }, 400)
+      )
+    )
 
   const onMouseLeave = () => {
     intervalTimeout.forEach(clearInterval)
@@ -39,6 +45,10 @@ export default (metadata: VideoMetadata) => {
       intervalTimeout.forEach(clearInterval)
     }
   }, [])
+
+  useEffect(() => {
+    intervalTimeout.forEach(initializeSnapshots)
+  }, [intervalTimeout])
 
   const thumbnail = (safeMode: boolean) =>
     thumbnailUrl(
