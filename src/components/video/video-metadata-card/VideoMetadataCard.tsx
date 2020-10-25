@@ -25,15 +25,13 @@ export default (metadata: VideoMetadata) => {
       )
 
   const onMouseOver = () =>
-    initializeSnapshots().then(() => {
-      setIntervalTimeout(
-        Some(
-          setInterval(() => {
-            setIndex((index) => index + 1)
-          }, 400)
-        )
+    setIntervalTimeout(
+      Some(
+        setInterval(() => {
+          setIndex((index) => index + 1)
+        }, 400)
       )
-    })
+    )
 
   const onMouseLeave = () => {
     intervalTimeout.forEach(clearInterval)
@@ -47,6 +45,10 @@ export default (metadata: VideoMetadata) => {
       intervalTimeout.forEach(clearInterval)
     }
   }, [])
+
+  useEffect(() => {
+    intervalTimeout.forEach(initializeSnapshots)
+  }, [intervalTimeout])
 
   const thumbnail = (safeMode: boolean) =>
     thumbnailUrl(
