@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import ApplicationContext from "context/ApplicationContext"
 import ScheduledVideoDownload from "models/ScheduledVideoDownload"
 import { imageUrl } from "services/asset/AssetService"
@@ -8,6 +8,10 @@ import { humanReadableDuration, humanReadableSize } from "utils/Formatter"
 import styles from "./ScheduledVideoDownloadCard.module.css"
 import { Downloadable } from "../ScheduledVideos"
 import DownloadInformation from "./DownloadInformation"
+import { updateStatus } from "services/scheduling/SchedulingService"
+import { Button } from "@material-ui/core"
+import { COMMAND_NAMES, SchedulingStatus, TRANSITION_STATES } from "models/SchedulingStatus"
+import { Maybe } from "monet"
 
 export default (scheduledVideoDownload: ScheduledVideoDownload & Downloadable) => (
   <ApplicationContext.Consumer>
@@ -26,7 +30,27 @@ export default (scheduledVideoDownload: ScheduledVideoDownload & Downloadable) =
             <DownloadInformation {...scheduledVideoDownload} />
           </div>
         )}
+        <Actions {...scheduledVideoDownload} />
       </div>
     )}
   </ApplicationContext.Consumer>
 )
+
+const Actions = (scheduleVideoDownload: ScheduledVideoDownload) => {
+  const [status, setStatus] = useState(scheduleVideoDownload.status)
+
+  return (
+    <div>
+      {(TRANSITION_STATES[status] as SchedulingStatus[]).map((next, index) => (
+        <Button
+          key={index}
+          onClick={() =>
+            updateStatus(scheduleVideoDownload.videoMetadata.id, next).then((value) => setStatus(value.status))
+          }
+        >
+          {Maybe.fromNull(COMMAND_NAMES[next]).getOrElse(next)}
+        </Button>
+      ))}
+    </div>
+  )
+}
