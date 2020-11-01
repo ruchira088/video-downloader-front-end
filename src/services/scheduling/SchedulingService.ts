@@ -5,6 +5,7 @@ import ScheduledVideoDownload from "models/ScheduledVideoDownload"
 import { parseScheduledVideoDownload } from "utils/ResponseParser"
 import { axiosClient } from "services/http/HttpClient"
 import { SortBy } from "models/SortBy"
+import { SchedulingStatus } from "models/SchedulingStatus"
 
 export const scheduledVideoDownloadStream = (): EventSource =>
   new EventSource(`${configuration.apiService}/schedule/active`, {
@@ -20,6 +21,9 @@ const unmemoizedFetchScheduledVideoById = (videoId: string): Promise<ScheduledVi
 export const fetchScheduledVideoById: (
   videoId: string
 ) => Promise<ScheduledVideoDownload> = memoizee(unmemoizedFetchScheduledVideoById, { promise: true })
+
+export const updateStatus = (videoId: string, status: SchedulingStatus): Promise<ScheduledVideoDownload> =>
+  axiosClient.put(`schedule/videoId/${videoId}`, { status }).then(({ data }) => parseScheduledVideoDownload(data))
 
 export const fetchScheduledVideos = (
   searchTerm: Maybe<string>,

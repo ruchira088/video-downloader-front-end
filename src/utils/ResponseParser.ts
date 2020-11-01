@@ -10,8 +10,8 @@ import ScheduledVideoDownload from "models/ScheduledVideoDownload"
 import { Snapshot } from "models/Snapshot"
 import { AuthenticationToken } from "models/AuthenticationToken"
 import { DownloadProgress } from "models/DownloadProgress"
-import { VideoServiceSummary } from "../models/VideoServiceSummary"
-import BackendServiceInformation from "../models/BackendServiceInformation"
+import { VideoServiceSummary } from "models/VideoServiceSummary"
+import BackendServiceInformation from "models/BackendServiceInformation"
 
 export const parseVideoMetadata = (json: any): VideoMetadata => ({
   ...json,
@@ -46,11 +46,9 @@ export const parseScheduledVideoDownload = (json: any): ScheduledVideoDownload =
   return {
     completedAt,
     videoMetadata,
+    status: json.status,
     scheduledAt: moment(json.scheduledAt),
-    downloadedBytes: completedAt
-      .map(() => videoMetadata.size)
-      .orElse(Maybe.fromNull(json.downloadedBytes))
-      .getOrElse(0),
+    downloadedBytes: json.progress,
   }
 }
 
