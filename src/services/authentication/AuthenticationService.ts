@@ -1,14 +1,14 @@
 import { axiosClient } from "services/http/HttpClient"
 import { AuthenticationToken } from "models/AuthenticationToken"
 import { parseAuthenticationToken } from "utils/ResponseParser"
-import { KeySpace, LocalStorage } from "services/kv-store/KeyValueStore"
+import { KeySpace, LocalKeyValueStore } from "services/kv-store/KeyValueStore"
 import { Maybe } from "monet"
 
-enum AuthenticationKey {
+export enum AuthenticationKey {
   Token = "Token",
 }
 
-const authenticationKeyValueStore = new LocalStorage(KeySpace.Authentication)
+const authenticationKeyValueStore = new LocalKeyValueStore(KeySpace.Authentication)
 
 export const isAuthenticated = (): Maybe<AuthenticationToken> =>
   authenticationKeyValueStore.get(AuthenticationKey.Token).map((string) => parseAuthenticationToken(JSON.parse(string)))
