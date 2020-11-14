@@ -14,7 +14,7 @@ export default interface KeyValueStore<K, V> {
   remove(key: K): Maybe<V>
 }
 
-export class LocalStorage implements KeyValueStore<string, string> {
+export class LocalKeyValueStore implements KeyValueStore<string, string> {
   constructor(readonly keySpace: KeySpace) {}
 
   get(key: string): Maybe<string> {
