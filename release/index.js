@@ -50,7 +50,6 @@ const createVersion = () =>
         .then(() => git.pushTags())
         .then(() => git.checkout(PROD_BRANCH))
         .then(() => git.raw("merge", version))
-        .then(() => git.push())
         .then(() => git.checkout(DEV_BRANCH))
     )
     .then(() => retrievePackageJson())
