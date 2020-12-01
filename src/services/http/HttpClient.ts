@@ -11,11 +11,13 @@ export const axiosClient: AxiosInstance = axios.create({
 axiosClient.interceptors.response.use(
   (value) => Promise.resolve(value),
   (error) => {
-    if (error.response.status === 401) {
+    if (error.response?.status === 401) {
       const keyValueStore = new LocalKeyValueStore(KeySpace.Authentication)
       keyValueStore.remove(AuthenticationKey.Token)
 
       window.location.reload()
+    } else {
+        // TODO Handle errors
     }
 
     return Promise.reject(error)

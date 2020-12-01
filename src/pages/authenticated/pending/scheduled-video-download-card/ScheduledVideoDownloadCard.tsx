@@ -28,9 +28,9 @@ export default (scheduledVideoDownload: ScheduledVideoDownload & Downloadable) =
               currentValue={scheduledVideoDownload.downloadedBytes}
             />
             <DownloadInformation {...scheduledVideoDownload} />
+            <Actions {...scheduledVideoDownload} />
           </div>
         )}
-        <Actions {...scheduledVideoDownload} />
       </div>
     )}
   </ApplicationContext.Consumer>

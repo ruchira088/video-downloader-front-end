@@ -48,7 +48,7 @@ export const parseScheduledVideoDownload = (json: any): ScheduledVideoDownload =
     videoMetadata,
     status: json.status,
     scheduledAt: moment(json.scheduledAt),
-    downloadedBytes: json.progress,
+    downloadedBytes: json.downloadedBytes,
   }
 }
 
