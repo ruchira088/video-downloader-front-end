@@ -61,7 +61,7 @@ const createVersion = (git, cli) =>
     .then(() => retrievePackageJson())
     .then((json) =>
       askQuestion(`Next version [${createSnapshotVersion(incrementVersion(json.version))}]? `, cli).then(
-        (nextVersion) => nextVersion.trim() || createProductionVersion(incrementVersion(json.version))
+        (nextVersion) => nextVersion.trim() || createSnapshotVersion(incrementVersion(json.version))
       )
     )
     .then((version) =>
