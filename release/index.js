@@ -1,16 +1,17 @@
 const { readFile, writeFile } = require("fs")
+const readLine = require("readline")
 const { promisify } = require("util")
 const path = require("path")
-const simpleGit = require("simple-git")
+const SimpleGit = require("simple-git")
 
 const PROD_BRANCH = "master"
 const DEV_BRANCH = "dev"
 
 const SNAPSHOT = "SNAPSHOT"
 
-const git = new simpleGit()
-
 const packageJsonPath = path.resolve(__dirname, "../", "package.json")
+
+const askQuestion = (text, cli) => new Promise((resolve) => cli.question(text, resolve))
 
 const retrievePackageJson = () => promisify(readFile)(packageJsonPath, "utf8").then(JSON.parse)
 
@@ -29,7 +30,7 @@ const incrementVersion = (appVersion) => {
 
 const createSnapshotVersion = (appVersion) => (appVersion.endsWith(SNAPSHOT) ? appVersion : `${appVersion}-${SNAPSHOT}`)
 
-const createVersion = () =>
+const createVersion = (git, cli) =>
   git
     .branch()
     .then((branch) => {
@@ -40,7 +41,11 @@ const createVersion = () =>
       }
     })
     .then(() => retrievePackageJson())
-    .then((json) => createProductionVersion(json.version))
+    .then((json) =>
+      askQuestion(`Release version [${createProductionVersion(json.version)}]? `, cli).then(
+        (inputVersion) => inputVersion.trim() || createProductionVersion(json.version)
+      )
+    )
     .then((version) =>
       updatePackageJson({ version })
         .then(() => git.add(packageJsonPath))
@@ -50,10 +55,15 @@ const createVersion = () =>
         .then(() => git.pushTags())
         .then(() => git.checkout(PROD_BRANCH))
         .then(() => git.raw("merge", version))
+        .then(() => git.raw("push"))
         .then(() => git.checkout(DEV_BRANCH))
     )
     .then(() => retrievePackageJson())
-    .then((json) => createSnapshotVersion(incrementVersion(json.version)))
+    .then((json) =>
+      askQuestion(`Next version [${createSnapshotVersion(incrementVersion(json.version))}]? `, cli).then(
+        (nextVersion) => nextVersion.trim() || createProductionVersion(incrementVersion(json.version))
+      )
+    )
     .then((version) =>
       updatePackageJson({ version })
         .then(() => git.add(packageJsonPath))
@@ -62,4 +72,9 @@ const createVersion = () =>
         .then(() => version)
     )
 
-createVersion().then(console.log)
+const cli = readLine.createInterface({ input: process.stdin, output: process.stdout })
+const simpleGit = new SimpleGit()
+
+createVersion(simpleGit, cli)
+    .then(console.log)
+    .then(() => process.exit(0))
