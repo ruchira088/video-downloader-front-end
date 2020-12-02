@@ -8,21 +8,48 @@ export enum AuthenticationKey {
   Token = "Token",
 }
 
-const authenticationKeyValueStore = new LocalKeyValueStore(KeySpace.Authentication)
+const AuthenticationKeySpace: KeySpace<AuthenticationKey, AuthenticationToken> = {
+  name: "Authentication",
+
+  keyCodec: {
+    decode(value: string): AuthenticationKey {
+      return value as AuthenticationKey
+    },
+
+    encode(authenticationKey: AuthenticationKey): string {
+      return authenticationKey.toString()
+    },
+  },
+
+  valueCodec: {
+    decode(value: string): AuthenticationToken {
+      return parseAuthenticationToken(JSON.parse(value))
+    },
+
+    encode(authenticationToken: AuthenticationToken): string {
+      return JSON.stringify(authenticationToken)
+    },
+  },
+}
+
+const authenticationKeyValueStore = new LocalKeyValueStore(AuthenticationKeySpace)
 
 export const isAuthenticated = (): Maybe<AuthenticationToken> =>
-  authenticationKeyValueStore.get(AuthenticationKey.Token).map((string) => parseAuthenticationToken(JSON.parse(string)))
+  authenticationKeyValueStore.get(AuthenticationKey.Token)
 
 export const login = (password: string): Promise<AuthenticationToken> =>
   axiosClient.post("/authentication/login", { password }).then(({ data }) => {
-    authenticationKeyValueStore.put(AuthenticationKey.Token, JSON.stringify(data))
+    authenticationKeyValueStore.put(AuthenticationKey.Token, data)
 
     return parseAuthenticationToken(data)
   })
 
 export const logout = (): Promise<AuthenticationToken> =>
   axiosClient.delete("authentication/logout").then(({ data }) => {
-    authenticationKeyValueStore.remove(AuthenticationKey.Token)
+    removeAuthenticationToken()
 
     return parseAuthenticationToken(data)
   })
+
+export const removeAuthenticationToken = (): Maybe<AuthenticationToken> =>
+  authenticationKeyValueStore.remove(AuthenticationKey.Token)

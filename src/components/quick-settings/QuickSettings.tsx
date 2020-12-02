@@ -1,10 +1,10 @@
-import React, { Dispatch, SetStateAction } from "react"
-import { FormGroup, FormControlLabel, Switch } from "@material-ui/core"
+import React from "react"
+import { FormControlLabel, FormGroup, Switch } from "@material-ui/core"
 import { ApplicationContext } from "context/ApplicationContext"
 import styles from "./QuickSettings.module.css"
 
 export type QuickSettings = ApplicationContext & {
-  setApplicationContext: Dispatch<SetStateAction<ApplicationContext>>
+  setApplicationContext: (applicationContext: ApplicationContext) => void
 }
 
 export default (settings: QuickSettings) => (
