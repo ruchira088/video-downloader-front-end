@@ -2,8 +2,18 @@ import { Maybe } from "monet"
 
 const localStorage: Storage = window.localStorage
 
-export enum KeySpace {
-  Authentication = "Authentication",
+export interface Codec<A, B> {
+  encode(value: A): B
+
+  decode(value: B): A
+}
+
+export interface KeySpace<K, V> {
+  readonly name: string
+
+  readonly keyCodec: Codec<K, string>
+
+  readonly valueCodec: Codec<V, string>
 }
 
 export default interface KeyValueStore<K, V> {
@@ -14,18 +24,18 @@ export default interface KeyValueStore<K, V> {
   remove(key: K): Maybe<V>
 }
 
-export class LocalKeyValueStore implements KeyValueStore<string, string> {
-  constructor(readonly keySpace: KeySpace) {}
+export class LocalKeyValueStore<K, V> implements KeyValueStore<K, V> {
+  constructor(readonly keySpace: KeySpace<K, V>) {}
 
-  get(key: string): Maybe<string> {
-    return Maybe.fromFalsy(localStorage.getItem(this.stringKey(key)))
+  get(key: K): Maybe<V> {
+    return Maybe.fromFalsy(localStorage.getItem(this.stringKey(key))).map(this.keySpace.valueCodec.decode)
   }
 
-  put(key: string, value: string): void {
-    localStorage.setItem(this.stringKey(key), value)
+  put(key: K, value: V): void {
+    localStorage.setItem(this.stringKey(key), this.keySpace.valueCodec.encode(value))
   }
 
-  remove(key: string): Maybe<string> {
+  remove(key: K): Maybe<V> {
     return this.get(key).map((value) => {
       localStorage.removeItem(this.stringKey(key))
 
@@ -33,5 +43,5 @@ export class LocalKeyValueStore implements KeyValueStore<string, string> {
     })
   }
 
-  stringKey = (key: string): string => `${this.keySpace}-${key}`
+  stringKey = (key: K): string => `${this.keySpace.name}-${this.keySpace.keyCodec.encode(key)}`
 }

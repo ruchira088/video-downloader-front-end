@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios"
 import { configuration } from "services/Configuration"
 import { KeySpace, LocalKeyValueStore } from "../kv-store/KeyValueStore"
-import { AuthenticationKey } from "../authentication/AuthenticationService"
+import { AuthenticationKey, removeAuthenticationToken } from "../authentication/AuthenticationService"
 
 export const axiosClient: AxiosInstance = axios.create({
   baseURL: configuration.apiService,
@@ -12,12 +12,11 @@ axiosClient.interceptors.response.use(
   (value) => Promise.resolve(value),
   (error) => {
     if (error.response?.status === 401) {
-      const keyValueStore = new LocalKeyValueStore(KeySpace.Authentication)
-      keyValueStore.remove(AuthenticationKey.Token)
+      removeAuthenticationToken()
 
       window.location.reload()
     } else {
-        // TODO Handle errors
+      // TODO Handle errors
     }
 
     return Promise.reject(error)

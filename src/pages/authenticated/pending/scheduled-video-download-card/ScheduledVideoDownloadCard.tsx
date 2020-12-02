@@ -21,7 +21,7 @@ export default (scheduledVideoDownload: ScheduledVideoDownload & Downloadable) =
         <div>{translate(scheduledVideoDownload.videoMetadata.title, safeMode)}</div>
         <div>{humanReadableDuration(scheduledVideoDownload.videoMetadata.duration)}</div>
         <div>{humanReadableSize(scheduledVideoDownload.videoMetadata.size)}</div>
-        {scheduledVideoDownload.videoMetadata.size !== scheduledVideoDownload.downloadedBytes && (
+        {scheduledVideoDownload.videoMetadata.size > scheduledVideoDownload.downloadedBytes && (
           <div>
             <ProgressBar
               completeValue={scheduledVideoDownload.videoMetadata.size}
