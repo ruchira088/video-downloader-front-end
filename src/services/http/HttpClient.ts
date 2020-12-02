@@ -1,7 +1,6 @@
 import axios, { AxiosInstance } from "axios"
 import { configuration } from "services/Configuration"
-import { KeySpace, LocalKeyValueStore } from "../kv-store/KeyValueStore"
-import { AuthenticationKey, removeAuthenticationToken } from "../authentication/AuthenticationService"
+import { removeAuthenticationToken } from "../authentication/AuthenticationService"
 
 export const axiosClient: AxiosInstance = axios.create({
   baseURL: configuration.apiService,
