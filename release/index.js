@@ -52,7 +52,7 @@ const createVersion = (git, cli) =>
         .then(() => git.commit(`Creating version ${version}`))
         .then(() => git.push())
         .then(() => git.checkout(PROD_BRANCH))
-        .then(() => git.raw("merge", DEV_BRANCH))
+        .then(() => git.raw("rebase", DEV_BRANCH))
         .then(() => git.raw("push"))
         .then(() => git.addTag(version))
         .then(() => git.pushTags())
