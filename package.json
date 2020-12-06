@@ -1,9 +1,9 @@
 {
   "name": "video-downloader-front-end",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "private": true,
   "dependencies": {
-    "@material-ui/core": "^4.11.1",
+    "@material-ui/core": "^4.11.2",
     "axios": "^0.21.0",
     "immutable": "^4.0.0-rc.12",
     "memoizee": "^0.4.14",
@@ -42,8 +42,8 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.6",
     "@testing-library/react": "^11.2.2",
-    "@testing-library/user-event": "^12.3.0",
-    "@types/jest": "^26.0.15",
+    "@testing-library/user-event": "^12.5.0",
+    "@types/jest": "^26.0.16",
     "@types/memoizee": "^0.4.5",
     "@types/node": "^14.14.10",
     "@types/react": "^17.0.0",
@@ -53,8 +53,8 @@
     "@types/react-toggle": "^4.0.2",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
     "@typescript-eslint/parser": "^4.9.0",
-    "eslint": "^7.14.0",
-    "eslint-config-prettier": "^6.15.0",
+    "eslint": "^7.15.0",
+    "eslint-config-prettier": "^7.0.0",
     "prettier": "2.2.1",
     "react-scripts": "4.0.1",
     "simple-git": "^2.24.0",
