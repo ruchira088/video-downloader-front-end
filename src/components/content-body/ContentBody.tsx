@@ -6,6 +6,7 @@ import VideoPage from "pages/authenticated/videos/video-page/VideoPage"
 import styles from "./ContentBody.module.css"
 import ScheduleVideo from "pages/authenticated/schedule/Schedule"
 import ScheduledVideos from "pages/authenticated/pending/ScheduledVideos"
+import ServerErrorPage from "../../pages/authenticated/server-error/ServerErrorPage";
 
 export default () => (
   <div className={styles.contentBody}>
@@ -24,6 +25,9 @@ export default () => (
       </Route>
       <Route path="/pending">
         <ScheduledVideos />
+      </Route>
+      <Route path="/server-error">
+        <ServerErrorPage/>
       </Route>
       <Route path="*"></Route>
     </Switch>

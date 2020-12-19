@@ -1,4 +1,5 @@
 import React from "react"
+import { Link} from "react-router-dom"
 import { imageUrl } from "services/asset/AssetService"
 import { Snapshot } from "models/Snapshot"
 import ApplicationContext from "context/ApplicationContext"
@@ -9,14 +10,14 @@ import { Grid } from "@material-ui/core"
 const VideoSnapshot = (snapshot: Snapshot) => (
   <ApplicationContext.Consumer>
     {({ safeMode }) => (
-      <div className={styles.videoSnapshot}>
+      <Link to={`/video/${snapshot.videoId}?timestamp=${Math.round(snapshot.videoTimestamp.asSeconds())}`} className={styles.videoSnapshot}>
         {shortHumanReadableDuration(snapshot.videoTimestamp)}
         <img
           src={imageUrl(snapshot.fileResource.id, safeMode)}
           alt="video snapshot"
           className={styles.videoSnapshotImage}
         />
-      </div>
+      </Link>
     )}
   </ApplicationContext.Consumer>
 )
