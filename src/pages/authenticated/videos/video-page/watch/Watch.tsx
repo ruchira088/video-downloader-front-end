@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from "react"
+import React, { useEffect, useRef } from "react"
 import ApplicationContext from "context/ApplicationContext"
 import Video from "models/Video"
 import { imageUrl, videoUrl } from "services/asset/AssetService"
@@ -8,19 +8,19 @@ import VideoSnapshots from "components/video/video-snapshots/VideoSnapshots"
 import styles from "./Watch.module.css"
 import EditableLabel from "components/editable-label/EditableLabel"
 import { updateVideoTitle } from "services/video/VideoService"
-import {Duration} from "moment";
-import {Maybe} from "monet";
+import { Duration } from "moment"
+import { Maybe } from "monet"
 
 export default (
   video: Video & { snapshots: Snapshot[] } & {
-    timestamp: Duration,
+    timestamp: Duration
     updateVideo: (video: Video) => void
   }
 ) => {
   const videoPlayer = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    Maybe.fromNull(videoPlayer.current).forEach(videoElement => {
+    Maybe.fromNull(videoPlayer.current).forEach((videoElement) => {
       videoElement.currentTime = video.timestamp.asSeconds()
     })
   })

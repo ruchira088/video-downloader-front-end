@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { GridList, GridListTile } from "@material-ui/core"
 import { Link } from "react-router-dom"
-import { None } from "monet"
+import { Maybe, None, Some } from "monet"
 import { List } from "immutable"
 import { searchVideos } from "services/video/VideoService"
 import InfiniteScroll from "react-infinite-scroller"
@@ -18,6 +18,7 @@ let isPending = false
 export default () => {
   const [videos, setVideos] = useState<List<Video>>(List<Video>())
   const [sortBy, setSortBy] = useState<SortBy>(SortBy.Date)
+  const [searchTerm, setSearchTerm] = useState<Maybe<string>>(None())
   const [pageNumber, setPageNumber] = useState<number>(0)
   const [hasMore, setHasMore] = useState<boolean>(true)
   const [durationRange, setDurationRange] = useState<DurationRange>(ALL_DURATIONS)
@@ -27,7 +28,7 @@ export default () => {
       return Promise.resolve()
     } else {
       isPending = true
-      return searchVideos(None(), durationRange, pageNumber, PAGE_SIZE, sortBy).then(({ results }) => {
+      return searchVideos(searchTerm, durationRange, pageNumber, PAGE_SIZE, sortBy).then(({ results }) => {
         if (results.length < PAGE_SIZE) {
           setHasMore(false)
         }
@@ -53,9 +54,24 @@ export default () => {
     setVideos(List())
   }
 
+  const onSearchTermChange = (term: string) => {
+    if (term.trim() === "") {
+      setSearchTerm(None())
+    } else {
+      setSearchTerm(Some(term))
+    }
+
+    setPageNumber(0)
+    setHasMore(true)
+    setVideos(List())
+  }
+
   return (
     <>
       <VideoFilter
+        videoTitles={videos.map((video) => video.videoMetadata.title).slice(0, 10)}
+        searchTerm={searchTerm}
+        onSearchTermChange={onSearchTermChange}
         sortBy={sortBy}
         onSortByChange={onSortByChange}
         durationRange={durationRange}
