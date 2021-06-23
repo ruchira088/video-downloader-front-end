@@ -12,7 +12,7 @@
     - name: Create K8s resource files
       import_tasks: tasks/k8s-resource-files.yml
       vars:
-        hostname: "{{ 'video.home.ruchij.com' if  env == 'production' else git_branch + '.video.home.ruchij.com' }}"
+        hostname: "{{ 'video.home.ruchij.com' if  env == 'production' else git_branch + '.video.dev.ruchij.com' }}"
 
     - name: Create kubeconfig
       import_tasks: tasks/k8s-config.yml
