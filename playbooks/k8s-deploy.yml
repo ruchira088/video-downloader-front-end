@@ -20,13 +20,13 @@
     - name: Deploy to K8s
       block:
         - name: Create Namespace
-          command: kubectl apply -f k8s-output/Namespace.yaml --kubeconfig k8s-output/kubeconfig
+          command: kubectl apply -f k8s-output/Namespace.yaml --kubeconfig {{ kube_config }}
 
         - name: Deploy application
-          command: kubectl apply -f k8s-output --kubeconfig k8s-output/kubeconfig
+          command: kubectl apply -f k8s-output --kubeconfig {{ kube_config }}
 
         - name: Wait for successful deployment
-          command: kubectl rollout status deployment front-end-deployment --kubeconfig k8s-output/kubeconfig -n {{ namespace }}
+          command: kubectl rollout status deployment front-end-deployment --kubeconfig {{ kube_config }} -n {{ namespace }}
 
     - name: Delete output directory
       file:
