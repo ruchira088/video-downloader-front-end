@@ -18,7 +18,7 @@
     "react-toggle": "^4.1.2"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "REACT_APP_API_URL=https://localhost:8443 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
