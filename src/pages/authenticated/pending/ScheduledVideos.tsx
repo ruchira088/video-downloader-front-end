@@ -31,9 +31,8 @@ const average = (numbers: number[]): Maybe<number> =>
     .map((total) => total / numbers.length)
 
 export default () => {
-  const [scheduledVideoDownloads, setScheduledVideoDownloads] = useState<
-    Map<string, ScheduledVideoDownload & Downloadable>
-  >(Map())
+  const [scheduledVideoDownloads, setScheduledVideoDownloads] =
+    useState<Map<string, ScheduledVideoDownload & Downloadable>>(Map<string, ScheduledVideoDownload & Downloadable>())
 
   useEffect(() => {
     fetchScheduledVideos(None(), 0, 100, SortBy.Date).then((results) =>
