@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { GridList, GridListTile } from "@material-ui/core"
+import { ImageList, ImageListItem } from "@material-ui/core"
 import { Link } from "react-router-dom"
 import { Maybe, None, Some } from "monet"
 import { List } from "immutable"
@@ -78,15 +78,15 @@ export default () => {
         onDurationRangeChange={onDurationChange}
       />
       <InfiniteScroll loadMore={fetchVideos} hasMore={hasMore} threshold={500}>
-        <GridList cols={4} cellHeight="auto">
+        <ImageList cols={4} rowHeight="auto">
           {videos.map((video, index) => (
-            <GridListTile cols={1} key={index}>
+            <ImageListItem cols={1} key={index}>
               <Link to={`/video/${video.videoMetadata.id}`} key={index}>
                 <VideoCard {...video} />
               </Link>
-            </GridListTile>
+            </ImageListItem>
           ))}
-        </GridList>
+        </ImageList>
       </InfiniteScroll>
     </>
   )
