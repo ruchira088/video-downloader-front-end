@@ -16,14 +16,14 @@ export const scheduleVideo = (videoSiteUrl: string): Promise<ScheduledVideoDownl
   axiosClient.post("/schedule", { url: videoSiteUrl }).then(({ data }) => parseScheduledVideoDownload(data))
 
 const unmemoizedFetchScheduledVideoById = (videoId: string): Promise<ScheduledVideoDownload> =>
-  axiosClient.get(`schedule/videoId/${videoId}`).then(({ data }) => parseScheduledVideoDownload(data))
+  axiosClient.get(`schedule/id/${videoId}`).then(({ data }) => parseScheduledVideoDownload(data))
 
 export const fetchScheduledVideoById: (
   videoId: string
 ) => Promise<ScheduledVideoDownload> = memoizee(unmemoizedFetchScheduledVideoById, { promise: true })
 
 export const updateStatus = (videoId: string, status: SchedulingStatus): Promise<ScheduledVideoDownload> =>
-  axiosClient.put(`schedule/videoId/${videoId}`, { status }).then(({ data }) => parseScheduledVideoDownload(data))
+  axiosClient.put(`schedule/id/${videoId}`, { status }).then(({ data }) => parseScheduledVideoDownload(data))
 
 export const fetchScheduledVideos = (
   searchTerm: Maybe<string>,
