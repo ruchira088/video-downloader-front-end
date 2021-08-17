@@ -6,6 +6,7 @@ import { parseScheduledVideoDownload } from "utils/ResponseParser"
 import { axiosClient } from "services/http/HttpClient"
 import { SortBy } from "models/SortBy"
 import { SchedulingStatus } from "models/SchedulingStatus"
+import { WorkerStatus } from "../../models/WorkerStatus"
 
 export const scheduledVideoDownloadStream = (): EventSource =>
   new EventSource(`${configuration.apiService}/schedule/active`, {
@@ -16,14 +17,21 @@ export const scheduleVideo = (videoSiteUrl: string): Promise<ScheduledVideoDownl
   axiosClient.post("/schedule", { url: videoSiteUrl }).then(({ data }) => parseScheduledVideoDownload(data))
 
 const unmemoizedFetchScheduledVideoById = (videoId: string): Promise<ScheduledVideoDownload> =>
-  axiosClient.get(`schedule/id/${videoId}`).then(({ data }) => parseScheduledVideoDownload(data))
+  axiosClient.get(`/schedule/id/${videoId}`).then(({ data }) => parseScheduledVideoDownload(data))
 
 export const fetchScheduledVideoById: (
   videoId: string
 ) => Promise<ScheduledVideoDownload> = memoizee(unmemoizedFetchScheduledVideoById, { promise: true })
 
-export const updateStatus = (videoId: string, status: SchedulingStatus): Promise<ScheduledVideoDownload> =>
-  axiosClient.put(`schedule/id/${videoId}`, { status }).then(({ data }) => parseScheduledVideoDownload(data))
+export const updateSchedulingStatus = (videoId: string, status: SchedulingStatus): Promise<ScheduledVideoDownload> =>
+  axiosClient.put(`/schedule/id/${videoId}`, { status }).then(({ data }) => parseScheduledVideoDownload(data))
+
+export const fetchWorkerStatus = (): Promise<WorkerStatus> =>
+  axiosClient.get("/schedule/worker-status").then(({ data }) => data.workerStatus)
+
+export const updateWorkerStatus =
+  (workerStatus: WorkerStatus): Promise<WorkerStatus> => axiosClient.put("/schedule/worker-status", { workerStatus })
+    .then(({ data }) => data.workerStatus)
 
 export const fetchScheduledVideos = (
   searchTerm: Maybe<string>,

@@ -8,7 +8,7 @@ import { humanReadableDuration, humanReadableSize } from "utils/Formatter"
 import styles from "./ScheduledVideoDownloadCard.module.css"
 import { Downloadable } from "../ScheduledVideos"
 import DownloadInformation from "./DownloadInformation"
-import { updateStatus } from "services/scheduling/SchedulingService"
+import { updateSchedulingStatus } from "services/scheduling/SchedulingService"
 import { Button } from "@material-ui/core"
 import { COMMAND_NAMES, SchedulingStatus, TRANSITION_STATES } from "models/SchedulingStatus"
 import { Maybe } from "monet"
@@ -45,7 +45,7 @@ const Actions = (scheduleVideoDownload: ScheduledVideoDownload) => {
         <Button
           key={index}
           onClick={() =>
-            updateStatus(scheduleVideoDownload.videoMetadata.id, next).then((value) => setStatus(value.status))
+            updateSchedulingStatus(scheduleVideoDownload.videoMetadata.id, next).then((value) => setStatus(value.status))
           }
         >
           {Maybe.fromNull(COMMAND_NAMES[next]).getOrElse(next)}
