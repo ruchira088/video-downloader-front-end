@@ -45,7 +45,7 @@ export default (
             poster={imageUrl(video.videoMetadata.thumbnail.id, safeMode)}
             className={styles.video}
           >
-            <source src={videoUrl(video.fileResource.id)} type={video.fileResource.mediaType} />
+            <source src={videoUrl(video.fileResource.id)} />
           </video>
           <VideoSnapshots snapshots={video.snapshots} />
         </div>
