@@ -1,4 +1,4 @@
-import { Maybe, None } from "monet"
+import { Just, Maybe, None } from "monet"
 import { Duration, duration } from "moment"
 
 export interface DurationRange {
@@ -17,3 +17,12 @@ export const durationRangeQueryParameter = (durationRange: DurationRange): strin
   durationRange.min.asMinutes() +
   "-" +
   durationRange.max.map((duration) => duration.asMinutes().toString(10)).getOrElse("")
+
+export const fromString = (input: string): Maybe<DurationRange> => {
+  const [minString, maxString] = input.split('-')
+
+  const min = parseInt(minString, 10)
+  const maybeMax = Maybe.fromNull(maxString).map(value => parseInt(value, 10))
+
+  return Just({ min: duration(min, "minutes"), max: maybeMax.map(value => duration(value, "minutes")) })
+}
