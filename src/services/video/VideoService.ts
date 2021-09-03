@@ -6,15 +6,15 @@ import {
   parseVideo,
   parseVideoMetadata,
   parseVideoServiceSummary,
-  searchResultParser,
+  searchResultParser
 } from "utils/ResponseParser"
 import { Snapshot } from "models/Snapshot"
 import { axiosClient } from "services/http/HttpClient"
 import VideoMetadata from "models/VideoMetadata"
 import { SortBy } from "models/SortBy"
 import { VideoServiceSummary } from "models/VideoServiceSummary"
-import { DurationRange, durationRangeEncoder } from "models/DurationRange"
-import {rangeQueryParameter} from "models/Range"
+import { DurationRange, durationRangeStringEncoder } from "models/DurationRange"
+import { rangeEncoder } from "models/Range"
 
 export const searchVideos = (
   searchTerm: Maybe<string>,
@@ -24,11 +24,7 @@ export const searchVideos = (
   sortBy: SortBy
 ): Promise<SearchResult<Video>> =>
   axiosClient
-    .get(
-      `/videos/search?page-number=${pageNumber}&page-size=${pageSize}&sort-by=${sortBy}&duration=${rangeQueryParameter(
-        durationRange, durationRangeEncoder
-      )}${searchTerm.fold("")((term) => `&search-term=${term}`)}`
-    )
+    .get(`/videos/search?page-number=${pageNumber}&page-size=${pageSize}&sort-by=${sortBy}&duration=${rangeEncoder(durationRangeStringEncoder).encode(durationRange)}${searchTerm.fold("")((term) => `&search-term=${term}`)}`)
     .then(({ data }) => searchResultParser(parseVideo)(data))
 
 export const fetchVideoById = (videoId: string): Promise<Video> =>

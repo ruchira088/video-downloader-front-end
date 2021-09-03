@@ -1,34 +1,39 @@
 import React, { useEffect, useState } from "react"
 import { ImageList, ImageListItem } from "@material-ui/core"
 import { Link, useHistory, useLocation } from "react-router-dom"
-import { Maybe, None, Some } from "monet"
+import { Maybe } from "monet"
 import { List } from "immutable"
 import { searchVideos } from "services/video/VideoService"
 import InfiniteScroll from "react-infinite-scroller"
 import VideoCard from "components/video/video-card/VideoCard"
 import Video from "models/Video"
 import { SortBy } from "models/SortBy"
-import { all, decodeFromString, rangeQueryParameter } from "models/Range"
-import { DurationRange, durationRangeDecoder, durationRangeEncoder } from "models/DurationRange"
-import VideoFilter from "./components/VideoFilter"
+import { DurationRange } from "models/DurationRange"
+import VideoSearch from "./components/VideoSearch"
+import {
+  DurationRangeSearchParam,
+  parseSearchParam,
+  SearchTermSearchParam,
+  SizeRangeSearchParam,
+  SortBySearchParam,
+  VideoSearchParameter,
+  VideoSearchParamName
+} from "./components/VideoSearchParams"
+import { Range } from "models/Range"
 
 const PAGE_SIZE = 50
 
 export default () => {
   const queryParams = new URLSearchParams(useLocation().search)
-  const defaultSortBy = Maybe.fromNull(queryParams.get("sort-by")).getOrElse(SortBy.Date) as SortBy
-  const defaultDurationRange =
-    Maybe.fromNull(queryParams.get("duration-range"))
-      .flatMap(input => decodeFromString(input, durationRangeDecoder).toMaybe())
-      .getOrElse(all(durationRangeDecoder))
 
   const [videos, setVideos] = useState<List<Video>>(List<Video>())
-  const [sortBy, setSortBy] = useState<SortBy>(defaultSortBy)
-  const [searchTerm, setSearchTerm] = useState<Maybe<string>>(None())
+  const [sortBy, setSortBy] = useState<SortBy>(parseSearchParam(queryParams, SortBySearchParam))
+  const [searchTerm, setSearchTerm] = useState<Maybe<string>>(parseSearchParam(queryParams, SearchTermSearchParam))
   const [pageNumber, setPageNumber] = useState<number>(0)
   const [hasMore, setHasMore] = useState<boolean>(true)
   const [isLoading, setLoading] = useState<boolean>(false)
-  const [durationRange, setDurationRange] = useState<DurationRange>(defaultDurationRange)
+  const [durationRange, setDurationRange] = useState<DurationRange>(parseSearchParam(queryParams, DurationRangeSearchParam))
+  const [sizeRange, setSizeRange] = useState<Range<number>>(parseSearchParam(queryParams, SizeRangeSearchParam))
 
   const history = useHistory()
 
@@ -51,48 +56,36 @@ export default () => {
     }
   }
 
-  const onSortByChange = (sortBy: SortBy) => {
-    setSortBy(sortBy)
-    setPageNumber(0)
-    setHasMore(true)
-    setVideos(List())
-
-    queryParams.set("sort-by", sortBy)
-    history.push({ search: queryParams.toString() })
+  function onChangeSearchParams<A, B extends VideoSearchParamName>(videoSearchParameter: VideoSearchParameter<A, B>, f: (value: A) => void): (value: A) => void {
+    return onChange(videoSearchParameter.name, videoSearchParameter.encoder.encode, f)
   }
 
-  const onDurationChange = (durationRange: DurationRange) => {
-    setDurationRange(durationRange)
-    setPageNumber(0)
-    setHasMore(true)
-    setVideos(List())
-
-    queryParams.set("duration-range", rangeQueryParameter(durationRange, durationRangeEncoder))
-    history.push({ search: queryParams.toString() })
-  }
-
-  const onSearchTermChange = (term: string) => {
-    if (term.trim() === "") {
-      setSearchTerm(None())
-    } else {
-      setSearchTerm(Some(term))
+  function onChange<A>(name: string, encoder: (value: A) => string, f: (value: A) => void): (value: A) => void {
+    return (value: A) => {
+      f(value)
+      setPageNumber(0)
+      setHasMore(true)
+      setVideos(List())
+      updateQueryParameter(name, encoder, value)
     }
+  }
 
-    setPageNumber(0)
-    setHasMore(true)
-    setVideos(List())
+  function updateQueryParameter<A>(name: string, encoder: (value: A) => string, value: A) {
+    queryParams.set(name, encoder(value))
+    history.push({ search: queryParams.toString() })
   }
 
   return (
     <>
-      <VideoFilter
+      <VideoSearch
         videoTitles={videos.map((video) => video.videoMetadata.title).slice(0, 10)}
         searchTerm={searchTerm}
-        onSearchTermChange={onSearchTermChange}
+        onSearchTermChange={onChangeSearchParams(SearchTermSearchParam, setSearchTerm)}
         sortBy={sortBy}
-        onSortByChange={onSortByChange}
+        onSortByChange={onChangeSearchParams(SortBySearchParam, setSortBy)}
         durationRange={durationRange}
-        onDurationRangeChange={onDurationChange}
+        onDurationRangeChange={onChangeSearchParams(DurationRangeSearchParam, setDurationRange)}
+        sizeRange={sizeRange}
       />
       <InfiniteScroll loadMore={fetchVideos} hasMore={hasMore} threshold={500}>
         <ImageList cols={4} rowHeight="auto">

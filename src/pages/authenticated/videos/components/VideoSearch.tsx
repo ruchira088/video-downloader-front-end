@@ -1,15 +1,16 @@
 import React, { useState } from "react"
 import { SortBy } from "models/SortBy"
-import { DurationRange, durationRangeEncoder } from "models/DurationRange"
+import { DurationRange, durationRangeNumberEncoder } from "models/DurationRange"
 import SortBySelection from "components/sort-by-selection/SortBySelection"
 import { Slider, TextField } from "@material-ui/core"
 import { duration } from "moment"
 import { Maybe } from "monet"
 import DurationRangeDisplay from "./DurationRangeDisplay"
-import styles from "./VideoFilter.module.css"
+import styles from "./VideoSearch.module.css"
 import { Autocomplete } from "@material-ui/lab"
 import { List } from "immutable"
-import {toNumberArray} from "models/Range"
+import { Range, toNumberArray } from "models/Range"
+import { maybeString } from "utils/StringUtils"
 
 const MAX_RANGE = duration(75, "minutes")
 
@@ -31,30 +32,36 @@ export default ({
   onSortByChange,
   durationRange,
   onDurationRangeChange,
+  sizeRange
 }: {
   videoTitles: List<string>
   searchTerm: Maybe<string>
-  onSearchTermChange: (searchTerm: string) => void
+  onSearchTermChange: (searchTerm: Maybe<string>) => void
   sortBy: SortBy
   onSortByChange: (sortBy: SortBy) => void
   durationRange: DurationRange
   onDurationRangeChange: (durationRange: DurationRange) => void
+  sizeRange: Range<number>
 }) => {
   const [transientDurationRange, setTransientDurationRange] = useState(durationRange)
+
+  console.log(sortBy)
 
   return (
     <div className={styles.videoFilter}>
       <Autocomplete
         freeSolo
         inputValue={searchTerm.getOrElse("")}
-        onInputChange={(changeEvent, value) => onSearchTermChange(value)}
+        onInputChange={(changeEvent, value) =>
+          Maybe.fromNull(changeEvent).forEach(() => onSearchTermChange(maybeString(value)))
+        }
         options={videoTitles.toArray()}
         renderInput={(params) => <TextField {...params} />}
       />
       <SortBySelection value={sortBy} onChange={onSortByChange} />
       <Slider
         max={MAX_RANGE.asMinutes()}
-        value={toNumberArray(transientDurationRange, MAX_RANGE, durationRangeEncoder)}
+        value={toNumberArray(transientDurationRange, MAX_RANGE, durationRangeNumberEncoder)}
         onChange={(event, value) => setTransientDurationRange(fromChangeEvent(value))}
         onChangeCommitted={(event, value) => onDurationRangeChange(fromChangeEvent(value))}
       />
