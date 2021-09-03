@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { ImageList, ImageListItem } from "@material-ui/core"
 import { Link, useHistory, useLocation } from "react-router-dom"
-import { Maybe } from "monet"
+import { Maybe, NonEmptyList } from "monet"
 import { List } from "immutable"
 import { searchVideos } from "services/video/VideoService"
 import InfiniteScroll from "react-infinite-scroller"
@@ -17,7 +17,7 @@ import {
   SizeRangeSearchParam,
   SortBySearchParam,
   VideoSearchParameter,
-  VideoSearchParamName
+  VideoSearchParamName, VideoSitesSearchParam
 } from "./components/VideoSearchParams"
 import { Range } from "models/Range"
 
@@ -27,6 +27,7 @@ export default () => {
   const queryParams = new URLSearchParams(useLocation().search)
 
   const [videos, setVideos] = useState<List<Video>>(List<Video>())
+  const [videoSites, setVideoSites] = useState<Maybe<NonEmptyList<string>>>(parseSearchParam(queryParams, VideoSitesSearchParam))
   const [sortBy, setSortBy] = useState<SortBy>(parseSearchParam(queryParams, SortBySearchParam))
   const [searchTerm, setSearchTerm] = useState<Maybe<string>>(parseSearchParam(queryParams, SearchTermSearchParam))
   const [pageNumber, setPageNumber] = useState<number>(0)
@@ -86,6 +87,9 @@ export default () => {
         durationRange={durationRange}
         onDurationRangeChange={onChangeSearchParams(DurationRangeSearchParam, setDurationRange)}
         sizeRange={sizeRange}
+        onSizeRangeChange={onChangeSearchParams(SizeRangeSearchParam, setSizeRange)}
+        videoSites={videoSites}
+        onVideoSitesChange={onChangeSearchParams(VideoSitesSearchParam, setVideoSites)}
       />
       <InfiniteScroll loadMore={fetchVideos} hasMore={hasMore} threshold={500}>
         <ImageList cols={4} rowHeight="auto">

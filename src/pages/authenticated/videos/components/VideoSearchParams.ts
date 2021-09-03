@@ -2,7 +2,7 @@ import { DurationRange, durationRangeDecoder, durationRangeStringEncoder } from 
 import { Range, rangeDecoder, rangeEncoder } from "models/Range"
 import { Decoder, Encoder, simpleStringEncoder, stringToNumberDecoder } from "models/Codec"
 import { duration } from "moment"
-import { Either, Left, Maybe, None, Right } from "monet"
+import { Either, Left, Maybe, None, NonEmptyList, Right } from "monet"
 import { maybeString } from "utils/StringUtils"
 import { SortBy } from "models/SortBy"
 
@@ -80,6 +80,23 @@ class SortBySearchParameter implements VideoSearchParameter<SortBy, VideoSearchP
   name: VideoSearchParamName.SortBy = VideoSearchParamName.SortBy
 }
 
+class VideoSitesSearchParameter implements VideoSearchParameter<Maybe<NonEmptyList<string>>, VideoSearchParamName.Sites> {
+  decoder: Decoder<string, Maybe<NonEmptyList<string>>> = {
+    decode(value: string): Either<Error, Maybe<NonEmptyList<string>>> {
+      return Right(NonEmptyList.from(value.split(",").filter(term => maybeString(term).isJust())))
+    }
+  }
+
+  default: Maybe<NonEmptyList<string>> = None()
+
+  encoder: Encoder<Maybe<NonEmptyList<string>>, string> = {
+    encode(maybeValues: Maybe<NonEmptyList<string>>): string {
+      return maybeValues.map(nonEmptyList => nonEmptyList.toArray().join(",")).getOrElse("")
+    }
+  }
+
+  name: VideoSearchParamName.Sites = VideoSearchParamName.Sites
+}
 
 export function parseSearchParam<A, B extends VideoSearchParamName>(urlSearchParams: URLSearchParams, videoSearchParameter: VideoSearchParameter<A, B>): A {
   return Maybe.fromNull(urlSearchParams.get(videoSearchParameter.name))
@@ -91,3 +108,4 @@ export const DurationRangeSearchParam = new DurationRangeSearchParameter()
 export const SizeRangeSearchParam = new SizeRangeSearchParameter()
 export const SearchTermSearchParam = new SearchTermSearchParameter()
 export const SortBySearchParam = new SortBySearchParameter()
+export const VideoSitesSearchParam = new VideoSitesSearchParameter()

@@ -4,7 +4,7 @@ import { DurationRange, durationRangeNumberEncoder } from "models/DurationRange"
 import SortBySelection from "components/sort-by-selection/SortBySelection"
 import { Slider, TextField } from "@material-ui/core"
 import { duration } from "moment"
-import { Maybe } from "monet"
+import { Maybe, NonEmptyList } from "monet"
 import DurationRangeDisplay from "./DurationRangeDisplay"
 import styles from "./VideoSearch.module.css"
 import { Autocomplete } from "@material-ui/lab"
@@ -32,7 +32,10 @@ export default ({
   onSortByChange,
   durationRange,
   onDurationRangeChange,
-  sizeRange
+  sizeRange,
+  onSizeRangeChange,
+  videoSites,
+  onVideoSitesChange
 }: {
   videoTitles: List<string>
   searchTerm: Maybe<string>
@@ -42,10 +45,12 @@ export default ({
   durationRange: DurationRange
   onDurationRangeChange: (durationRange: DurationRange) => void
   sizeRange: Range<number>
+  onSizeRangeChange: (sizeRange: Range<number>) => void
+  videoSites: Maybe<NonEmptyList<string>>
+  onVideoSitesChange: (videoSites: Maybe<NonEmptyList<string>>) => void
 }) => {
   const [transientDurationRange, setTransientDurationRange] = useState(durationRange)
-
-  console.log(sortBy)
+  const [transientSizeRange, setTransientSizeRange] = useState(sizeRange)
 
   return (
     <div className={styles.videoFilter}>
