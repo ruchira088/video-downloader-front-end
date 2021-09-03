@@ -1,14 +1,15 @@
-import React, {useState} from "react"
-import {SortBy} from "models/SortBy"
-import {DurationRange, toNumberRange} from "models/DurationRange"
+import React, { useState } from "react"
+import { SortBy } from "models/SortBy"
+import { DurationRange, durationRangeEncoder } from "models/DurationRange"
 import SortBySelection from "components/sort-by-selection/SortBySelection"
-import {Slider, TextField} from "@material-ui/core"
-import {duration} from "moment"
-import {Maybe} from "monet"
+import { Slider, TextField } from "@material-ui/core"
+import { duration } from "moment"
+import { Maybe } from "monet"
 import DurationRangeDisplay from "./DurationRangeDisplay"
 import styles from "./VideoFilter.module.css"
-import {Autocomplete} from "@material-ui/lab"
-import {List} from "immutable"
+import { Autocomplete } from "@material-ui/lab"
+import { List } from "immutable"
+import {toNumberArray} from "models/Range"
 
 const MAX_RANGE = duration(75, "minutes")
 
@@ -53,7 +54,7 @@ export default ({
       <SortBySelection value={sortBy} onChange={onSortByChange} />
       <Slider
         max={MAX_RANGE.asMinutes()}
-        value={toNumberRange(transientDurationRange, MAX_RANGE)}
+        value={toNumberArray(transientDurationRange, MAX_RANGE, durationRangeEncoder)}
         onChange={(event, value) => setTransientDurationRange(fromChangeEvent(value))}
         onChangeCommitted={(event, value) => onDurationRangeChange(fromChangeEvent(value))}
       />

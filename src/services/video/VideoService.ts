@@ -13,7 +13,8 @@ import { axiosClient } from "services/http/HttpClient"
 import VideoMetadata from "models/VideoMetadata"
 import { SortBy } from "models/SortBy"
 import { VideoServiceSummary } from "models/VideoServiceSummary"
-import { DurationRange, durationRangeQueryParameter } from "models/DurationRange"
+import { DurationRange, durationRangeEncoder } from "models/DurationRange"
+import {rangeQueryParameter} from "models/Range"
 
 export const searchVideos = (
   searchTerm: Maybe<string>,
@@ -24,8 +25,8 @@ export const searchVideos = (
 ): Promise<SearchResult<Video>> =>
   axiosClient
     .get(
-      `/videos/search?page-number=${pageNumber}&page-size=${pageSize}&sort-by=${sortBy}&duration=${durationRangeQueryParameter(
-        durationRange
+      `/videos/search?page-number=${pageNumber}&page-size=${pageSize}&sort-by=${sortBy}&duration=${rangeQueryParameter(
+        durationRange, durationRangeEncoder
       )}${searchTerm.fold("")((term) => `&search-term=${term}`)}`
     )
     .then(({ data }) => searchResultParser(parseVideo)(data))

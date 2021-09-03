@@ -8,7 +8,8 @@ import InfiniteScroll from "react-infinite-scroller"
 import VideoCard from "components/video/video-card/VideoCard"
 import Video from "models/Video"
 import { SortBy } from "models/SortBy"
-import { ALL_DURATIONS, DurationRange, durationRangeQueryParameter, fromString } from "models/DurationRange"
+import { all, decodeFromString, rangeQueryParameter } from "models/Range"
+import { DurationRange, durationRangeDecoder, durationRangeEncoder } from "models/DurationRange"
 import VideoFilter from "./components/VideoFilter"
 
 const PAGE_SIZE = 50
@@ -18,8 +19,8 @@ export default () => {
   const defaultSortBy = Maybe.fromNull(queryParams.get("sort-by")).getOrElse(SortBy.Date) as SortBy
   const defaultDurationRange =
     Maybe.fromNull(queryParams.get("duration-range"))
-      .flatMap(input => fromString(input))
-      .getOrElse(ALL_DURATIONS)
+      .flatMap(input => decodeFromString(input, durationRangeDecoder).toMaybe())
+      .getOrElse(all(durationRangeDecoder))
 
   const [videos, setVideos] = useState<List<Video>>(List<Video>())
   const [sortBy, setSortBy] = useState<SortBy>(defaultSortBy)
@@ -66,7 +67,7 @@ export default () => {
     setHasMore(true)
     setVideos(List())
 
-    queryParams.set("duration-range", durationRangeQueryParameter(durationRange))
+    queryParams.set("duration-range", rangeQueryParameter(durationRange, durationRangeEncoder))
     history.push({ search: queryParams.toString() })
   }
 
