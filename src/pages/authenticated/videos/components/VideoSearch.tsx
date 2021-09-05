@@ -5,31 +5,31 @@ import SortBySelection from "components/sort-by-selection/SortBySelection"
 import { TextField } from "@material-ui/core"
 import { duration } from "moment"
 import { Maybe, NonEmptyList } from "monet"
-import DurationRangeDisplay from "./DurationRangeDisplay"
 import styles from "./VideoSearch.module.css"
 import { Autocomplete } from "@material-ui/lab"
 import { List } from "immutable"
-import { Range } from "models/Range"
+import Range from "models/Range"
 import { maybeString } from "utils/StringUtils"
-import { RangeSlider } from "./RangeSlider"
+import RangeSlider from "./RangeSlider"
 import { codec, identityCodec } from "models/Codec"
+import { dataSizePrettyPrint, durationPrettyPrint } from "./RangeDisplay"
 
 const MAX_RANGE = duration(75, "minutes")
 const MAX_DATA_SIZE = 4000
 
 export default ({
-  videoTitles,
-  searchTerm,
-  onSearchTermChange,
-  sortBy,
-  onSortByChange,
-  durationRange,
-  onDurationRangeChange,
-  sizeRange,
-  onSizeRangeChange,
-  videoSites,
-  onVideoSitesChange
-}: {
+                  videoTitles,
+                  searchTerm,
+                  onSearchTermChange,
+                  sortBy,
+                  onSortByChange,
+                  durationRange,
+                  onDurationRangeChange,
+                  sizeRange,
+                  onSizeRangeChange,
+                  videoSites,
+                  onVideoSitesChange
+                }: {
   videoTitles: List<string>
   searchTerm: Maybe<string>
   onSearchTermChange: (searchTerm: Maybe<string>) => void
@@ -58,13 +58,13 @@ export default ({
         range={durationRange}
         onChange={onDurationRangeChange}
         maxValue={MAX_RANGE}
-        codec={codec(durationRangeNumberEncoder, durationRangeNumberDecoder)}/>
-      <DurationRangeDisplay durationRange={durationRange} />
+        codec={codec(durationRangeNumberEncoder, durationRangeNumberDecoder)}
+        printer={durationPrettyPrint} />
       <RangeSlider
         range={sizeRange}
         onChange={onSizeRangeChange}
         maxValue={MAX_DATA_SIZE}
         codec={identityCodec()}
-      />
+        printer={dataSizePrettyPrint} />
     </div>
   )

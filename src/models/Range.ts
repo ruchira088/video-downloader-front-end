@@ -1,7 +1,7 @@
 import { Either, Just, Maybe, None, Right } from "monet"
 import { Decoder, Encoder } from "models/Codec"
 
-export interface Range<A> {
+export default interface Range<A> {
   min: A
   max: Maybe<A>
 }

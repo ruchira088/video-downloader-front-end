@@ -1,5 +1,5 @@
 import { DurationRange, durationRangeDecoder, durationRangeStringEncoder } from "models/DurationRange"
-import { Range, rangeDecoder, rangeEncoder } from "models/Range"
+import Range, { rangeDecoder, rangeEncoder } from "models/Range"
 import { Decoder, Encoder, simpleStringEncoder, stringToNumberDecoder } from "models/Codec"
 import { duration } from "moment"
 import { Either, Left, Maybe, None, NonEmptyList, Right } from "monet"

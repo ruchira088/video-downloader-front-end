@@ -1,5 +1,5 @@
 import { Duration, duration } from "moment"
-import { Range } from "./Range"
+import Range from "./Range"
 import { decodeMap, Decoder, encodeMap, Encoder, stringToNumberDecoder } from "./Codec"
 import { Either, Right } from "monet"
 

@@ -19,7 +19,7 @@ import {
   VideoSearchParameter,
   VideoSearchParamName, VideoSitesSearchParam
 } from "./components/VideoSearchParams"
-import { Range } from "models/Range"
+import Range from "models/Range"
 
 const PAGE_SIZE = 50
 

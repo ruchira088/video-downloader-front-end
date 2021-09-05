@@ -1,9 +1,10 @@
 import React, { useState } from "react"
-import { fromNumberArray, Range, toNumberArray } from "models/Range"
+import Range, { fromNumberArray, toNumberArray } from "models/Range"
 import { Slider } from "@material-ui/core"
 import { Codec } from "models/Codec"
+import RangeDisplay, { PrettyPrint } from "./RangeDisplay"
 
-export function RangeSlider<A>(props: { range: Range<A>, onChange: (value: Range<A>) => void, maxValue: A, codec: Codec<A, number> }): JSX.Element {
+export default function RangeSlider<A>(props: { range: Range<A>, onChange: (value: Range<A>) => void, maxValue: A, codec: Codec<A, number>, printer: PrettyPrint<A> }): JSX.Element {
   const [transientRange, setTransientRange] = useState(props.range)
 
   const toRange = (values: number | number[]): Range<A> =>
@@ -11,11 +12,14 @@ export function RangeSlider<A>(props: { range: Range<A>, onChange: (value: Range
       .toMaybe().getOrElse(props.range)
 
   return (
-    <Slider
-      max={props.codec.encode(props.maxValue)}
-      value={toNumberArray(transientRange, props.maxValue, props.codec)}
-      onChange={(event, value) => setTransientRange(toRange(value))}
-      onChangeCommitted={(event, value) => props.onChange(toRange(value ))}
-    />
+    <div>
+      <Slider
+        max={props.codec.encode(props.maxValue)}
+        value={toNumberArray(transientRange, props.maxValue, props.codec)}
+        onChange={(event, value) => setTransientRange(toRange(value))}
+        onChangeCommitted={(event, value) => props.onChange(toRange(value ))}
+      />
+      <RangeDisplay range={props.range} printer={props.printer}/>
+    </div>
   )
 }
