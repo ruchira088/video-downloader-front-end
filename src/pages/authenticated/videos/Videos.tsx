@@ -41,7 +41,7 @@ export default () => {
   useEffect(() => {
     setLoading(true)
 
-    searchVideos(searchTerm, durationRange, pageNumber, PAGE_SIZE, sortBy)
+    searchVideos(searchTerm, durationRange, sizeRange, videoSites, pageNumber, PAGE_SIZE, sortBy)
       .then(({ results }) => {
           if (results.length < PAGE_SIZE) {
           setHasMore(false)
@@ -50,7 +50,7 @@ export default () => {
         setVideos((videos: List<Video>) => videos.concat(results))
         setLoading(false)
       })
-  }, [pageNumber, sortBy, durationRange, searchTerm, sizeRange])
+  }, [pageNumber, sortBy, durationRange, searchTerm, sizeRange, videoSites])
 
   const fetchVideos = (): void => {
     if (!isLoading) {

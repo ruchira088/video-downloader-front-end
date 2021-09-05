@@ -16,7 +16,7 @@ import { codec, identityCodec } from "models/Codec"
 import { dataSizePrettyPrint, durationPrettyPrint } from "./RangeDisplay"
 
 const MAX_RANGE = duration(75, "minutes")
-const MAX_DATA_SIZE = 4000
+const MAX_DATA_SIZE = 4000000000
 
 export default ({
                   videoTitles,

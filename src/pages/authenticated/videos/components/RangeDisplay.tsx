@@ -1,6 +1,7 @@
 import React from "react"
 import Range from "models/Range"
 import { Duration } from "moment"
+import { humanReadableSize } from "utils/Formatter"
 
 export interface PrettyPrint<A> {
   print(value: A): string
@@ -14,7 +15,7 @@ export const durationPrettyPrint: PrettyPrint<Duration> = {
 
 export const dataSizePrettyPrint: PrettyPrint<number> = {
   print(data: number): string {
-    return `${data/1000} MB`;
+    return humanReadableSize(data);
   }
 }
 
