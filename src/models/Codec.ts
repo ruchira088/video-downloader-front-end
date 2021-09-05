@@ -1,4 +1,28 @@
-import { Either } from "monet"
+import { Either, Right } from "monet"
+
+export type Codec<A, B> = Encoder<A, B> & Decoder<B, A>
+
+export function codec<A, B>(encoder: Encoder<A, B>, decoder: Decoder<B, A>): Codec<A, B> {
+  return {
+    decode(value: B): Either<Error, A> {
+      return decoder.decode(value)
+    },
+    encode(value: A): B {
+      return encoder.encode(value)
+    }
+  }
+}
+
+export function identityCodec<A>(): Codec<A, A> {
+  return {
+    decode<A>(value: A): Either<Error, A> {
+      return Right(value)
+    },
+    encode<A>(value: A): A {
+      return value;
+    }
+  }
+}
 
 export interface Encoder<A, B> {
   encode(value: A): B

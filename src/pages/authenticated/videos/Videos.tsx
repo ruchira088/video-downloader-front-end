@@ -41,15 +41,16 @@ export default () => {
   useEffect(() => {
     setLoading(true)
 
-    searchVideos(searchTerm, durationRange, pageNumber, PAGE_SIZE, sortBy).then(({ results }) => {
-      if (results.length < PAGE_SIZE) {
-        setHasMore(false)
-      }
+    searchVideos(searchTerm, durationRange, pageNumber, PAGE_SIZE, sortBy)
+      .then(({ results }) => {
+          if (results.length < PAGE_SIZE) {
+          setHasMore(false)
+        }
 
-      setVideos((videos: List<Video>) => videos.concat(results))
-      setLoading(false)
-    })
-  }, [pageNumber, sortBy, durationRange, searchTerm])
+        setVideos((videos: List<Video>) => videos.concat(results))
+        setLoading(false)
+      })
+  }, [pageNumber, sortBy, durationRange, searchTerm, sizeRange])
 
   const fetchVideos = (): void => {
     if (!isLoading) {

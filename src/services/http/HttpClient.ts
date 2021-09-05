@@ -14,7 +14,7 @@ axiosClient.interceptors.response.use(
       removeAuthenticationToken()
 
       window.location.reload()
-    } else {
+    } else if (!window.location.pathname.endsWith("server-error")) {
       window.location.replace("/server-error")
     }
 

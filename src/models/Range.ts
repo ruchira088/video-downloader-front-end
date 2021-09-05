@@ -13,6 +13,16 @@ export function toNumberArray<A>(range: Range<A>, maximum: A, encoder: Encoder<A
   ]
 }
 
+export function fromNumberArray<A>(input: number[], decoder: Decoder<number, A>, isMax: (value: A) => boolean): Either<Error, Range<A>> {
+  const [minValue, maxValue] = input
+
+  return decoder.decode(minValue)
+    .flatMap(minA =>
+      decoder.decode(maxValue)
+        .map(maxA => ({min: minA, max: Just(maxA).filter(value => !isMax(value))}))
+    )
+}
+
 export function rangeEncoder<A>(encoder: Encoder<A, string>): Encoder<Range<A>, string> {
   return {
     encode(range: Range<A>): string {
