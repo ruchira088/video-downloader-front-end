@@ -25,10 +25,23 @@ export const searchVideos = (
   pageNumber: number,
   pageSize: number,
   sortBy: SortBy
-): Promise<SearchResult<Video>> =>
-  axiosClient
-    .get(`/videos/search?page-number=${pageNumber}&page-size=${pageSize}&size=${rangeEncoder(simpleStringEncoder()).encode(sizeRange)}&sort-by=${sortBy}&duration=${rangeEncoder(durationRangeStringEncoder).encode(durationRange)}${maybeSearchTerm.fold("")((term) => `&search-term=${term}`)}`)
+): Promise<SearchResult<Video>> => {
+  const pageNumberQuery = "page-number=" + pageNumber
+  const pageSizeQuery = "page-size=" + pageSize
+  const sizeQuery = "size=" + rangeEncoder(simpleStringEncoder()).encode(sizeRange)
+  const durationQuery = "duration=" + rangeEncoder(durationRangeStringEncoder).encode(durationRange)
+  const searchTermQuery = maybeSearchTerm.map(term => "search-term=" + term).getOrElse("")
+  const sitesQuery = maybeVideoSites.map(sites => "site=" + sites.toArray().join(",")).getOrElse("")
+
+  const queryParameters: string =
+    [ pageNumberQuery, pageSizeQuery, sizeQuery, durationQuery, searchTermQuery, sitesQuery]
+      .filter(query => query !== "")
+      .join("&")
+
+  return axiosClient
+    .get("/videos/search?" + queryParameters)
     .then(({ data }) => searchResultParser(parseVideo)(data))
+}
 
 export const fetchVideoById = (videoId: string): Promise<Video> =>
   axiosClient.get(`/videos/id/${videoId}`).then(({ data }) => parseVideo(data))

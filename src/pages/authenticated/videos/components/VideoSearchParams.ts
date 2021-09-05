@@ -11,7 +11,7 @@ export enum VideoSearchParamName {
   SizeRange = "size-range",
   SearchTerm = "search-term",
   SortBy = "sort-by",
-  Sites = "sites"
+  Sites = "site"
 }
 
 export interface VideoSearchParameter<A, B extends VideoSearchParamName> {
