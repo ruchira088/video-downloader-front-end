@@ -4,4 +4,5 @@ export interface VideoServiceSummary {
   videoCount: number
   totalSize: number
   totalDuration: Duration
+  sites: string[]
 }

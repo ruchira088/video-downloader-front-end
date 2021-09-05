@@ -11,6 +11,7 @@ import { List } from "immutable"
 import Range from "models/Range"
 import { maybeString } from "utils/StringUtils"
 import RangeSlider from "./RangeSlider"
+import VideoSitesSelector from "./VideoSitesSelector"
 import { codec, identityCodec } from "models/Codec"
 import { dataSizePrettyPrint, durationPrettyPrint } from "./RangeDisplay"
 
@@ -66,5 +67,6 @@ export default ({
         maxValue={MAX_DATA_SIZE}
         codec={identityCodec()}
         printer={dataSizePrettyPrint} />
+      <VideoSitesSelector videoSites={videoSites} onChange={onVideoSitesChange}/>
     </div>
   )

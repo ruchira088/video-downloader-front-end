@@ -1,11 +1,10 @@
 import FileResource from "./FileResource"
 import { Duration } from "moment"
-import { VideoSite } from "./VideoSite"
 
 export default interface VideoMetadata {
   readonly url: string
   readonly id: string
-  readonly videoSite: VideoSite
+  readonly videoSite: string
   readonly title: string
   readonly duration: Duration
   readonly size: number
