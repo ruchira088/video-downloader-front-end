@@ -28,13 +28,14 @@ export const searchVideos = (
 ): Promise<SearchResult<Video>> => {
   const pageNumberQuery = "page-number=" + pageNumber
   const pageSizeQuery = "page-size=" + pageSize
+  const sortByQuery = "sort-by=" + sortBy
   const sizeQuery = "size=" + rangeEncoder(simpleStringEncoder()).encode(sizeRange)
   const durationQuery = "duration=" + rangeEncoder(durationRangeStringEncoder).encode(durationRange)
   const searchTermQuery = maybeSearchTerm.map(term => "search-term=" + term).getOrElse("")
   const sitesQuery = maybeVideoSites.map(sites => "site=" + sites.toArray().join(",")).getOrElse("")
 
   const queryParameters: string =
-    [ pageNumberQuery, pageSizeQuery, sizeQuery, durationQuery, searchTermQuery, sitesQuery]
+    [ pageNumberQuery, pageSizeQuery, sortByQuery, sizeQuery, durationQuery, searchTermQuery, sitesQuery]
       .filter(query => query !== "")
       .join("&")
 
