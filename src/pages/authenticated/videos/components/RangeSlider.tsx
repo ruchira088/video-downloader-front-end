@@ -19,7 +19,7 @@ export default function RangeSlider<A>(props: { range: Range<A>, onChange: (valu
         onChange={(event, value) => setTransientRange(toRange(value))}
         onChangeCommitted={(event, value) => props.onChange(toRange(value ))}
       />
-      <RangeDisplay range={props.range} printer={props.printer}/>
+      <RangeDisplay range={transientRange} printer={props.printer}/>
     </div>
   )
 }
