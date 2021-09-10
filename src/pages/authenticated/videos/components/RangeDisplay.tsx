@@ -19,9 +19,9 @@ export const dataSizePrettyPrint: PrettyPrint<number> = {
   }
 }
 
-export default function<A>(props: {range: Range<A>, printer: PrettyPrint<A>}): JSX.Element {
+export default function<A>(props: {range: Range<A>, printer: PrettyPrint<A>, className?: string}): JSX.Element {
   return (
-    <div>
+    <div className={props.className}>
       <span>{props.printer.print(props.range.min)}</span>
       <span> - </span>
       <span>{props.range.max.map(props.printer.print).getOrElse("Max")}</span>

@@ -1,0 +1,18 @@
+.rangeSlider {
+}
+
+.description {
+    text-align: left;
+}
+
+.title {
+    font-weight: bold;
+}
+
+.rangeDisplay {
+    text-align: left;
+}
+
+.slider {
+    display: inline-block;
+}

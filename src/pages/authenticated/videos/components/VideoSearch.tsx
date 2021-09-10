@@ -45,28 +45,35 @@ export default ({
 }) =>
   (
     <div className={styles.videoFilter}>
-      <Autocomplete
-        freeSolo
-        inputValue={searchTerm.getOrElse("")}
-        onInputChange={(changeEvent, value) =>
-          Maybe.fromNull(changeEvent).forEach(() => onSearchTermChange(maybeString(value)))
-        }
-        options={videoTitles.toArray()}
-        renderInput={(params) => <TextField {...params} />}
-      />
-      <SortBySelection value={sortBy} onChange={onSortByChange} />
-      <RangeSlider
-        range={durationRange}
-        onChange={onDurationRangeChange}
-        maxValue={MAX_RANGE}
-        codec={codec(durationRangeNumberEncoder, durationRangeNumberDecoder)}
-        printer={durationPrettyPrint} />
-      <RangeSlider
-        range={sizeRange}
-        onChange={onSizeRangeChange}
-        maxValue={MAX_DATA_SIZE}
-        codec={identityCodec()}
-        printer={dataSizePrettyPrint} />
-      <VideoSitesSelector videoSites={videoSites} onChange={onVideoSitesChange}/>
+      <div className={styles.left}>
+        <Autocomplete
+          freeSolo
+          inputValue={searchTerm.getOrElse("")}
+          onInputChange={(changeEvent, value) =>
+            Maybe.fromNull(changeEvent).forEach(() => onSearchTermChange(maybeString(value)))
+          }
+          options={videoTitles.toArray()}
+          renderInput={(params) => <TextField {...params} />}
+        />
+        <SortBySelection value={sortBy} onChange={onSortByChange} />
+        <VideoSitesSelector videoSites={videoSites} onChange={onVideoSitesChange}/>
+      </div>
+
+      <div className={styles.right}>
+        <RangeSlider
+          title="Duration"
+          range={durationRange}
+          onChange={onDurationRangeChange}
+          maxValue={MAX_RANGE}
+          codec={codec(durationRangeNumberEncoder, durationRangeNumberDecoder)}
+          printer={durationPrettyPrint} />
+        <RangeSlider
+          title="Size"
+          range={sizeRange}
+          onChange={onSizeRangeChange}
+          maxValue={MAX_DATA_SIZE}
+          codec={identityCodec()}
+          printer={dataSizePrettyPrint} />
+      </div>
     </div>
   )
