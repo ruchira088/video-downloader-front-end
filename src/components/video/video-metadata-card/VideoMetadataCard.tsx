@@ -3,7 +3,7 @@ import VideoMetadata from "models/VideoMetadata"
 import ApplicationContext from "context/ApplicationContext"
 import { thumbnailUrl } from "services/asset/AssetService"
 import translate from "services/translation/TranslationService"
-import { humanReadableDuration, humanReadableSize } from "utils/Formatter"
+import { humanReadableDuration, humanReadableSize, shortHumanReadableDuration } from "utils/Formatter"
 import styles from "./VideoMetadataCard.module.css"
 import { Maybe, None, Some } from "monet"
 import { Snapshot } from "models/Snapshot"
@@ -71,10 +71,10 @@ export default (metadata: VideoMetadata) => {
               alt="video thumbnail"
               className={styles.thumbnail}
             />
+            <div className={styles.duration}>{shortHumanReadableDuration(metadata.duration)}</div>
           </div>
           <div>
             <div>{translate(metadata.title, safeMode)}</div>
-            <div>{humanReadableDuration(metadata.duration)}</div>
             <div>{humanReadableSize(metadata.size)}</div>
           </div>
         </div>

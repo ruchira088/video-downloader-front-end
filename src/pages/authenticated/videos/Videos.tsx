@@ -93,7 +93,7 @@ export default () => {
         onVideoSitesChange={onChangeSearchParams(VideoSitesSearchParam, setVideoSites)}
       />
       <InfiniteScroll loadMore={fetchVideos} hasMore={hasMore} threshold={500}>
-        <ImageList cols={4} rowHeight="auto">
+        <ImageList cols={5} rowHeight="auto">
           {videos.map((video, index) => (
             <ImageListItem cols={1} key={index}>
               <Link to={`/video/${video.videoMetadata.id}`} key={index}>

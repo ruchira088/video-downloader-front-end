@@ -1,6 +1,6 @@
 .thumbnail {
   max-width: 100%;
-  min-height: 100%;
+  max-height: 10em;
   border-radius: 0.2em;
 }
 
@@ -8,6 +8,17 @@
   max-height: 80%;
   max-width: 80%;
   margin: auto;
+}
+
+.duration {
+  text-align: start;
+  position: absolute;
+  margin-top: -2em;
+  margin-left: 0.4em;
+  background: black;
+  border-radius: 0.1em;
+  padding: 0.1em;
+  color: white;
 }
 
 .videoMetadataCard {

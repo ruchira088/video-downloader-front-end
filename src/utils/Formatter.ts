@@ -53,5 +53,15 @@ export const humanReadableDuration = (duration: Duration): string =>
     )
     .results.join(" ")
 
-export const shortHumanReadableDuration = (duration: Duration) =>
-  (Math.floor(duration.asHours()) >= 1 ? `${duration.hours()}:` : "") + `${duration.minutes()}:${duration.seconds()}`
+export const shortHumanReadableDuration = (duration: Duration): string => {
+  const hasHours = duration.asHours() >= 1;
+
+  const result =
+    (hasHours ? `${duration.hours()}:` : "") +
+    (hasHours ? formatTwoDigits(duration.minutes()) : duration.minutes()) +
+    ":" + formatTwoDigits(duration.seconds())
+
+  return result
+}
+
+const formatTwoDigits = (number: number): string => number < 10 ? `0${number}` : number.toString()
