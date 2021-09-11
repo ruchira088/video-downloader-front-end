@@ -71,12 +71,10 @@ export default (metadata: VideoMetadata) => {
               alt="video thumbnail"
               className={styles.thumbnail}
             />
+            <div className={styles.size}>{humanReadableSize(metadata.size)}</div>
             <div className={styles.duration}>{shortHumanReadableDuration(metadata.duration)}</div>
           </div>
-          <div>
-            <div>{translate(metadata.title, safeMode)}</div>
-            <div>{humanReadableSize(metadata.size)}</div>
-          </div>
+          <div>{translate(metadata.title, safeMode)}</div>
         </div>
       )}
     </ApplicationContext.Consumer>

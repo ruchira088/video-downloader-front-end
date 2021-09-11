@@ -13,6 +13,17 @@
 .duration {
   text-align: start;
   position: absolute;
+  margin-top: -3.5em;
+  margin-left: 0.4em;
+  background: black;
+  border-radius: 0.1em;
+  padding: 0.1em;
+  color: white;
+}
+
+.size {
+  text-align: start;
+  position: absolute;
   margin-top: -2em;
   margin-left: 0.4em;
   background: black;
