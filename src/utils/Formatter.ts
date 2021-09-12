@@ -26,12 +26,12 @@ const GIGA_BYTE: ByteSize = {
   suffix: "GB",
 }
 
-export const humanReadableSize = (size: number): string => {
+export const humanReadableSize = (size: number, alwaysShowDecimals = false): string => {
   const byteSize = Maybe.fromUndefined(
     [GIGA_BYTE, MEGA_BYTE, KILO_BYTE].find((byteSize) => byteSize.floor < size)
   ).getOrElse(BYTE)
 
-  return `${(size / byteSize.floor).toFixed(byteSize.suffix === GIGA_BYTE.suffix ? 2 : 0)}${byteSize.suffix}`
+  return `${(size / byteSize.floor).toFixed((byteSize.suffix === GIGA_BYTE.suffix || alwaysShowDecimals) ? 2 : 0)}${byteSize.suffix}`
 }
 
 export const humanReadableDuration = (duration: Duration): string =>

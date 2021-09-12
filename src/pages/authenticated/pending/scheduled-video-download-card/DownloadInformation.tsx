@@ -8,7 +8,7 @@ export default (scheduledVideoDownload: ScheduledVideoDownload & Downloadable) =
   scheduledVideoDownload.downloadSpeed
     .map((speed) => (
       <div>
-        <div>{humanReadableSize(speed)}</div>
+        <div>{humanReadableSize(speed, true)}</div>
         <div>
           {remainingDuration(scheduledVideoDownload.videoMetadata.size, scheduledVideoDownload.downloadedBytes, speed)}
         </div>

@@ -7,21 +7,30 @@ import VideoMetadata from "models/VideoMetadata"
 
 export default ({ url }: { url: string }) => {
   const [showPreview, setShowPreview] = useState(false)
-  const [videoMetadata, setVideoMetadata] = useState<Maybe<VideoMetadata>>(None())
+  const [maybeVideoMetadata, setMaybeVideoMetadata] = useState<Maybe<VideoMetadata>>(None())
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (url.trim().length !== 0) {
         setShowPreview(true)
-        metadata(url).then((result) => setVideoMetadata(Maybe.fromNull(result)))
+        metadata(url).then((result) => setMaybeVideoMetadata(Maybe.fromNull(result)))
       }
     }, 500)
 
     setShowPreview(false)
-    setVideoMetadata(None())
+    setMaybeVideoMetadata(None())
 
     return () => clearTimeout(timeoutId)
   }, [url])
 
-  return <div className="preview">{showPreview && loadableComponent(VideoMetadataCard, videoMetadata)}</div>
+  return (
+    <div className="preview">
+      { showPreview &&
+        loadableComponent(
+          VideoMetadataCard,
+          maybeVideoMetadata.map(videoMetadata => ({...videoMetadata, disableSnapshots: true}))
+        )
+      }
+    </div>
+  )
 }

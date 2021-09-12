@@ -9,51 +9,54 @@ import { Maybe, None, Some } from "monet"
 import { Snapshot } from "models/Snapshot"
 import { fetchVideoSnapshots } from "services/video/VideoService"
 
-export default (metadata: VideoMetadata) => {
-  const [snapshots, setSnapshots] = useState<Maybe<Snapshot[]>>(None())
-  const [intervalTimeout, setIntervalTimeout] = useState<Maybe<NodeJS.Timeout>>(None())
+export default (metadata: VideoMetadata & { disableSnapshots?: boolean }) => {
+  const [maybeSnapshots, setMaybeSnapshots] = useState<Maybe<Snapshot[]>>(None())
+  const [maybeIntervalTimeout, setMaybeIntervalTimeout] = useState<Maybe<NodeJS.Timeout>>(None())
   const [index, setIndex] = useState<number>(0)
 
   const initializeSnapshots = (): Promise<Snapshot[]> =>
-    snapshots
+    maybeSnapshots
       .map((values) => Promise.resolve(values))
       .orLazy(() =>
         fetchVideoSnapshots(metadata.id).then((values) => {
-          setSnapshots(Some(values))
+          setMaybeSnapshots(Some(values))
           return values
         })
       )
 
-  const onMouseOver = () =>
-    setIntervalTimeout(
-      Some(
-        setInterval(() => {
-          setIndex((index) => index + 1)
-        }, 400)
+  const onMouseOver = () => {
+    if (!Maybe.fromNull(metadata.disableSnapshots).getOrElse(false)) {
+      setMaybeIntervalTimeout(
+        Some(
+          setInterval(() => {
+            setIndex((index) => index + 1)
+          }, 400)
+        )
       )
-    )
+    }
+  }
 
   const onMouseLeave = () => {
-    intervalTimeout.forEach(clearInterval)
-    setIntervalTimeout(None())
+    maybeIntervalTimeout.forEach(clearInterval)
+    setMaybeIntervalTimeout(None())
     setIndex(0)
   }
 
   useEffect(() => {
     return () => {
-      setSnapshots(None())
-      intervalTimeout.forEach(clearInterval)
+      setMaybeSnapshots(None())
+      maybeIntervalTimeout.forEach(clearInterval)
     }
   }, [])
 
   useEffect(() => {
-    intervalTimeout.forEach(initializeSnapshots)
-  }, [intervalTimeout])
+    maybeIntervalTimeout.forEach(initializeSnapshots)
+  }, [maybeIntervalTimeout])
 
   const thumbnail = (safeMode: boolean) =>
     thumbnailUrl(
-      intervalTimeout
-        .flatMap(() => snapshots)
+      maybeIntervalTimeout
+        .flatMap(() => maybeSnapshots)
         .filter((values) => values.length > 0)
         .fold(metadata.thumbnail)((values) => values.map((snapshot) => snapshot.fileResource)[index % values.length]),
       safeMode
