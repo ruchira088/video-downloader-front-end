@@ -41,14 +41,20 @@ export default () => {
   useEffect(() => {
     setLoading(true)
 
+    const startUrl = location.href
+
     searchVideos(searchTerm, durationRange, sizeRange, videoSites, pageNumber, PAGE_SIZE, sortBy)
       .then(({ results }) => {
           if (results.length < PAGE_SIZE) {
           setHasMore(false)
         }
 
-        setVideos((videos: List<Video>) => videos.concat(results))
-        setLoading(false)
+          const endUrl = location.href
+
+          if (endUrl === startUrl) {
+            setVideos((videos: List<Video>) => videos.concat(results))
+            setLoading(false)
+          }
       })
   }, [pageNumber, sortBy, durationRange, searchTerm, sizeRange, videoSites])
 
@@ -91,6 +97,7 @@ export default () => {
         onSizeRangeChange={onChangeSearchParams(SizeRangeSearchParam, setSizeRange)}
         videoSites={videoSites}
         onVideoSitesChange={onChangeSearchParams(VideoSitesSearchParam, setVideoSites)}
+        isLoading={isLoading}
       />
       <InfiniteScroll loadMore={fetchVideos} hasMore={hasMore} threshold={500}>
         <ImageList cols={5} rowHeight="auto">

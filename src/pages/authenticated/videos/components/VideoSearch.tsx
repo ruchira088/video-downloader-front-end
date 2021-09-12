@@ -16,7 +16,7 @@ import { codec, identityCodec } from "models/Codec"
 import { dataSizePrettyPrint, durationPrettyPrint } from "./RangeDisplay"
 
 const MAX_RANGE = duration(75, "minutes")
-const MAX_DATA_SIZE = 4000000000
+const MAX_DATA_SIZE = 2000000000
 
 export default ({
                   videoTitles,
@@ -29,7 +29,8 @@ export default ({
                   sizeRange,
                   onSizeRangeChange,
                   videoSites,
-                  onVideoSitesChange
+                  onVideoSitesChange,
+                  isLoading
                 }: {
   videoTitles: List<string>
   searchTerm: Maybe<string>
@@ -41,7 +42,8 @@ export default ({
   sizeRange: Range<number>
   onSizeRangeChange: (sizeRange: Range<number>) => void
   videoSites: Maybe<NonEmptyList<string>>
-  onVideoSitesChange: (videoSites: Maybe<NonEmptyList<string>>) => void
+  onVideoSitesChange: (videoSites: Maybe<NonEmptyList<string>>) => void,
+  isLoading: boolean
 }) =>
   (
     <div className={styles.videoFilter}>
@@ -54,9 +56,10 @@ export default ({
           }
           options={videoTitles.toArray()}
           renderInput={(params) => <TextField {...params} />}
+          loading={isLoading}
         />
         <SortBySelection value={sortBy} onChange={onSortByChange} />
-        <VideoSitesSelector videoSites={videoSites} onChange={onVideoSitesChange}/>
+        <VideoSitesSelector videoSites={videoSites} onChange={onVideoSitesChange} />
       </div>
 
       <div className={styles.right}>
