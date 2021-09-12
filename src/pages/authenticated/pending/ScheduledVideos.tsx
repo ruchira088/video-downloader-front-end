@@ -14,7 +14,7 @@ import { DownloadProgress } from "models/DownloadProgress"
 import { parseDownloadProgress } from "utils/ResponseParser"
 import { SortBy } from "models/SortBy"
 
-const DOWNLOAD_HISTORY_SIZE = 20
+const DOWNLOAD_HISTORY_SIZE = 10
 
 export type BytesPerSecond = number
 
@@ -66,14 +66,17 @@ export default () => {
           setScheduledVideoDownloads((scheduledVideoDownloads) => {
             const downloadHistory = Maybe.fromFalsy(scheduledVideoDownloads.get(downloadProgress.videoId))
               .map((existing) => {
-                const currentRate = existing.lastUpdatedAt.map(
-                  (lastUpdatedAt) =>
-                    (1000 * (downloadProgress.bytes - existing.downloadedBytes)) /
-                    (downloadProgress.updatedAt.valueOf() - lastUpdatedAt.valueOf())
-                )
+                const maybeCurrentRate =
+                  existing.lastUpdatedAt
+                    .filter(lastUpdatedAt => downloadProgress.updatedAt.valueOf() > lastUpdatedAt.valueOf())
+                    .map(
+                      (lastUpdatedAt) =>
+                        (1000 * Math.max(downloadProgress.bytes - existing.downloadedBytes, 0)) /
+                        (downloadProgress.updatedAt.valueOf() - lastUpdatedAt.valueOf())
+                  )
 
                 return existing.downloadHistory
-                  .concat(currentRate.fold<BytesPerSecond[]>([])((value) => [value]))
+                  .concat(maybeCurrentRate.filter(rate => rate !== 0).fold<BytesPerSecond[]>([])((value) => [value]))
                   .slice(-1 * DOWNLOAD_HISTORY_SIZE)
               })
               .getOrElse([])
@@ -104,10 +107,12 @@ export default () => {
 
   return (
     <>
-      {scheduledVideoDownloads
-        .sortBy((value) => -1 * value.scheduledAt.unix())
-        .map((scheduledVideoDownload, index) => <ScheduledVideoDownloadCard {...scheduledVideoDownload} key={index} />)
-        .toList()}
+      {
+        scheduledVideoDownloads
+          .sortBy((value) => -1 * value.scheduledAt.unix())
+          .map((scheduledVideoDownload, index) => <ScheduledVideoDownloadCard {...scheduledVideoDownload} key={index} />)
+          .toList()
+      }
     </>
   )
 }
