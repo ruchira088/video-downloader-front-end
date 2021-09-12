@@ -1,19 +1,20 @@
 export enum SchedulingStatus {
   Active = "Active",
   Completed = "Completed",
+  Downloaded = "Downloads",
+  Acquired = "Acquired",
+  Stale = "Stale",
   Error = "Error",
+  WorkersPaused = "WorkersPaused",
   Paused = "Paused",
-  Queued = "Queued",
-  SchedulerPaused = "SchedulerPaused",
+  Queued = "Queued"
 }
 
 export const TRANSITION_STATES: { [key: string]: SchedulingStatus[] } = {
   [SchedulingStatus.Active]: [SchedulingStatus.Paused],
-  [SchedulingStatus.Completed]: [],
   [SchedulingStatus.Error]: [SchedulingStatus.Queued],
   [SchedulingStatus.Paused]: [SchedulingStatus.Queued],
   [SchedulingStatus.Queued]: [SchedulingStatus.Paused],
-  [SchedulingStatus.SchedulerPaused]: [SchedulingStatus.Paused],
 }
 
 export const COMMAND_NAMES: { [key: string]: string } = {

@@ -12,17 +12,19 @@ import VideoMetadataCard from "components/video/video-metadata-card/VideoMetadat
 
 export default (scheduledVideoDownload: ScheduledVideoDownload & Downloadable) => (
   <div className={styles.card}>
-    <VideoMetadataCard {...scheduledVideoDownload.videoMetadata} disableSnapshots={true}/>
-    {scheduledVideoDownload.videoMetadata.size > scheduledVideoDownload.downloadedBytes && (
-      <div>
-        <ProgressBar
-          completeValue={scheduledVideoDownload.videoMetadata.size}
-          currentValue={scheduledVideoDownload.downloadedBytes}
-        />
-        <DownloadInformation {...scheduledVideoDownload} />
-        <Actions {...scheduledVideoDownload} />
-      </div>
-    )}
+    <VideoMetadataCard {...scheduledVideoDownload.videoMetadata} disableSnapshots={true} />
+    {
+      scheduledVideoDownload.videoMetadata.size > scheduledVideoDownload.downloadedBytes && (
+        <div>
+          <ProgressBar
+            completeValue={scheduledVideoDownload.videoMetadata.size}
+            currentValue={scheduledVideoDownload.downloadedBytes}
+          />
+          <DownloadInformation {...scheduledVideoDownload} />
+          <Actions {...scheduledVideoDownload} />
+        </div>
+      )
+    }
   </div>
 )
 
@@ -31,16 +33,18 @@ const Actions = (scheduleVideoDownload: ScheduledVideoDownload) => {
 
   return (
     <div>
-      {(TRANSITION_STATES[status] as SchedulingStatus[]).map((next, index) => (
-        <Button
-          key={index}
-          onClick={() =>
-            updateSchedulingStatus(scheduleVideoDownload.videoMetadata.id, next).then((value) => setStatus(value.status))
-          }
-        >
-          {Maybe.fromNull(COMMAND_NAMES[next]).getOrElse(next)}
-        </Button>
-      ))}
+      {
+        Maybe.fromNull(TRANSITION_STATES[status] as SchedulingStatus[]).getOrElse([])
+          .map((next, index) => (
+            <Button
+              key={index}
+              onClick={() =>
+                updateSchedulingStatus(scheduleVideoDownload.videoMetadata.id, next).then((value) => setStatus(value.status))
+              }
+            >
+              {Maybe.fromNull(COMMAND_NAMES[next]).getOrElse(next)}
+            </Button>
+          ))}
     </div>
   )
 }
