@@ -2,6 +2,8 @@ import axios, { AxiosInstance } from "axios"
 import { configuration } from "services/Configuration"
 import { removeAuthenticationToken } from "../authentication/AuthenticationService"
 
+export const CANCEL = "cancel"
+
 export const axiosClient: AxiosInstance = axios.create({
   baseURL: configuration.apiService,
   withCredentials: true,
@@ -14,7 +16,7 @@ axiosClient.interceptors.response.use(
       removeAuthenticationToken()
 
       window.location.reload()
-    } else if (!window.location.pathname.endsWith("server-error")) {
+    } else if (error.message !== CANCEL && !window.location.pathname.endsWith("server-error")) {
       window.location.replace("/server-error")
     }
 

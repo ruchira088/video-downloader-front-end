@@ -16,6 +16,7 @@ import { VideoServiceSummary } from "models/VideoServiceSummary"
 import { DurationRange, durationRangeStringEncoder } from "models/DurationRange"
 import Range, { rangeEncoder } from "models/Range"
 import { simpleStringEncoder } from "models/Codec"
+import { CancelToken, CancelTokenSource } from "axios"
 
 export const searchVideos = (
   maybeSearchTerm: Maybe<string>,
@@ -24,7 +25,8 @@ export const searchVideos = (
   maybeVideoSites: Maybe<NonEmptyList<string>>,
   pageNumber: number,
   pageSize: number,
-  sortBy: SortBy
+  sortBy: SortBy,
+  cancelTokenSource: CancelTokenSource
 ): Promise<SearchResult<Video>> => {
   const pageNumberQuery = "page-number=" + pageNumber
   const pageSizeQuery = "page-size=" + pageSize
@@ -40,7 +42,7 @@ export const searchVideos = (
       .join("&")
 
   return axiosClient
-    .get("/videos/search?" + queryParameters)
+    .get("/videos/search?" + queryParameters, { cancelToken: cancelTokenSource.token })
     .then(({ data }) => searchResultParser(parseVideo)(data))
 }
 

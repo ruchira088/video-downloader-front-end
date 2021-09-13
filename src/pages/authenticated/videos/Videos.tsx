@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { ImageList, ImageListItem } from "@material-ui/core"
 import { Link, useHistory, useLocation } from "react-router-dom"
 import { Maybe, NonEmptyList } from "monet"
 import { List } from "immutable"
+import Axios, { CancelToken, CancelTokenSource } from "axios"
 import { searchVideos } from "services/video/VideoService"
 import InfiniteScroll from "react-infinite-scroller"
 import VideoCard from "components/video/video-card/VideoCard"
@@ -17,11 +18,13 @@ import {
   SizeRangeSearchParam,
   SortBySearchParam,
   VideoSearchParameter,
-  VideoSearchParamName, VideoSitesSearchParam
+  VideoSearchParamName,
+  VideoSitesSearchParam
 } from "./components/VideoSearchParams"
 import Range from "models/Range"
+import { CANCEL } from "../../../services/http/HttpClient"
 
-const PAGE_SIZE = 50
+const PAGE_SIZE = 10
 
 export default () => {
   const queryParams = new URLSearchParams(useLocation().search)
@@ -35,31 +38,29 @@ export default () => {
   const [isLoading, setLoading] = useState<boolean>(false)
   const [durationRange, setDurationRange] = useState<DurationRange>(parseSearchParam(queryParams, DurationRangeSearchParam))
   const [sizeRange, setSizeRange] = useState<Range<number>>(parseSearchParam(queryParams, SizeRangeSearchParam))
+  const [cancelTokenSource, setCancelTokenSource] = useState<CancelTokenSource>(Axios.CancelToken.source())
 
   const history = useHistory()
 
-  useEffect(() => {
-    setLoading(true)
-
-    const startUrl = location.href
-
-    searchVideos(searchTerm, durationRange, sizeRange, videoSites, pageNumber, PAGE_SIZE, sortBy)
-      .then(({ results }) => {
-          if (results.length < PAGE_SIZE) {
-          setHasMore(false)
-        }
-
-          const endUrl = location.href
-
-          if (endUrl === startUrl) {
-            setVideos((videos: List<Video>) => videos.concat(results))
-            setLoading(false)
-          }
-      })
-  }, [pageNumber, sortBy, durationRange, searchTerm, sizeRange, videoSites])
-
-  const fetchVideos = (): void => {
+  const fetchVideos = () => {
     if (!isLoading) {
+      setLoading(true)
+
+      searchVideos(searchTerm, durationRange, sizeRange, videoSites, pageNumber, PAGE_SIZE, sortBy, cancelTokenSource)
+        .then(({ results }) => {
+          if (results.length < PAGE_SIZE) {
+            setHasMore(false)
+          }
+
+          setVideos((videos: List<Video>) => videos.concat(results))
+          setLoading(false)
+        })
+    }
+  }
+
+  const incrementPageNumber = (): void => {
+    if (!isLoading) {
+      fetchVideos()
       setPageNumber((pageNumber: number) => pageNumber + 1)
     }
   }
@@ -75,6 +76,9 @@ export default () => {
       setHasMore(true)
       setVideos(List())
       updateQueryParameter(name, encoder, value)
+      cancelTokenSource.cancel(CANCEL)
+      setLoading(false)
+      setCancelTokenSource(Axios.CancelToken.source())
     }
   }
 
@@ -99,7 +103,7 @@ export default () => {
         onVideoSitesChange={onChangeSearchParams(VideoSitesSearchParam, setVideoSites)}
         isLoading={isLoading}
       />
-      <InfiniteScroll loadMore={fetchVideos} hasMore={hasMore} threshold={500}>
+      <InfiniteScroll loadMore={incrementPageNumber} hasMore={hasMore} threshold={500}>
         <ImageList cols={5} rowHeight="auto">
           {videos.map((video, index) => (
             <ImageListItem cols={1} key={index}>
