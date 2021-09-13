@@ -6,7 +6,7 @@ import { parseScheduledVideoDownload } from "utils/ResponseParser"
 import { axiosClient } from "services/http/HttpClient"
 import { SortBy } from "models/SortBy"
 import { SchedulingStatus } from "models/SchedulingStatus"
-import { WorkerStatus } from "../../models/WorkerStatus"
+import { WorkerStatus } from "models/WorkerStatus"
 
 export const scheduledVideoDownloadStream = (): EventSource =>
   new EventSource(`${configuration.apiService}/schedule/active`, {
@@ -41,8 +41,14 @@ export const fetchScheduledVideos = (
 ): Promise<ScheduledVideoDownload[]> =>
   axiosClient
     .get(
-      `/schedule/search?page-size=${pageSize}&page-number=${pageNumber}&sort-by=${sortBy}${searchTerm.fold(String())(
-        (term) => `&search-term=${term}`
-      )}`
+      "/schedule/search?" +
+        [
+          `status=${[SchedulingStatus.Error, SchedulingStatus.Queued, SchedulingStatus.Paused, SchedulingStatus.WorkersPaused].join(",")}`,
+          `page-size=${pageSize}`,
+          `page-number=${pageNumber}`,
+          `sort-by=${sortBy}`,
+          `search-term=${searchTerm.getOrElse("")}`
+        ]
+          .join("&")
     )
     .then(({ data }) => data.results.map(parseScheduledVideoDownload))

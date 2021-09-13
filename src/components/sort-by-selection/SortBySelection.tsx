@@ -1,18 +1,18 @@
 import React from "react"
 import { SortBy } from "models/SortBy"
-import NativeSelect from "@material-ui/core/NativeSelect"
+import { MenuItem, Select } from "@material-ui/core"
 
-export default ({ value, onChange }: { value: SortBy; onChange: (value: SortBy) => void }) => (
-  <div>
-    <NativeSelect
+export default ({ value, onChange, className }: { value: SortBy; onChange: (value: SortBy) => void, className?: string }) => (
+  <div className={className}>
+    <Select
       value={value}
-      onChange={(event: React.ChangeEvent<HTMLSelectElement>) => onChange(event.target.value as SortBy)}
+      onChange={(event: React.ChangeEvent<{ name?: string, value: unknown}>) => onChange(event.target.value as SortBy)}
     >
       {Object.keys(SortBy).map((key) => (
-        <option value={(SortBy as { [key: string]: string })[key]} key={key}>
-          {key}
-        </option>
+        <MenuItem key={key} value={(SortBy as { [key: string]: string })[key]}>
+          { key }
+        </MenuItem>
       ))}
-    </NativeSelect>
+    </Select>
   </div>
 )

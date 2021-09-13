@@ -55,11 +55,14 @@ export default ({
             Maybe.fromNull(changeEvent).forEach(() => onSearchTermChange(maybeString(value)))
           }
           options={videoTitles.toArray()}
-          renderInput={(params) => <TextField {...params} />}
+          renderInput={(params) => <TextField {...params} label="Search"/>}
           loading={isLoading}
+          className={styles.search}
         />
-        <SortBySelection value={sortBy} onChange={onSortByChange} />
-        <VideoSitesSelector videoSites={videoSites} onChange={onVideoSitesChange} />
+        <div className={styles.selectors}>
+          <VideoSitesSelector videoSites={videoSites} onChange={onVideoSitesChange} className={styles.videoSiteSelector}/>
+          <SortBySelection value={sortBy} onChange={onSortByChange} className={styles.sortBy}/>
+        </div>
       </div>
 
       <div className={styles.right}>
