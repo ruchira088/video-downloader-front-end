@@ -16,7 +16,7 @@ import { VideoServiceSummary } from "models/VideoServiceSummary"
 import { DurationRange, durationRangeStringEncoder } from "models/DurationRange"
 import Range, { rangeEncoder } from "models/Range"
 import { simpleStringEncoder } from "models/Codec"
-import { CancelToken, CancelTokenSource } from "axios"
+import { CancelTokenSource } from "axios"
 
 export const searchVideos = (
   maybeSearchTerm: Maybe<string>,

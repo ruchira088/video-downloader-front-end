@@ -3,7 +3,7 @@ import { ImageList, ImageListItem } from "@material-ui/core"
 import { Link, useHistory, useLocation } from "react-router-dom"
 import { Maybe, NonEmptyList } from "monet"
 import { List } from "immutable"
-import Axios, { CancelToken, CancelTokenSource } from "axios"
+import Axios, { CancelTokenSource } from "axios"
 import { searchVideos } from "services/video/VideoService"
 import InfiniteScroll from "react-infinite-scroller"
 import VideoCard from "components/video/video-card/VideoCard"
@@ -22,9 +22,9 @@ import {
   VideoSitesSearchParam
 } from "./components/VideoSearchParams"
 import Range from "models/Range"
-import { CANCEL } from "../../../services/http/HttpClient"
+import { CANCEL } from "services/http/HttpClient"
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 50
 
 export default () => {
   const queryParams = new URLSearchParams(useLocation().search)
