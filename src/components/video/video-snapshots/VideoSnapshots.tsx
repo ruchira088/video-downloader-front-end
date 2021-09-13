@@ -14,7 +14,7 @@ const VideoSnapshot = (snapshot: Snapshot) => (
         to={`/video/${snapshot.videoId}?timestamp=${Math.round(snapshot.videoTimestamp.asSeconds())}`}
         className={styles.videoSnapshot}
       >
-        {shortHumanReadableDuration(snapshot.videoTimestamp)}
+        <div className={styles.timestamp}>{shortHumanReadableDuration(snapshot.videoTimestamp)}</div>
         <img
           src={imageUrl(snapshot.fileResource.id, safeMode)}
           alt="video snapshot"

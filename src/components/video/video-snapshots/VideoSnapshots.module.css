@@ -1,6 +1,17 @@
 .videoSnapshot {
+  position: relative;
 }
 
 .videoSnapshotImage {
   max-width: 100%;
+}
+
+.timestamp {
+  position: absolute;
+  background: black;
+  border-radius: 0.1em;
+  padding: 0.1em;
+  color: white;
+  right: 0;
+  margin: 0.4em;
 }
