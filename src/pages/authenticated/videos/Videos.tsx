@@ -42,7 +42,7 @@ export default () => {
 
   const history = useHistory()
 
-  const fetchVideos = () => {
+  const loadMoreVideos = (): void => {
     if (!isLoading) {
       setLoading(true)
 
@@ -53,15 +53,12 @@ export default () => {
           }
 
           setVideos((videos: List<Video>) => videos.concat(results))
+        })
+        .finally(() => {
           setLoading(false)
         })
-    }
-  }
 
-  const incrementPageNumber = (): void => {
-    if (!isLoading) {
-      fetchVideos()
-      setPageNumber((pageNumber: number) => pageNumber + 1)
+      setPageNumber(pageNumber => pageNumber + 1)
     }
   }
 
@@ -71,14 +68,14 @@ export default () => {
 
   function onChange<A>(name: string, encoder: (value: A) => string, f: (value: A) => void): (value: A) => void {
     return (value: A) => {
-      f(value)
-      setPageNumber(0)
-      setHasMore(true)
-      setVideos(List())
-      updateQueryParameter(name, encoder, value)
       cancelTokenSource.cancel(CANCEL)
-      setLoading(false)
       setCancelTokenSource(Axios.CancelToken.source())
+      setPageNumber(0)
+      f(value)
+      updateQueryParameter(name, encoder, value)
+      setVideos(List())
+      setHasMore(true)
+      setLoading(false)
     }
   }
 
@@ -103,7 +100,7 @@ export default () => {
         onVideoSitesChange={onChangeSearchParams(VideoSitesSearchParam, setVideoSites)}
         isLoading={isLoading}
       />
-      <InfiniteScroll loadMore={incrementPageNumber} hasMore={hasMore} threshold={500}>
+      <InfiniteScroll loadMore={loadMoreVideos} hasMore={hasMore} threshold={500}>
         <ImageList cols={5} rowHeight="auto">
           {videos.map((video, index) => (
             <ImageListItem cols={1} key={index}>
