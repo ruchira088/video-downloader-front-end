@@ -43,7 +43,13 @@ export const fetchScheduledVideos = (
     .get(
       "/schedule/search?" +
         [
-          `status=${[SchedulingStatus.Error, SchedulingStatus.Queued, SchedulingStatus.Paused, SchedulingStatus.WorkersPaused].join(",")}`,
+          `status=${[
+            SchedulingStatus.Active, 
+            SchedulingStatus.Error, 
+            SchedulingStatus.Queued, 
+            SchedulingStatus.Paused, 
+            SchedulingStatus.WorkersPaused
+          ].join(",")}`,
           `page-size=${pageSize}`,
           `page-number=${pageNumber}`,
           `sort-by=${sortBy}`,
