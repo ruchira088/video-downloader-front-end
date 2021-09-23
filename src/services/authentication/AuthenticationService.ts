@@ -37,8 +37,8 @@ const authenticationKeyValueStore = new LocalKeyValueStore(AuthenticationKeySpac
 export const isAuthenticated = (): Maybe<AuthenticationToken> =>
   authenticationKeyValueStore.get(AuthenticationKey.Token)
 
-export const login = (password: string): Promise<AuthenticationToken> =>
-  axiosClient.post("/authentication/login", { password }).then(({ data }) => {
+export const login = (email: string, password: string): Promise<AuthenticationToken> =>
+  axiosClient.post("/authentication/login", { email, password }).then(({ data }) => {
     authenticationKeyValueStore.put(AuthenticationKey.Token, data)
 
     return parseAuthenticationToken(data)

@@ -6,6 +6,7 @@ import styles from "./LoginForm.module.css"
 import ErrorMessages from "components/error-messages/ErrorMessages"
 
 export default ({ onAuthenticate }: { onAuthenticate: (token: AuthenticationToken) => void }) => {
+  const [email, setEmail] = useState<string>("")
   const [password, setPassword] = useState<string>("")
   const [errorMessages, setErrorMessages] = useState<string[]>([])
 
@@ -14,8 +15,13 @@ export default ({ onAuthenticate }: { onAuthenticate: (token: AuthenticationToke
     setPassword(event.target.value)
   }
 
+  const onEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setErrorMessages([])
+    setEmail(event.target.value)
+  }
+
   const onLoginClick = () =>
-    login(password)
+    login(email, password)
       .then(onAuthenticate)
       .catch((error) => setErrorMessages(error?.response?.data?.errorMessages || []))
 
@@ -23,6 +29,7 @@ export default ({ onAuthenticate }: { onAuthenticate: (token: AuthenticationToke
     <div className={styles.loginForm}>
       <div className={styles.loginFormBody}>
         <div>
+          <TextField value={email} onChange={onEmailChange} label="Email" type="email" fullWidth />
           <TextField value={password} onChange={onPasswordChange} label="Password" type="password" fullWidth />
         </div>
         <div className={styles.loginButton}>
