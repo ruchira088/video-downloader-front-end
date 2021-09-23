@@ -34,7 +34,7 @@ const AuthenticationKeySpace: KeySpace<AuthenticationKey, AuthenticationToken> =
 
 const authenticationKeyValueStore = new LocalKeyValueStore(AuthenticationKeySpace)
 
-export const isAuthenticated = (): Maybe<AuthenticationToken> =>
+export const getAuthenticationToken = (): Maybe<AuthenticationToken> =>
   authenticationKeyValueStore.get(AuthenticationKey.Token)
 
 export const login = (email: string, password: string): Promise<AuthenticationToken> =>

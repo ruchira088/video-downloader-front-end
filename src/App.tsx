@@ -1,16 +1,16 @@
 import React, { useState } from "react"
-import { Maybe, Some } from "monet"
-import { AuthenticationToken } from "./models/AuthenticationToken"
 import AuthenticatedApp from "./pages/authenticated/AuthenticatedApp"
-import Login from "./pages/unauthenticated/LoginPage"
-import { isAuthenticated } from "./services/authentication/AuthenticationService"
+import { getAuthenticationToken } from "./services/authentication/AuthenticationService"
+import UnauthenticatedApp from "./pages/unauthenticated/UnauthenticatedApp"
+import moment from "moment"
 
 export default () => {
-  const [authenticationToken, setAuthenticationToken] = useState<Maybe<AuthenticationToken>>(isAuthenticated())
+  const [isAuthenticated, setAuthenticated] =
+    useState(getAuthenticationToken().filter(token => token.expiresAt.isAfter(moment())).isSome())
 
-  if (authenticationToken.isSome()) {
+  if (isAuthenticated) {
     return <AuthenticatedApp />
   } else {
-    return <Login onAuthenticate={(token) => setAuthenticationToken(Some(token))} />
+    return <UnauthenticatedApp onAuthenticationSuccess={() => setAuthenticated(true)}/>
   }
 }
