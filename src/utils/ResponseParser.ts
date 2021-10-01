@@ -1,9 +1,9 @@
 /* eslint @typescript-eslint/no-explicit-any: ["off"] */
 
-import moment from "moment"
+import moment, { Moment } from "moment"
 import { Maybe } from "monet"
 import VideoMetadata from "models/VideoMetadata"
-import FileResource from "models/FileResource"
+import { FileResourceType } from "models/FileResource"
 import Video from "models/Video"
 import SearchResult from "models/ListResult"
 import ScheduledVideoDownload from "models/ScheduledVideoDownload"
@@ -13,25 +13,33 @@ import { DownloadProgress } from "models/DownloadProgress"
 import { VideoServiceSummary } from "models/VideoServiceSummary"
 import BackendServiceInformation from "models/BackendServiceInformation"
 
+interface PartialFileResource {
+  readonly id: string
+  readonly createdAt: Moment
+  readonly path: string
+  readonly mediaType: string
+  readonly size: number
+}
+
 export const parseVideoMetadata = (json: any): VideoMetadata => ({
   ...json,
   duration: moment.duration(json.duration.length, json.duration.unit),
-  thumbnail: parseFileResource(json.thumbnail),
+  thumbnail: {...parseFileResource(json.thumbnail), type: FileResourceType.Thumbnail},
 })
 
-const parseFileResource = (json: any): FileResource => ({
+const parseFileResource = (json: any): PartialFileResource => ({
   ...json,
   createdAt: moment(json.createdAt),
 })
 
 export const parseVideo = (json: any): Video => ({
   videoMetadata: parseVideoMetadata(json.videoMetadata),
-  fileResource: parseFileResource(json.fileResource),
+  fileResource: {...parseFileResource(json.fileResource), type: FileResourceType.Video},
 })
 
 export const parseSnapshot = (json: any): Snapshot => ({
   videoId: json.videoId,
-  fileResource: parseFileResource(json.fileResource),
+  fileResource: {...parseFileResource(json.fileResource), type: FileResourceType.Snapshot},
   videoTimestamp: moment.duration(json.videoTimestamp.length, json.videoTimestamp.unit),
 })
 

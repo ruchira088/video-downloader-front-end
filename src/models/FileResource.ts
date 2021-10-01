@@ -6,4 +6,9 @@ export default interface FileResource {
   readonly path: string
   readonly mediaType: string
   readonly size: number
+  readonly type: FileResourceType
+}
+
+export enum FileResourceType {
+  Thumbnail = "thumbnail", Snapshot = "snapshot", Video = "video"
 }

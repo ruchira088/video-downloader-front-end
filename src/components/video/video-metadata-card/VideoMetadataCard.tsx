@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import VideoMetadata from "models/VideoMetadata"
 import ApplicationContext from "context/ApplicationContext"
-import { thumbnailUrl } from "services/asset/AssetService"
+import { imageUrl } from "services/asset/AssetService"
 import translate from "services/translation/TranslationService"
 import { humanReadableSize, shortHumanReadableDuration } from "utils/Formatter"
 import styles from "./VideoMetadataCard.module.css"
@@ -54,7 +54,7 @@ export default (metadata: VideoMetadata & { disableSnapshots?: boolean }) => {
   }, [maybeIntervalTimeout])
 
   const thumbnail = (safeMode: boolean) =>
-    thumbnailUrl(
+    imageUrl(
       maybeIntervalTimeout
         .flatMap(() => maybeSnapshots)
         .filter((values) => values.length > 0)

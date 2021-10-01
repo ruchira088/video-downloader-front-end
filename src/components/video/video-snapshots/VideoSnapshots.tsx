@@ -16,7 +16,7 @@ const VideoSnapshot = (snapshot: Snapshot) => (
       >
         <div className={styles.timestamp}>{shortHumanReadableDuration(snapshot.videoTimestamp)}</div>
         <img
-          src={imageUrl(snapshot.fileResource.id, safeMode)}
+          src={imageUrl(snapshot.fileResource, safeMode)}
           alt="video snapshot"
           className={styles.videoSnapshotImage}
         />

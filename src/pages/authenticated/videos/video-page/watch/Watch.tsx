@@ -42,10 +42,10 @@ export default (
             ref={videoPlayer}
             controls
             preload="auto"
-            poster={imageUrl(video.videoMetadata.thumbnail.id, safeMode)}
+            poster={imageUrl(video.videoMetadata.thumbnail, safeMode)}
             className={styles.video}
           >
-            <source src={videoUrl(video.fileResource.id)} />
+            <source src={videoUrl(video.fileResource)} />
           </video>
           <VideoSnapshots snapshots={video.snapshots} />
         </div>
