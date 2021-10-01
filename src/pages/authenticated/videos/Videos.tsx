@@ -54,6 +54,7 @@ export default () => {
 
           setVideos((videos: List<Video>) => videos.concat(results))
         })
+        .catch(() => setHasMore(false))
         .finally(() => {
           setLoading(false)
         })
