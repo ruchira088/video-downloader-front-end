@@ -7,6 +7,8 @@ import { axiosClient } from "services/http/HttpClient"
 import { SortBy } from "models/SortBy"
 import { SchedulingStatus } from "models/SchedulingStatus"
 import { WorkerStatus } from "models/WorkerStatus"
+import { WorkerStatusResponse } from "../../models/WorkerStatusResponse"
+import SearchResult from "../../models/SearchResult"
 
 export const scheduledVideoDownloadStream = (): EventSource =>
   new EventSource(`${configuration.apiService}/schedule/active`, {
@@ -27,10 +29,10 @@ export const updateSchedulingStatus = (videoId: string, status: SchedulingStatus
   axiosClient.put(`/schedule/id/${videoId}`, { status }).then(({ data }) => parseScheduledVideoDownload(data))
 
 export const fetchWorkerStatus = (): Promise<WorkerStatus> =>
-  axiosClient.get("/schedule/worker-status").then(({ data }) => data.workerStatus)
+  axiosClient.get<WorkerStatusResponse>("/schedule/worker-status").then(({ data }) => data.workerStatus)
 
 export const updateWorkerStatus =
-  (workerStatus: WorkerStatus): Promise<WorkerStatus> => axiosClient.put("/schedule/worker-status", { workerStatus })
+  (workerStatus: WorkerStatus): Promise<WorkerStatus> => axiosClient.put<WorkerStatusResponse>("/schedule/worker-status", { workerStatus })
     .then(({ data }) => data.workerStatus)
 
 export const fetchScheduledVideos = (
@@ -40,7 +42,7 @@ export const fetchScheduledVideos = (
   sortBy: SortBy
 ): Promise<ScheduledVideoDownload[]> =>
   axiosClient
-    .get(
+    .get<SearchResult<Record<string, unknown>>>(
       "/schedule/search?" +
         [
           `status=${[

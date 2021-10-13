@@ -1,5 +1,5 @@
 import { Maybe, NonEmptyList } from "monet"
-import SearchResult from "models/ListResult"
+import SearchResult from "models/SearchResult"
 import Video from "models/Video"
 import {
   parseSnapshot,
@@ -17,6 +17,7 @@ import { DurationRange, durationRangeStringEncoder } from "models/DurationRange"
 import Range, { rangeEncoder } from "models/Range"
 import { simpleStringEncoder } from "models/Codec"
 import { CancelTokenSource } from "axios"
+import { ListResponse } from "../../models/ListResponse"
 
 export const searchVideos = (
   maybeSearchTerm: Maybe<string>,
@@ -50,7 +51,8 @@ export const fetchVideoById = (videoId: string): Promise<Video> =>
   axiosClient.get(`/videos/id/${videoId}`).then(({ data }) => parseVideo(data))
 
 export const fetchVideoSnapshots = (videoId: string): Promise<Snapshot[]> =>
-  axiosClient.get(`/videos/id/${videoId}/snapshots`).then(({ data }) => data.results.map(parseSnapshot))
+  axiosClient.get<ListResponse<Record<string, unknown>>>(`/videos/id/${videoId}/snapshots`)
+    .then(({ data }) => data.results.map(parseSnapshot))
 
 export const metadata = (url: string): Promise<VideoMetadata> =>
   axiosClient.post("/videos/metadata", { url }).then(({ data }) => parseVideoMetadata(data))

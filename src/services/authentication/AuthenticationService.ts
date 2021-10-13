@@ -39,9 +39,10 @@ export const getAuthenticationToken = (): Maybe<AuthenticationToken> =>
 
 export const login = (email: string, password: string): Promise<AuthenticationToken> =>
   axiosClient.post("/authentication/login", { email, password }).then(({ data }) => {
-    authenticationKeyValueStore.put(AuthenticationKey.Token, data)
+    const authenticationToken = parseAuthenticationToken(data)
+    authenticationKeyValueStore.put(AuthenticationKey.Token, authenticationToken)
 
-    return parseAuthenticationToken(data)
+    return authenticationToken
   })
 
 export const logout = (): Promise<AuthenticationToken> =>
