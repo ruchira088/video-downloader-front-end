@@ -5,12 +5,15 @@ import UnauthenticatedApp from "./pages/unauthenticated/UnauthenticatedApp"
 import moment from "moment"
 
 export default () => {
-  const [isAuthenticated, setAuthenticated] =
-    useState(getAuthenticationToken().filter(token => token.expiresAt.isAfter(moment())).isSome())
+  const [isAuthenticated, setAuthenticated] = useState(
+    getAuthenticationToken()
+      .filter((token) => token.expiresAt.isAfter(moment()))
+      .isSome()
+  )
 
   if (isAuthenticated) {
     return <AuthenticatedApp />
   } else {
-    return <UnauthenticatedApp onAuthenticationSuccess={() => setAuthenticated(true)}/>
+    return <UnauthenticatedApp onAuthenticationSuccess={() => setAuthenticated(true)} />
   }
 }

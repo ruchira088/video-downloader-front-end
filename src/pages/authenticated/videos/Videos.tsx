@@ -19,7 +19,7 @@ import {
   SortBySearchParam,
   VideoSearchParameter,
   VideoSearchParamName,
-  VideoSitesSearchParam
+  VideoSitesSearchParam,
 } from "./components/VideoSearchParams"
 import Range from "models/Range"
 import { CANCEL } from "services/http/HttpClient"
@@ -30,13 +30,17 @@ export default () => {
   const queryParams = new URLSearchParams(useLocation().search)
 
   const [videos, setVideos] = useState<List<Video>>(List<Video>())
-  const [videoSites, setVideoSites] = useState<Maybe<NonEmptyList<string>>>(parseSearchParam(queryParams, VideoSitesSearchParam))
+  const [videoSites, setVideoSites] = useState<Maybe<NonEmptyList<string>>>(
+    parseSearchParam(queryParams, VideoSitesSearchParam)
+  )
   const [sortBy, setSortBy] = useState<SortBy>(parseSearchParam(queryParams, SortBySearchParam))
   const [searchTerm, setSearchTerm] = useState<Maybe<string>>(parseSearchParam(queryParams, SearchTermSearchParam))
   const [pageNumber, setPageNumber] = useState<number>(0)
   const [hasMore, setHasMore] = useState<boolean>(true)
   const [isLoading, setLoading] = useState<boolean>(false)
-  const [durationRange, setDurationRange] = useState<DurationRange>(parseSearchParam(queryParams, DurationRangeSearchParam))
+  const [durationRange, setDurationRange] = useState<DurationRange>(
+    parseSearchParam(queryParams, DurationRangeSearchParam)
+  )
   const [sizeRange, setSizeRange] = useState<Range<number>>(parseSearchParam(queryParams, SizeRangeSearchParam))
   const [cancelTokenSource, setCancelTokenSource] = useState<CancelTokenSource>(Axios.CancelToken.source())
 
@@ -59,11 +63,14 @@ export default () => {
           setLoading(false)
         })
 
-      setPageNumber(pageNumber => pageNumber + 1)
+      setPageNumber((pageNumber) => pageNumber + 1)
     }
   }
 
-  function onChangeSearchParams<A, B extends VideoSearchParamName>(videoSearchParameter: VideoSearchParameter<A, B>, f: (value: A) => void): (value: A) => void {
+  function onChangeSearchParams<A, B extends VideoSearchParamName>(
+    videoSearchParameter: VideoSearchParameter<A, B>,
+    f: (value: A) => void
+  ): (value: A) => void {
     return onChange(videoSearchParameter.name, videoSearchParameter.encoder.encode, f)
   }
 

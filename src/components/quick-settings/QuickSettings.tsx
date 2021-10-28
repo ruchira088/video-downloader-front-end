@@ -11,7 +11,7 @@ export type QuickSettings = ApplicationContext & {
 
 export default (settings: QuickSettings) => (
   <FormGroup className={styles.quickSettings}>
-    <SafeModeSwitch {...settings}/>
-    <WorkerStatusSwitch/>
+    <SafeModeSwitch {...settings} />
+    <WorkerStatusSwitch />
   </FormGroup>
 )

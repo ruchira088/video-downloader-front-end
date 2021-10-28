@@ -24,7 +24,7 @@ interface PartialFileResource {
 export const parseVideoMetadata = (json: any): VideoMetadata => ({
   ...json,
   duration: moment.duration(json.duration.length, json.duration.unit),
-  thumbnail: {...parseFileResource(json.thumbnail), type: FileResourceType.Thumbnail},
+  thumbnail: { ...parseFileResource(json.thumbnail), type: FileResourceType.Thumbnail },
 })
 
 const parseFileResource = (json: any): PartialFileResource => ({
@@ -34,12 +34,12 @@ const parseFileResource = (json: any): PartialFileResource => ({
 
 export const parseVideo = (json: any): Video => ({
   videoMetadata: parseVideoMetadata(json.videoMetadata),
-  fileResource: {...parseFileResource(json.fileResource), type: FileResourceType.Video},
+  fileResource: { ...parseFileResource(json.fileResource), type: FileResourceType.Video },
 })
 
 export const parseSnapshot = (json: any): Snapshot => ({
   videoId: json.videoId,
-  fileResource: {...parseFileResource(json.fileResource), type: FileResourceType.Snapshot},
+  fileResource: { ...parseFileResource(json.fileResource), type: FileResourceType.Snapshot },
   videoTimestamp: moment.duration(json.videoTimestamp.length, json.videoTimestamp.unit),
 })
 

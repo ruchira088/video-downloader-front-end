@@ -19,12 +19,10 @@ export default ({ onAuthenticate }: { onAuthenticate: (token: AuthenticationToke
   const [password, setPassword] = useState<string>("")
   const [errors, setErrors] = useState<Errors>(EMPTY_ERRORS)
 
-  const onChange =
-    (callback: Dispatch<SetStateAction<string>>) =>
-      (event: ChangeEvent<HTMLInputElement>) => {
-        setErrors(EMPTY_ERRORS)
-        callback(event.target.value)
-      }
+  const onChange = (callback: Dispatch<SetStateAction<string>>) => (event: ChangeEvent<HTMLInputElement>) => {
+    setErrors(EMPTY_ERRORS)
+    callback(event.target.value)
+  }
 
   const onLoginClick = () => {
     const isEmailValid = validateNonEmpty("email", email)
@@ -33,31 +31,44 @@ export default ({ onAuthenticate }: { onAuthenticate: (token: AuthenticationToke
     if (isEmailValid && isPasswordValid) {
       login(email, password)
         .then(onAuthenticate)
-        .catch((error) => setErrors(errors => ({
-          ...errors,
-          response: Some(error?.response?.data?.errorMessages || [])
-        })))
+        .catch((error) =>
+          setErrors((errors) => ({
+            ...errors,
+            response: Some(error?.response?.data?.errorMessages || []),
+          }))
+        )
     }
   }
 
-  const validateNonEmpty =
-    (field: "email" | "password", value: string) => {
-      if (value.trim().length === 0) {
-        setErrors(errors => ({ ...errors, [field]: Some("Cannot be empty") }))
-        return false
-      } else return true
-    }
+  const validateNonEmpty = (field: "email" | "password", value: string) => {
+    if (value.trim().length === 0) {
+      setErrors((errors) => ({ ...errors, [field]: Some("Cannot be empty") }))
+      return false
+    } else return true
+  }
 
   return (
     <div className={styles.loginForm}>
       <div className={styles.loginFormBody}>
         <div>
-          <TextField error={errors.email.isSome()} value={email} onChange={onChange(setEmail)} label="Email"
-                     helperText={errors.email.getOrElse("")}
-                     type="email" fullWidth />
-          <TextField error={errors.password.isSome()} value={password} onChange={onChange(setPassword)}
-                     helperText={errors.password.getOrElse("")}
-                     label="Password" type="password" fullWidth />
+          <TextField
+            error={errors.email.isSome()}
+            value={email}
+            onChange={onChange(setEmail)}
+            label="Email"
+            helperText={errors.email.getOrElse("")}
+            type="email"
+            fullWidth
+          />
+          <TextField
+            error={errors.password.isSome()}
+            value={password}
+            onChange={onChange(setPassword)}
+            helperText={errors.password.getOrElse("")}
+            label="Password"
+            type="password"
+            fullWidth
+          />
         </div>
         <div className={styles.loginButton}>
           <Button onClick={onLoginClick} variant="contained" color="primary">
@@ -65,7 +76,7 @@ export default ({ onAuthenticate }: { onAuthenticate: (token: AuthenticationToke
           </Button>
         </div>
       </div>
-      <ErrorMessages errors={errors.response.fold<string[]>([])(error => [error])} />
+      <ErrorMessages errors={errors.response.fold<string[]>([])((error) => [error])} />
     </div>
   )
 }

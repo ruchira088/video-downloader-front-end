@@ -4,7 +4,8 @@
   display: inline-flex;
 }
 
-.left, .right {
+.left,
+.right {
   display: inline-block;
   padding: 0 1em;
 }
@@ -26,7 +27,8 @@
   display: block;
 }
 
-.videoSiteSelector, .sortBy {
+.videoSiteSelector,
+.sortBy {
   display: inline-block;
   width: 40%;
   margin: 1.3em 1em;
@@ -35,5 +37,3 @@
 .sortBy {
   text-align: start;
 }
-
-

@@ -2,6 +2,7 @@ import React from "react"
 import BackendServiceInformation from "models/BackendServiceInformation"
 import { Some } from "monet"
 import { ServiceInformationItem } from "../ServiceInformation"
+import moment from "moment"
 
 export default (apiServiceInformation: BackendServiceInformation) => (
   <div>
@@ -16,7 +17,9 @@ export default (apiServiceInformation: BackendServiceInformation) => (
     <ServiceInformationItem label="Git Commit" value={apiServiceInformation.gitCommit} />
     <ServiceInformationItem
       label="Build Timestamp"
-      value={apiServiceInformation.buildTimestamp.map((value) => value.toString())}
+      value={apiServiceInformation.buildTimestamp.map(
+        (timestamp) => `${timestamp} (${moment.duration(timestamp.unix() - moment().unix(), "seconds").humanize(true)})`
+      )}
     />
   </div>
 )

@@ -11,7 +11,7 @@ export enum VideoSearchParamName {
   SizeRange = "size-range",
   SearchTerm = "search-term",
   SortBy = "sort-by",
-  Sites = "site"
+  Sites = "site",
 }
 
 export interface VideoSearchParameter<A, B extends VideoSearchParamName> {
@@ -45,7 +45,7 @@ class SearchTermSearchParameter implements VideoSearchParameter<Maybe<string>, V
   decoder: Decoder<string, Maybe<string>> = {
     decode(value: string): Either<Error, Maybe<string>> {
       return Right(maybeString(value))
-    }
+    },
   }
 
   default: Maybe<string> = None()
@@ -53,7 +53,7 @@ class SearchTermSearchParameter implements VideoSearchParameter<Maybe<string>, V
   encoder: Encoder<Maybe<string>, string> = {
     encode(value: Maybe<string>): string {
       return value.getOrElse("")
-    }
+    },
   }
 
   name: VideoSearchParamName.SearchTerm = VideoSearchParamName.SearchTerm
@@ -62,11 +62,12 @@ class SearchTermSearchParameter implements VideoSearchParameter<Maybe<string>, V
 class SortBySearchParameter implements VideoSearchParameter<SortBy, VideoSearchParamName.SortBy> {
   decoder: Decoder<string, SortBy> = {
     decode(input: string): Either<Error, SortBy> {
-      return Maybe.fromNull(Object.entries(SortBy)
-        .find(([, value]) => value === input))
+      return Maybe.fromNull(Object.entries(SortBy).find(([, value]) => value === input))
         .map(([key]) => key)
-        .fold<Either<Error, SortBy>>(Left(new Error(`Unable to parse ${input} as ${SortBy}`)))(key => Right(SortBy[key as keyof typeof SortBy]))
-    }
+        .fold<Either<Error, SortBy>>(Left(new Error(`Unable to parse ${input} as ${SortBy}`)))((key) =>
+        Right(SortBy[key as keyof typeof SortBy])
+      )
+    },
   }
 
   default: SortBy = SortBy.Date
@@ -74,33 +75,38 @@ class SortBySearchParameter implements VideoSearchParameter<SortBy, VideoSearchP
   encoder: Encoder<SortBy, string> = {
     encode(value: SortBy): string {
       return value
-    }
+    },
   }
 
   name: VideoSearchParamName.SortBy = VideoSearchParamName.SortBy
 }
 
-class VideoSitesSearchParameter implements VideoSearchParameter<Maybe<NonEmptyList<string>>, VideoSearchParamName.Sites> {
+class VideoSitesSearchParameter
+  implements VideoSearchParameter<Maybe<NonEmptyList<string>>, VideoSearchParamName.Sites>
+{
   decoder: Decoder<string, Maybe<NonEmptyList<string>>> = {
     decode(value: string): Either<Error, Maybe<NonEmptyList<string>>> {
-      return Right(NonEmptyList.from(value.split(",").filter(term => maybeString(term).isJust())))
-    }
+      return Right(NonEmptyList.from(value.split(",").filter((term) => maybeString(term).isJust())))
+    },
   }
 
   default: Maybe<NonEmptyList<string>> = None()
 
   encoder: Encoder<Maybe<NonEmptyList<string>>, string> = {
     encode(maybeValues: Maybe<NonEmptyList<string>>): string {
-      return maybeValues.map(nonEmptyList => nonEmptyList.toArray().join(",")).getOrElse("")
-    }
+      return maybeValues.map((nonEmptyList) => nonEmptyList.toArray().join(",")).getOrElse("")
+    },
   }
 
   name: VideoSearchParamName.Sites = VideoSearchParamName.Sites
 }
 
-export function parseSearchParam<A, B extends VideoSearchParamName>(urlSearchParams: URLSearchParams, videoSearchParameter: VideoSearchParameter<A, B>): A {
+export function parseSearchParam<A, B extends VideoSearchParamName>(
+  urlSearchParams: URLSearchParams,
+  videoSearchParameter: VideoSearchParameter<A, B>
+): A {
   return Maybe.fromNull(urlSearchParams.get(videoSearchParameter.name))
-    .flatMap(stringValue => videoSearchParameter.decoder.decode(stringValue).toMaybe())
+    .flatMap((stringValue) => videoSearchParameter.decoder.decode(stringValue).toMaybe())
     .getOrElse(videoSearchParameter.default)
 }
 

@@ -9,17 +9,17 @@ export interface PrettyPrint<A> {
 
 export const durationPrettyPrint: PrettyPrint<Duration> = {
   print(duration: Duration): string {
-    return `${duration.asMinutes()} minutes`;
-  }
+    return `${duration.asMinutes()} minutes`
+  },
 }
 
 export const dataSizePrettyPrint: PrettyPrint<number> = {
   print(data: number): string {
-    return humanReadableSize(data);
-  }
+    return humanReadableSize(data)
+  },
 }
 
-export default function<A>(props: {range: Range<A>, printer: PrettyPrint<A>, className?: string}): JSX.Element {
+export default function <A>(props: { range: Range<A>; printer: PrettyPrint<A>; className?: string }): JSX.Element {
   return (
     <div className={props.className}>
       <span>{props.printer.print(props.range.min)}</span>

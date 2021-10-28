@@ -9,7 +9,7 @@ export function codec<A, B>(encoder: Encoder<A, B>, decoder: Decoder<B, A>): Cod
     },
     encode(value: A): B {
       return encoder.encode(value)
-    }
+    },
   }
 }
 
@@ -19,8 +19,8 @@ export function identityCodec<A>(): Codec<A, A> {
       return Right(value)
     },
     encode<A>(value: A): A {
-      return value;
-    }
+      return value
+    },
   }
 }
 
@@ -31,16 +31,16 @@ export interface Encoder<A, B> {
 export function encodeMap<A, B, C>(encoder: Encoder<A, B>, f: (value: B) => C): Encoder<A, C> {
   return {
     encode(value: A): C {
-      return f(encoder.encode(value));
-    }
+      return f(encoder.encode(value))
+    },
   }
 }
 
 export function simpleStringEncoder<A>(): Encoder<A, string> {
   return {
     encode<A>(value: A): string {
-      return `${value}`;
-    }
+      return `${value}`
+    },
   }
 }
 
@@ -51,13 +51,13 @@ export interface Decoder<B, A> {
 export function decodeMap<A, B, C>(decoder: Decoder<A, B>, f: (value: B) => C): Decoder<A, C> {
   return {
     decode(value: A): Either<Error, C> {
-      return decoder.decode(value).map(f);
-    }
+      return decoder.decode(value).map(f)
+    },
   }
 }
 
 export const stringToNumberDecoder: Decoder<string, number> = {
   decode(value: string): Either<Error, number> {
-    return Either.fromTry(() => parseInt(value, 10));
-  }
+    return Either.fromTry(() => parseInt(value, 10))
+  },
 }

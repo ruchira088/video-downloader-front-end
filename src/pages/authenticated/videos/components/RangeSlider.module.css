@@ -2,17 +2,17 @@
 }
 
 .description {
-    text-align: left;
+  text-align: left;
 }
 
 .title {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .rangeDisplay {
-    text-align: left;
+  text-align: left;
 }
 
 .slider {
-    display: inline-block;
+  display: inline-block;
 }

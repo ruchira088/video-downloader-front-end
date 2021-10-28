@@ -7,22 +7,22 @@ export default () => {
   const [workerStatus, setWorkerStatus] = useState(WorkerStatus.Available)
 
   useEffect(() => {
-    fetchWorkerStatus().then(status => setWorkerStatus(status))
+    fetchWorkerStatus().then((status) => setWorkerStatus(status))
   })
 
   return (
-    <FormControlLabel control={
-      <Switch
-        checked={workerStatus === WorkerStatus.Available}
-        onChange={
-          ({ target }) => {
+    <FormControlLabel
+      control={
+        <Switch
+          checked={workerStatus === WorkerStatus.Available}
+          onChange={({ target }) => {
             const updated: WorkerStatus = target.checked ? WorkerStatus.Available : WorkerStatus.Paused
 
-            updateWorkerStatus(updated)
-              .then(value => setWorkerStatus(value))
+            updateWorkerStatus(updated).then((value) => setWorkerStatus(value))
           }}
-      />
-    } label="Worker Status"/>
+        />
+      }
+      label="Worker Status"
+    />
   )
-
 }

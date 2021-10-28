@@ -2,6 +2,7 @@ import React from "react"
 import { ServiceInformationItem } from "../ServiceInformation"
 import { Some } from "monet"
 import { FrontendServiceInformation } from "models/FrontendServiceInformation"
+import moment from "moment"
 
 export default ({ frontendServiceInformation }: { frontendServiceInformation: FrontendServiceInformation }) => (
   <div>
@@ -12,7 +13,9 @@ export default ({ frontendServiceInformation }: { frontendServiceInformation: Fr
     <ServiceInformationItem label="Timestamp" value={Some(frontendServiceInformation.timestamp.toString())} />
     <ServiceInformationItem
       label="Build Timestamp"
-      value={frontendServiceInformation.buildTimestamp.map((timestamp) => timestamp.toString())}
+      value={frontendServiceInformation.buildTimestamp.map(
+        (timestamp) => `${timestamp} (${moment.duration(timestamp.unix() - moment().unix(), "seconds").humanize(true)})`
+      )}
     />
   </div>
 )

@@ -21,9 +21,10 @@ export const scheduleVideo = (videoSiteUrl: string): Promise<ScheduledVideoDownl
 const unmemoizedFetchScheduledVideoById = (videoId: string): Promise<ScheduledVideoDownload> =>
   axiosClient.get(`/schedule/id/${videoId}`).then(({ data }) => parseScheduledVideoDownload(data))
 
-export const fetchScheduledVideoById: (
-  videoId: string
-) => Promise<ScheduledVideoDownload> = memoizee(unmemoizedFetchScheduledVideoById, { promise: true })
+export const fetchScheduledVideoById: (videoId: string) => Promise<ScheduledVideoDownload> = memoizee(
+  unmemoizedFetchScheduledVideoById,
+  { promise: true }
+)
 
 export const updateSchedulingStatus = (videoId: string, status: SchedulingStatus): Promise<ScheduledVideoDownload> =>
   axiosClient.put(`/schedule/id/${videoId}`, { status }).then(({ data }) => parseScheduledVideoDownload(data))
@@ -31,8 +32,9 @@ export const updateSchedulingStatus = (videoId: string, status: SchedulingStatus
 export const fetchWorkerStatus = (): Promise<WorkerStatus> =>
   axiosClient.get<WorkerStatusResponse>("/schedule/worker-status").then(({ data }) => data.workerStatus)
 
-export const updateWorkerStatus =
-  (workerStatus: WorkerStatus): Promise<WorkerStatus> => axiosClient.put<WorkerStatusResponse>("/schedule/worker-status", { workerStatus })
+export const updateWorkerStatus = (workerStatus: WorkerStatus): Promise<WorkerStatus> =>
+  axiosClient
+    .put<WorkerStatusResponse>("/schedule/worker-status", { workerStatus })
     .then(({ data }) => data.workerStatus)
 
 export const fetchScheduledVideos = (
@@ -46,17 +48,16 @@ export const fetchScheduledVideos = (
       "/schedule/search?" +
         [
           `status=${[
-            SchedulingStatus.Active, 
-            SchedulingStatus.Error, 
-            SchedulingStatus.Queued, 
-            SchedulingStatus.Paused, 
-            SchedulingStatus.WorkersPaused
+            SchedulingStatus.Active,
+            SchedulingStatus.Error,
+            SchedulingStatus.Queued,
+            SchedulingStatus.Paused,
+            SchedulingStatus.WorkersPaused,
           ].join(",")}`,
           `page-size=${pageSize}`,
           `page-number=${pageNumber}`,
           `sort-by=${sortBy}`,
-          `search-term=${searchTerm.getOrElse("")}`
-        ]
-          .join("&")
+          `search-term=${searchTerm.getOrElse("")}`,
+        ].join("&")
     )
     .then(({ data }) => data.results.map(parseScheduledVideoDownload))

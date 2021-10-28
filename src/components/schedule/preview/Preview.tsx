@@ -25,12 +25,11 @@ export default ({ url }: { url: string }) => {
 
   return (
     <div className="preview">
-      { showPreview &&
+      {showPreview &&
         loadableComponent(
           VideoMetadataCard,
-          maybeVideoMetadata.map(videoMetadata => ({...videoMetadata, disableSnapshots: true}))
-        )
-      }
+          maybeVideoMetadata.map((videoMetadata) => ({ ...videoMetadata, disableSnapshots: true }))
+        )}
     </div>
   )
 }

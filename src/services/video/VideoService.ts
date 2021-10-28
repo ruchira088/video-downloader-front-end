@@ -6,7 +6,7 @@ import {
   parseVideo,
   parseVideoMetadata,
   parseVideoServiceSummary,
-  searchResultParser
+  searchResultParser,
 } from "utils/ResponseParser"
 import { Snapshot } from "models/Snapshot"
 import { axiosClient } from "services/http/HttpClient"
@@ -34,13 +34,20 @@ export const searchVideos = (
   const sortByQuery = "sort-by=" + sortBy
   const sizeQuery = "size=" + rangeEncoder(simpleStringEncoder()).encode(sizeRange)
   const durationQuery = "duration=" + rangeEncoder(durationRangeStringEncoder).encode(durationRange)
-  const searchTermQuery = maybeSearchTerm.map(term => "search-term=" + term).getOrElse("")
-  const sitesQuery = maybeVideoSites.map(sites => "site=" + sites.toArray().join(",")).getOrElse("")
+  const searchTermQuery = maybeSearchTerm.map((term) => "search-term=" + term).getOrElse("")
+  const sitesQuery = maybeVideoSites.map((sites) => "site=" + sites.toArray().join(",")).getOrElse("")
 
-  const queryParameters: string =
-    [ pageNumberQuery, pageSizeQuery, sortByQuery, sizeQuery, durationQuery, searchTermQuery, sitesQuery]
-      .filter(query => query !== "")
-      .join("&")
+  const queryParameters: string = [
+    pageNumberQuery,
+    pageSizeQuery,
+    sortByQuery,
+    sizeQuery,
+    durationQuery,
+    searchTermQuery,
+    sitesQuery,
+  ]
+    .filter((query) => query !== "")
+    .join("&")
 
   return axiosClient
     .get("/videos/search?" + queryParameters, { cancelToken: cancelTokenSource.token })
@@ -51,7 +58,8 @@ export const fetchVideoById = (videoId: string): Promise<Video> =>
   axiosClient.get(`/videos/id/${videoId}`).then(({ data }) => parseVideo(data))
 
 export const fetchVideoSnapshots = (videoId: string): Promise<Snapshot[]> =>
-  axiosClient.get<ListResponse<Record<string, unknown>>>(`/videos/id/${videoId}/snapshots`)
+  axiosClient
+    .get<ListResponse<Record<string, unknown>>>(`/videos/id/${videoId}/snapshots`)
     .then(({ data }) => data.results.map(parseSnapshot))
 
 export const metadata = (url: string): Promise<VideoMetadata> =>

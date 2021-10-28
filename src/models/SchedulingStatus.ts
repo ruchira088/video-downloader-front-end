@@ -7,7 +7,7 @@ export enum SchedulingStatus {
   Error = "Error",
   WorkersPaused = "WorkersPaused",
   Paused = "Paused",
-  Queued = "Queued"
+  Queued = "Queued",
 }
 
 export const TRANSITION_STATES: { [key: string]: SchedulingStatus[] } = {

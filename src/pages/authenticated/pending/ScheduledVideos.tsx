@@ -31,8 +31,9 @@ const average = (numbers: number[]): Maybe<number> =>
     .map((total) => total / numbers.length)
 
 export default () => {
-  const [scheduledVideoDownloads, setScheduledVideoDownloads] =
-    useState<Map<string, ScheduledVideoDownload & Downloadable>>(Map<string, ScheduledVideoDownload & Downloadable>())
+  const [scheduledVideoDownloads, setScheduledVideoDownloads] = useState<
+    Map<string, ScheduledVideoDownload & Downloadable>
+  >(Map<string, ScheduledVideoDownload & Downloadable>())
 
   useEffect(() => {
     fetchScheduledVideos(None(), 0, 100, SortBy.Date).then((results) =>
@@ -55,7 +56,7 @@ export default () => {
   }, [])
 
   const onMessageEvent = (messageEvent: Event) => {
-    const { data } = (messageEvent as unknown) as { data: string }
+    const { data } = messageEvent as unknown as { data: string }
 
     Either.fromTry(() => JSON.parse(data)).fold(
       (error) => console.error(error),
@@ -66,17 +67,16 @@ export default () => {
           setScheduledVideoDownloads((scheduledVideoDownloads) => {
             const downloadHistory = Maybe.fromFalsy(scheduledVideoDownloads.get(downloadProgress.videoId))
               .map((existing) => {
-                const maybeCurrentRate =
-                  existing.lastUpdatedAt
-                    .filter(lastUpdatedAt => downloadProgress.updatedAt.valueOf() > lastUpdatedAt.valueOf())
-                    .map(
-                      (lastUpdatedAt) =>
-                        (1000 * Math.max(downloadProgress.bytes - existing.downloadedBytes, 0)) /
-                        (downloadProgress.updatedAt.valueOf() - lastUpdatedAt.valueOf())
+                const maybeCurrentRate = existing.lastUpdatedAt
+                  .filter((lastUpdatedAt) => downloadProgress.updatedAt.valueOf() > lastUpdatedAt.valueOf())
+                  .map(
+                    (lastUpdatedAt) =>
+                      (1000 * Math.max(downloadProgress.bytes - existing.downloadedBytes, 0)) /
+                      (downloadProgress.updatedAt.valueOf() - lastUpdatedAt.valueOf())
                   )
 
                 return existing.downloadHistory
-                  .concat(maybeCurrentRate.filter(rate => rate !== 0).fold<BytesPerSecond[]>([])((value) => [value]))
+                  .concat(maybeCurrentRate.filter((rate) => rate !== 0).fold<BytesPerSecond[]>([])((value) => [value]))
                   .slice(-1 * DOWNLOAD_HISTORY_SIZE)
               })
               .getOrElse([])
@@ -107,12 +107,10 @@ export default () => {
 
   return (
     <>
-      {
-        scheduledVideoDownloads
-          .sortBy((value) => -1 * value.scheduledAt.unix())
-          .map((scheduledVideoDownload, index) => <ScheduledVideoDownloadCard {...scheduledVideoDownload} key={index} />)
-          .toList()
-      }
+      {scheduledVideoDownloads
+        .sortBy((value) => -1 * value.scheduledAt.unix())
+        .map((scheduledVideoDownload, index) => <ScheduledVideoDownloadCard {...scheduledVideoDownload} key={index} />)
+        .toList()}
     </>
   )
 }

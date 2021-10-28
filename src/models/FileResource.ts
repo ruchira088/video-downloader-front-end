@@ -10,5 +10,7 @@ export default interface FileResource {
 }
 
 export enum FileResourceType {
-  Thumbnail = "thumbnail", Snapshot = "snapshot", Video = "video"
+  Thumbnail = "thumbnail",
+  Snapshot = "snapshot",
+  Video = "video",
 }

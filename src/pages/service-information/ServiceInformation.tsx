@@ -22,16 +22,16 @@ export const ServiceInformationItem = (serviceInformationItem: ServiceInformatio
   ))
 
 export default () => {
-  const [serviceInformation, setServiceInformation] = useState<Maybe<BackendServiceInformation>>(None())
+  const [backendInformation, setBackendInformation] = useState<Maybe<BackendServiceInformation>>(None())
   const [frontendInformation, setFrontendInformation] = useState(frontendServiceInformation(process.env))
 
-  const fetchServerInformation = () =>
-    backendServiceInformation().then((information) => setServiceInformation(Some(information)))
+  const fetchBackendInformation = () =>
+    backendServiceInformation().then((information) => setBackendInformation(Some(information)))
 
   useEffect(() => {
-    fetchServerInformation()
+    fetchBackendInformation()
 
-    const intervalId = setInterval(fetchServerInformation, 1000)
+    const intervalId = setInterval(fetchBackendInformation, 500)
 
     return () => clearInterval(intervalId)
   }, [])
@@ -49,11 +49,11 @@ export default () => {
 
   return (
     <div className="service-information">
-      <div>
+      <div className="back-end">
         <ServiceInformationItem label="API URL" value={Some(configuration.apiService)} />
-        {loadableComponent(BackendInformation, serviceInformation)}
+        {loadableComponent(BackendInformation, backendInformation)}
       </div>
-      <div>
+      <div className="front-end">
         <FrontendInformation frontendServiceInformation={frontendInformation} />
       </div>
     </div>
