@@ -37,6 +37,9 @@ export const updateWorkerStatus = (workerStatus: WorkerStatus): Promise<WorkerSt
     .put<WorkerStatusResponse>("/schedule/worker-status", { workerStatus })
     .then(({ data }) => data.workerStatus)
 
+export const deleteScheduledVideoById = (videoId: string): Promise<ScheduledVideoDownload> =>
+  axiosClient.delete(`/schedule/id/${videoId}`).then(({ data }) => parseScheduledVideoDownload(data))
+
 export const fetchScheduledVideos = (
   searchTerm: Maybe<string>,
   pageNumber: number,

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import { Either, Maybe, None, Some } from "monet"
 import { Map } from "immutable"
 import {
+  deleteScheduledVideoById,
   fetchScheduledVideoById,
   fetchScheduledVideos,
   scheduledVideoDownloadStream,
@@ -13,6 +14,7 @@ import { Moment } from "moment"
 import { DownloadProgress } from "models/DownloadProgress"
 import { parseDownloadProgress } from "utils/ResponseParser"
 import { SortBy } from "models/SortBy"
+import styles from "./ScheduledVideos.module.css"
 
 const DOWNLOAD_HISTORY_SIZE = 10
 
@@ -106,11 +108,21 @@ export default () => {
   }, [])
 
   return (
-    <>
+    <div className={styles.scheduledVideos}>
       {scheduledVideoDownloads
         .sortBy((value) => -1 * value.scheduledAt.unix())
-        .map((scheduledVideoDownload, index) => <ScheduledVideoDownloadCard {...scheduledVideoDownload} key={index} />)
+        .map((scheduledVideoDownload, index) => (
+          <ScheduledVideoDownloadCard
+            scheduledVideoDownload={scheduledVideoDownload}
+            key={index}
+            onDelete={(videoId) =>
+              deleteScheduledVideoById(videoId).then(() =>
+                setScheduledVideoDownloads((scheduledVideos) => scheduledVideos.delete(videoId))
+              )
+            }
+          />
+        ))
         .toList()}
-    </>
+    </div>
   )
 }
