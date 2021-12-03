@@ -48,12 +48,16 @@ workflows:
   video-downloader-front-end:
     jobs:
       - build-and-publish-docker-image:
-          context: aws-credentials
+          context:
+            - aws-credentials
+            - slack-webhook
           post-steps:
             - slack/status
 
       - deploy-to-k8s:
-          context: aws-credentials
+          context:
+            - aws-credentials
+            - slack-webhook
           requires:
             - build-and-publish-docker-image
           post-steps:
