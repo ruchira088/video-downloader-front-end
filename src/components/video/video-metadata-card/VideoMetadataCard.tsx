@@ -8,6 +8,7 @@ import styles from "./VideoMetadataCard.module.css"
 import { Maybe, None, Some } from "monet"
 import { Snapshot } from "models/Snapshot"
 import { fetchVideoSnapshots } from "services/video/VideoService"
+import VideoSiteCard from "../video-site-card/VideoSiteCard";
 
 export default (metadata: VideoMetadata & { disableSnapshots?: boolean }) => {
   const [maybeSnapshots, setMaybeSnapshots] = useState<Maybe<Snapshot[]>>(None())
@@ -67,6 +68,7 @@ export default (metadata: VideoMetadata & { disableSnapshots?: boolean }) => {
       {({ safeMode }) => (
         <div className={styles.videoMetadataCard}>
           <div className={styles.imageContainer}>
+            <VideoSiteCard videoSite={metadata.videoSite}/>
             <img
               onMouseOver={onMouseOver}
               onMouseLeave={onMouseLeave}

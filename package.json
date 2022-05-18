@@ -17,7 +17,7 @@
     "react-router-dom": "^5.3.0"
   },
   "scripts": {
-    "start": "REACT_APP_API_URL=https://localhost:8443 react-scripts start",
+    "start": "REACT_APP_API_URL=https://api.localhost react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
