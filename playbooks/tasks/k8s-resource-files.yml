@@ -3,7 +3,7 @@
 
 - name: Create output directory
   block:
-    - name: Delete exisiting output directory
+    - name: Delete existing output directory
       file:
         path: k8s-output
         state: absent
