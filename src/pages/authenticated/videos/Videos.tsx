@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { ImageList, ImageListItem } from "@material-ui/core"
-import { Link, useHistory, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { Maybe, NonEmptyList } from "monet"
 import { List } from "immutable"
 import Axios, { CancelTokenSource } from "axios"
@@ -19,7 +19,7 @@ import {
   SortBySearchParam,
   VideoSearchParameter,
   VideoSearchParamName,
-  VideoSitesSearchParam,
+  VideoSitesSearchParam
 } from "./components/VideoSearchParams"
 import Range from "models/Range"
 import { CANCEL } from "services/http/HttpClient"
@@ -44,7 +44,7 @@ export default () => {
   const [sizeRange, setSizeRange] = useState<Range<number>>(parseSearchParam(queryParams, SizeRangeSearchParam))
   const [cancelTokenSource, setCancelTokenSource] = useState<CancelTokenSource>(Axios.CancelToken.source())
 
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const loadMoreVideos = (): void => {
     if (!isLoading) {
@@ -89,7 +89,7 @@ export default () => {
 
   function updateQueryParameter<A>(name: string, encoder: (value: A) => string, value: A) {
     queryParams.set(name, encoder(value))
-    history.push({ search: queryParams.toString() })
+    navigate({ search: queryParams.toString() })
   }
 
   return (

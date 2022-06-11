@@ -1,5 +1,5 @@
 import React from "react"
-import { Route, Switch } from "react-router-dom"
+import { Route, Routes } from "react-router-dom"
 import ServiceInformation from "pages/service-information/ServiceInformation"
 import Videos from "pages/authenticated/videos/Videos"
 import VideoPage from "pages/authenticated/videos/video-page/VideoPage"
@@ -10,26 +10,14 @@ import ServerErrorPage from "../../pages/authenticated/server-error/ServerErrorP
 
 export default () => (
   <div className={styles.contentBody}>
-    <Switch>
-      <Route exact path="/">
-        <Videos />
-      </Route>
-      <Route path="/video/:videoId">
-        <VideoPage />
-      </Route>
-      <Route path="/service-information">
-        <ServiceInformation />
-      </Route>
-      <Route path="/schedule">
-        <ScheduleVideo />
-      </Route>
-      <Route path="/pending">
-        <ScheduledVideos />
-      </Route>
-      <Route path="/server-error">
-        <ServerErrorPage />
-      </Route>
+    <Routes>
+      <Route path="/" element={<Videos />} />
+      <Route path="/video/:videoId" element={<VideoPage />} />
+      <Route path="/service-information" element={<ServiceInformation />} />
+      <Route path="/schedule" element={<ScheduleVideo />} />
+      <Route path="/pending" element={<ScheduledVideos />} />
+      <Route path="/server-error" element={<ServerErrorPage />} />
       <Route path="*"></Route>
-    </Switch>
+    </Routes>
   </div>
 )

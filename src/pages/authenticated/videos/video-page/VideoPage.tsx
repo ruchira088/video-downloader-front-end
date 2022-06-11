@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { useParams, useLocation } from "react-router-dom"
+import { useParams, useLocation, Params } from "react-router-dom"
 import { Maybe, None, Some } from "monet"
 import Video from "models/Video"
 import loadableComponent from "components/hoc/loading/loadableComponent"
@@ -9,7 +9,8 @@ import { Snapshot } from "models/Snapshot"
 import { Duration, duration } from "moment"
 
 export default () => {
-  const { videoId }: { videoId: string } = useParams()
+  const params: Readonly<Params> = useParams()
+  const videoId = Maybe.fromNull(params.videoId).getOrElse("")
   const queryParams = new URLSearchParams(useLocation().search)
   const [video, setVideo] = useState<Maybe<Video>>(None())
   const [videoSnapshots, setVideoSnapshots] = useState<Snapshot[]>([])
