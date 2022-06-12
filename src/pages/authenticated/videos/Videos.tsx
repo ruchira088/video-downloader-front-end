@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { ImageList, ImageListItem } from "@material-ui/core"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { Maybe, NonEmptyList } from "monet"
@@ -28,6 +28,7 @@ const PAGE_SIZE = 50
 
 const Videos = () => {
   const queryParams = new URLSearchParams(useLocation().search)
+  const windowWidth = () => document.body.clientWidth
 
   const [videos, setVideos] = useState<List<Video>>(List<Video>())
   const [videoSites, setVideoSites] = useState<Maybe<NonEmptyList<string>>>(
@@ -43,8 +44,10 @@ const Videos = () => {
   )
   const [sizeRange, setSizeRange] = useState<Range<number>>(parseSearchParam(queryParams, SizeRangeSearchParam))
   const [cancelTokenSource, setCancelTokenSource] = useState<CancelTokenSource>(Axios.CancelToken.source())
+  const [width, setWidth] = useState<number>(windowWidth())
 
   const navigate = useNavigate()
+  const columns = Math.ceil(width / 350)
 
   const loadMoreVideos = (): void => {
     if (!isLoading) {
@@ -92,6 +95,14 @@ const Videos = () => {
     navigate({ search: queryParams.toString() })
   }
 
+  useEffect(() => {
+    const onResize = () => { setWidth(windowWidth()) }
+
+    window.addEventListener("resize", onResize)
+
+    return () => window.removeEventListener("resize", onResize)
+  })
+
   return (
     <>
       <VideoSearch
@@ -109,7 +120,7 @@ const Videos = () => {
         isLoading={isLoading}
       />
       <InfiniteScroll loadMore={loadMoreVideos} hasMore={hasMore} threshold={500}>
-        <ImageList cols={5} rowHeight="auto">
+        <ImageList cols={columns} rowHeight="auto">
           {videos.map((video, index) => (
             <ImageListItem cols={1} key={index}>
               <Link to={`/video/${video.videoMetadata.id}`} key={index}>
