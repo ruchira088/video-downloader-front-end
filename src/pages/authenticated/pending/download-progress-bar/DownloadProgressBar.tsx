@@ -7,7 +7,7 @@ export interface ProgressValue {
   readonly currentValue: number
 }
 
-export default (progressValue: ProgressValue) => {
+const DownloadProgressBar = (progressValue: ProgressValue) => {
   const percentage = Number(((progressValue.currentValue / progressValue.completeValue) * 100).toFixed(2))
 
   return (
@@ -21,3 +21,5 @@ export default (progressValue: ProgressValue) => {
     </div>
   )
 }
+
+export default DownloadProgressBar

@@ -4,7 +4,7 @@ import { Some } from "monet"
 import { ServiceInformationItem } from "../ServiceInformation"
 import moment from "moment"
 
-export default (apiServiceInformation: BackendServiceInformation) => (
+const BackendInformation = (apiServiceInformation: BackendServiceInformation) => (
   <div>
     <ServiceInformationItem label="Service Name" value={Some(apiServiceInformation.serviceName)} />
     <ServiceInformationItem label="Service Version" value={Some(apiServiceInformation.serviceVersion)} />
@@ -23,3 +23,5 @@ export default (apiServiceInformation: BackendServiceInformation) => (
     />
   </div>
 )
+
+export default BackendInformation

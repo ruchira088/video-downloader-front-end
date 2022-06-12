@@ -14,7 +14,7 @@ interface Errors {
 
 const EMPTY_ERRORS: Errors = { email: None(), password: None(), response: None() }
 
-export default ({ onAuthenticate }: { onAuthenticate: (token: AuthenticationToken) => void }) => {
+const LoginForm = ({ onAuthenticate }: { onAuthenticate: (token: AuthenticationToken) => void }) => {
   const [email, setEmail] = useState<string>("")
   const [password, setPassword] = useState<string>("")
   const [errors, setErrors] = useState<Errors>(EMPTY_ERRORS)
@@ -80,3 +80,5 @@ export default ({ onAuthenticate }: { onAuthenticate: (token: AuthenticationToke
     </div>
   )
 }
+
+export default LoginForm

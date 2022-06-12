@@ -11,7 +11,7 @@ import { Maybe } from "monet"
 import VideoMetadataCard from "components/video/video-metadata-card/VideoMetadataCard"
 import VideoMetadata from "models/VideoMetadata"
 
-export default (props: {
+const ScheduledVideoDownloadCard = (props: {
   scheduledVideoDownload: ScheduledVideoDownload & Downloadable
   onDelete: (videoId: string) => Promise<void>
 }) => {
@@ -91,3 +91,5 @@ const Actions = (scheduleVideoDownload: ScheduledVideoDownload) => {
     </div>
   )
 }
+
+export default ScheduledVideoDownloadCard

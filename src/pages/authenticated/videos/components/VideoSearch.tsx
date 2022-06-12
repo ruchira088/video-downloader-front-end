@@ -18,7 +18,7 @@ import { dataSizePrettyPrint, durationPrettyPrint } from "./RangeDisplay"
 const MAX_RANGE = duration(75, "minutes")
 const MAX_DATA_SIZE = 2000000000
 
-export default ({
+const VideoSearch = ({
   videoTitles,
   searchTerm,
   onSearchTermChange,
@@ -88,3 +88,5 @@ export default ({
     </div>
   </div>
 )
+
+export default VideoSearch

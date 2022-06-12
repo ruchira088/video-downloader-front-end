@@ -32,7 +32,7 @@ const average = (numbers: number[]): Maybe<number> =>
     .reduce<Maybe<number>>((acc, value) => Some(acc.getOrElse(0) + value), None())
     .map((total) => total / numbers.length)
 
-export default () => {
+const ScheduledVideos = () => {
   const [scheduledVideoDownloads, setScheduledVideoDownloads] = useState<
     Map<string, ScheduledVideoDownload & Downloadable>
   >(Map<string, ScheduledVideoDownload & Downloadable>())
@@ -126,3 +126,5 @@ export default () => {
     </div>
   )
 }
+
+export default ScheduledVideos

@@ -11,7 +11,7 @@ import { updateVideoTitle } from "services/video/VideoService"
 import { Duration } from "moment"
 import { Maybe } from "monet"
 
-export default (
+const Watch = (
   video: Video & { snapshots: Snapshot[] } & {
     timestamp: Duration
     updateVideo: (video: Video) => void
@@ -53,3 +53,5 @@ export default (
     </ApplicationContext.Consumer>
   )
 }
+
+export default Watch

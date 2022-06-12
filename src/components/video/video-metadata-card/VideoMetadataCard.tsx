@@ -10,7 +10,7 @@ import { Snapshot } from "models/Snapshot"
 import { fetchVideoSnapshots } from "services/video/VideoService"
 import VideoSiteCard from "../video-site-card/VideoSiteCard";
 
-export default (metadata: VideoMetadata & { disableSnapshots?: boolean }) => {
+const VideoMetadataCard = (metadata: VideoMetadata & { disableSnapshots?: boolean }) => {
   const [maybeSnapshots, setMaybeSnapshots] = useState<Maybe<Snapshot[]>>(None())
   const [maybeIntervalTimeout, setMaybeIntervalTimeout] = useState<Maybe<NodeJS.Timeout>>(None())
   const [index, setIndex] = useState<number>(0)
@@ -85,3 +85,5 @@ export default (metadata: VideoMetadata & { disableSnapshots?: boolean }) => {
     </ApplicationContext.Consumer>
   )
 }
+
+export default VideoMetadataCard

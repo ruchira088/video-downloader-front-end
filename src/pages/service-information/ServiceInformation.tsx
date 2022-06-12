@@ -21,7 +21,7 @@ export const ServiceInformationItem = (serviceInformationItem: ServiceInformatio
     </div>
   ))
 
-export default () => {
+const ServiceInformation = () => {
   const [backendInformation, setBackendInformation] = useState<Maybe<BackendServiceInformation>>(None())
   const [frontendInformation, setFrontendInformation] = useState(frontendServiceInformation(process.env))
 
@@ -59,3 +59,5 @@ export default () => {
     </div>
   )
 }
+
+export default ServiceInformation

@@ -2,4 +2,6 @@ import React from "react"
 import Video from "models/Video"
 import VideoMetadataCard from "../video-metadata-card/VideoMetadataCard"
 
-export default (video: Video) => <VideoMetadataCard {...video.videoMetadata} />
+const VideoCard = (video: Video) => <VideoMetadataCard {...video.videoMetadata} />
+
+export default VideoCard

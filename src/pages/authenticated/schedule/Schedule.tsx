@@ -5,7 +5,7 @@ import Preview from "components/schedule/preview/Preview"
 import styles from "./Schedule.module.css"
 import { LoadingComponent } from "components/hoc/loading/loadableComponent"
 
-export default () => {
+const Schedule = () => {
   const [videoUrl, setVideoUrl] = useState(String())
   const [scheduling, setScheduling] = useState(false)
 
@@ -32,3 +32,5 @@ export default () => {
     </>
   )
 }
+
+export default Schedule

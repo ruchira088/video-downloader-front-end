@@ -35,7 +35,7 @@ const EditableTextField = ({
   </>
 )
 
-export default ({ textValue, onUpdateText }: { textValue: string; onUpdateText: (text: string) => Promise<void> }) => {
+const EditableLabel = ({ textValue, onUpdateText }: { textValue: string; onUpdateText: (text: string) => Promise<void> }) => {
   const [text, setText] = useState(textValue)
   const [editMode, setEditMode] = useState(false)
 
@@ -55,3 +55,5 @@ export default ({ textValue, onUpdateText }: { textValue: string; onUpdateText: 
     </>
   )
 }
+
+export default EditableLabel

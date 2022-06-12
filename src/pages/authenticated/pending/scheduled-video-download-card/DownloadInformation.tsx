@@ -4,7 +4,7 @@ import { BytesPerSecond, Downloadable } from "../ScheduledVideos"
 import { humanReadableDuration, humanReadableSize } from "utils/Formatter"
 import moment from "moment"
 
-export default (scheduledVideoDownload: ScheduledVideoDownload & Downloadable) =>
+const DownloadInformation = (scheduledVideoDownload: ScheduledVideoDownload & Downloadable) =>
   scheduledVideoDownload.downloadSpeed
     .map((speed) => (
       <div>
@@ -18,3 +18,5 @@ export default (scheduledVideoDownload: ScheduledVideoDownload & Downloadable) =
 
 const remainingDuration = (totalSize: number, currentSize: number, downloadRate: BytesPerSecond): string =>
   humanReadableDuration(moment.duration((totalSize - currentSize) / downloadRate, "seconds"))
+
+export default DownloadInformation

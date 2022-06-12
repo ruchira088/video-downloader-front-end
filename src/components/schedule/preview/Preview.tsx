@@ -5,7 +5,7 @@ import { metadata } from "services/video/VideoService"
 import VideoMetadataCard from "components/video/video-metadata-card/VideoMetadataCard"
 import VideoMetadata from "models/VideoMetadata"
 
-export default ({ url }: { url: string }) => {
+const Preview = ({ url }: { url: string }) => {
   const [showPreview, setShowPreview] = useState(false)
   const [maybeVideoMetadata, setMaybeVideoMetadata] = useState<Maybe<VideoMetadata>>(None())
 
@@ -33,3 +33,5 @@ export default ({ url }: { url: string }) => {
     </div>
   )
 }
+
+export default Preview

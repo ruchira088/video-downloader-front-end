@@ -15,7 +15,7 @@ const navigationTabs: NavigationTab[] = [
   { label: "Service Information", path: "/service-information" },
 ]
 
-export default () => (
+const Navigator = () => (
   <Grid container className={styles.navigator}>
     {navigationTabs.map((navigationTab, index) => (
       <Grid item xs={3} key={index}>
@@ -26,3 +26,5 @@ export default () => (
     ))}
   </Grid>
 )
+
+export default Navigator

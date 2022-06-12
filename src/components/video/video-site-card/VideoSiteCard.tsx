@@ -14,7 +14,7 @@ import youporn from "images/logos/youporn.png"
 import xvideos from "images/logos/xvideos.png"
 import youtube from "images/logos/youtube.png"
 
-export default (props: { videoSite: string }) =>
+const VideoSiteCard = (props: { videoSite: string }) =>
   Maybe.fromNull(videoSiteLogos[props.videoSite]).fold(<span/>)((logo) =>
     <img className={styles.videoSiteLogo} src={logo} alt="site logo" />
   )
@@ -31,3 +31,5 @@ const videoSiteLogos: { [key: string]: string } = {
   youporn,
   xvideos
 }
+
+export default VideoSiteCard

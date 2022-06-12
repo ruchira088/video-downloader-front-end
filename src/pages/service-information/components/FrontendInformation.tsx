@@ -4,7 +4,7 @@ import { Some } from "monet"
 import { FrontendServiceInformation } from "models/FrontendServiceInformation"
 import moment from "moment"
 
-export default ({ frontendServiceInformation }: { frontendServiceInformation: FrontendServiceInformation }) => (
+const FrontendInformation = ({ frontendServiceInformation }: { frontendServiceInformation: FrontendServiceInformation }) => (
   <div>
     <ServiceInformationItem label="Name" value={Some(frontendServiceInformation.name)} />
     <ServiceInformationItem label="Version" value={Some(frontendServiceInformation.version)} />
@@ -19,3 +19,5 @@ export default ({ frontendServiceInformation }: { frontendServiceInformation: Fr
     />
   </div>
 )
+
+export default FrontendInformation

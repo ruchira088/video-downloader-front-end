@@ -1,8 +1,8 @@
 import { FormControlLabel, Switch } from "@material-ui/core"
 import React from "react"
-import { QuickSettings } from "components/quick-settings/QuickSettings"
+import { Settings } from "components/quick-settings/QuickSettings"
 
-export default (settings: QuickSettings) => (
+export default (settings: Settings) => (
   <FormControlLabel
     control={
       <Switch

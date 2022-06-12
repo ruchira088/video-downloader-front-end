@@ -2,7 +2,7 @@ import React from "react"
 import { SortBy } from "models/SortBy"
 import { MenuItem, Select } from "@material-ui/core"
 
-export default ({
+const SortBySelection = ({
   value,
   onChange,
   className,
@@ -24,3 +24,5 @@ export default ({
     </Select>
   </div>
 )
+
+export default SortBySelection

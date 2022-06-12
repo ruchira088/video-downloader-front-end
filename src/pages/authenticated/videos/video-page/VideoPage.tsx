@@ -8,7 +8,7 @@ import Watch from "./watch/Watch"
 import { Snapshot } from "models/Snapshot"
 import { Duration, duration } from "moment"
 
-export default () => {
+const VideoPage = () => {
   const params: Readonly<Params> = useParams()
   const videoId = Maybe.fromNull(params.videoId).getOrElse("")
   const queryParams = new URLSearchParams(useLocation().search)
@@ -44,3 +44,5 @@ export default () => {
     </div>
   )
 }
+
+export default VideoPage

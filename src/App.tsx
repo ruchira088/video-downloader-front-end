@@ -4,7 +4,7 @@ import { getAuthenticationToken } from "./services/authentication/Authentication
 import UnauthenticatedApp from "./pages/unauthenticated/UnauthenticatedApp"
 import moment from "moment"
 
-export default () => {
+const App = () => {
   const [isAuthenticated, setAuthenticated] = useState(
     getAuthenticationToken()
       .filter((token) => token.expiresAt.isAfter(moment()))
@@ -17,3 +17,5 @@ export default () => {
     return <UnauthenticatedApp onAuthenticationSuccess={() => setAuthenticated(true)} />
   }
 }
+
+export default App

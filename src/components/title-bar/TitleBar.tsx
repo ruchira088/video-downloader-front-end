@@ -1,10 +1,10 @@
 import React from "react"
 import Grid from "@material-ui/core/Grid"
-import QuickSettings, { QuickSettings as Settings } from "components/quick-settings/QuickSettings"
+import QuickSettings, { Settings } from "components/quick-settings/QuickSettings"
 import styles from "./TitleBar.module.css"
 import Navigator from "components/navigator/Navigator"
 
-export default (quickSettings: Settings) => (
+const TitleBar = (settings: Settings) => (
   <Grid container className={styles.titleBar}>
     <Grid item xs={2} className={styles.logo}>
       <img src="/small-logo.svg" alt="small logo" className={styles.smallLogo} />
@@ -14,7 +14,9 @@ export default (quickSettings: Settings) => (
       <Navigator />
     </Grid>
     <Grid item xs={2} className={styles.quickSettings}>
-      <QuickSettings {...quickSettings} />
+      <QuickSettings {...settings} />
     </Grid>
   </Grid>
 )
+
+export default TitleBar

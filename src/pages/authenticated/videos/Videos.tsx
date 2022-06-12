@@ -26,7 +26,7 @@ import { CANCEL } from "services/http/HttpClient"
 
 const PAGE_SIZE = 50
 
-export default () => {
+const Videos = () => {
   const queryParams = new URLSearchParams(useLocation().search)
 
   const [videos, setVideos] = useState<List<Video>>(List<Video>())
@@ -122,3 +122,5 @@ export default () => {
     </>
   )
 }
+
+export default Videos

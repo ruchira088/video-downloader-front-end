@@ -25,7 +25,7 @@ const VideoSnapshot = (snapshot: Snapshot) => (
   </ApplicationContext.Consumer>
 )
 
-export default ({ snapshots }: { snapshots: Snapshot[] }) => (
+const VideoSnapshots = ({ snapshots }: { snapshots: Snapshot[] }) => (
   <Grid container spacing={1}>
     {snapshots
       .sort(
@@ -38,3 +38,5 @@ export default ({ snapshots }: { snapshots: Snapshot[] }) => (
       ))}
   </Grid>
 )
+
+export default VideoSnapshots

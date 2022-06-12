@@ -3,7 +3,7 @@ import { Maybe, NonEmptyList } from "monet"
 import { MenuItem, Select } from "@material-ui/core"
 import { videoServiceSummary } from "services/video/VideoService"
 
-export default (props: {
+const VideoSelector = (props: {
   videoSites: Maybe<NonEmptyList<string>>
   onChange: (values: Maybe<NonEmptyList<string>>) => void
   className?: string
@@ -33,3 +33,5 @@ export default (props: {
     </Select>
   )
 }
+
+export default VideoSelector

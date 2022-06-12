@@ -10,7 +10,7 @@ import ContentBody from "components/content-body/ContentBody"
 import TitleBar from "components/title-bar/TitleBar"
 import { setSavedSafeMode } from "services/Configuration"
 
-export default () => {
+const AuthenticatedApp = () => {
   const [applicationContext, setApplicationContext] = useState(DEFAULT_APPLICATION_CONTEXT)
 
   const setContext = (applicationContext: Context) => {
@@ -31,3 +31,5 @@ export default () => {
     </div>
   )
 }
+
+export default AuthenticatedApp

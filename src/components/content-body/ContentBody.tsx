@@ -3,12 +3,12 @@ import { Route, Routes } from "react-router-dom"
 import ServiceInformation from "pages/service-information/ServiceInformation"
 import Videos from "pages/authenticated/videos/Videos"
 import VideoPage from "pages/authenticated/videos/video-page/VideoPage"
-import styles from "./ContentBody.module.css"
 import ScheduleVideo from "pages/authenticated/schedule/Schedule"
 import ScheduledVideos from "pages/authenticated/pending/ScheduledVideos"
-import ServerErrorPage from "../../pages/authenticated/server-error/ServerErrorPage"
+import ServerErrorPage from "pages/authenticated/server-error/ServerErrorPage"
+import styles from "./ContentBody.module.css"
 
-export default () => (
+const ContentBody = () => (
   <div className={styles.contentBody}>
     <Routes>
       <Route path="/" element={<Videos />} />
@@ -21,3 +21,5 @@ export default () => (
     </Routes>
   </div>
 )
+
+export default ContentBody
