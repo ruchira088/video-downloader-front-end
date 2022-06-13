@@ -32,7 +32,7 @@ const VideoSnapshots = ({ snapshots }: { snapshots: Snapshot[] }) => (
         (snapshotA, snapshotB) => snapshotA.videoTimestamp.asMilliseconds() - snapshotB.videoTimestamp.asMilliseconds()
       )
       .map((snapshot, index) => (
-        <Grid item key={index} xs={2}>
+        <Grid item key={index} xs={6} sm={4} md={3} lg={2}>
           <VideoSnapshot {...snapshot} />
         </Grid>
       ))}
