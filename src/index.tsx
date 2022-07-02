@@ -7,7 +7,7 @@ import { Maybe } from "monet"
 const container =
   Maybe.fromNull(document.getElementById("root"))
     .orLazy(() => {
-      throw new Error("Unable to find element with Id=root")
+      throw new Error("Unable to find element with id=root")
     })
 
 const root = ReactClient.createRoot(container)
