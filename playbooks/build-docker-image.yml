@@ -3,5 +3,7 @@
   connection: local
 
   tasks:
-    - name: Build production Docker image
-      import_tasks: tasks/build-docker.yml
+    - name: Fetch git information
+      import_tasks: tasks/build-and-publish-docker-image.yml
+      vars:
+        publish: false
