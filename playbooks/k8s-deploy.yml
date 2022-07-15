@@ -16,6 +16,7 @@
       import_tasks: tasks/k8s-resource-files.yml
       vars:
         hostname: "{{ 'video.home.ruchij.com' if env == 'production' else git_branch + '.video.dev.ruchij.com' }}"
+        ghcr_credentials: "{{ lookup('aws_ssm', '/github/ghcr/docker-config', region='ap-southeast-2') }}"
 
     - name: Create kubeconfig
       import_tasks: tasks/k8s-config.yml
@@ -24,6 +25,9 @@
       block:
         - name: Create Namespace
           command: kubectl apply -f k8s-output/Namespace.yaml --kubeconfig {{ kube_config }}
+
+        - name: Create Docker registry secret
+          command: kubectl apply -f k8s-output/DockerRegistryCredentials.yaml --kubeconfig {{ kube_config }}
 
         - name: Deploy application
           command: kubectl apply -f k8s-output --kubeconfig {{ kube_config }}

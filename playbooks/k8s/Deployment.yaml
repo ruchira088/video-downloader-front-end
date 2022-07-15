@@ -44,3 +44,5 @@ spec:
               httpHeaders:
                 - name: X-Correlation-ID
                   value: k8s-startup-probe
+      imagePullSecrets:
+        - name: docker-registry-credentials
