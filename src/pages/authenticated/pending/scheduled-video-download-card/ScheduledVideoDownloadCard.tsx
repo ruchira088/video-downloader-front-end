@@ -19,7 +19,14 @@ const ScheduledVideoDownloadCard = (props: {
 
   return (
     <div className={styles.card}>
-      <Button onClick={() => setDeleteDialogVisibility(!deleteDialogVisibility)}>Delete</Button>
+      <Button
+        className={styles.deleteButton}
+        color="secondary"
+        variant="contained"
+        onClick={() => setDeleteDialogVisibility(!deleteDialogVisibility)}
+      >
+        Delete
+      </Button>
       <VideoMetadataCard {...props.scheduledVideoDownload.videoMetadata} disableSnapshots={true} />
       {props.scheduledVideoDownload.videoMetadata.size > props.scheduledVideoDownload.downloadedBytes && (
         <div>
@@ -53,9 +60,6 @@ const ScheduledVideoDeleteDialog = (props: {
       <VideoMetadataCard {...props.videoMetadata} disableSnapshots={true} />
     </DialogContent>
     <DialogActions>
-      <Button variant="contained" onClick={props.onClose}>
-        Cancel
-      </Button>
       <Button
         color="secondary"
         variant="contained"
@@ -64,6 +68,9 @@ const ScheduledVideoDeleteDialog = (props: {
         }}
       >
         Delete
+      </Button>
+      <Button variant="contained" onClick={props.onClose}>
+        Cancel
       </Button>
     </DialogActions>
   </Dialog>

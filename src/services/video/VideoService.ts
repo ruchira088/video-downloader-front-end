@@ -70,3 +70,7 @@ export const updateVideoTitle = (videoId: string, title: string): Promise<Video>
 
 export const videoServiceSummary = (): Promise<VideoServiceSummary> =>
   axiosClient.get("/videos/summary").then(({ data }) => parseVideoServiceSummary(data))
+
+export const deleteVideo = (videoId: string, deleteFile: boolean): Promise<Video> =>
+  axiosClient.delete(`/videos/id/${videoId}?delete-video-file=${deleteFile}`)
+    .then(({ data }) => parseVideo(data))
