@@ -74,3 +74,5 @@ export const videoServiceSummary = (): Promise<VideoServiceSummary> =>
 export const deleteVideo = (videoId: string, deleteFile: boolean): Promise<Video> =>
   axiosClient.delete(`/videos/id/${videoId}?delete-video-file=${deleteFile}`)
     .then(({ data }) => parseVideo(data))
+
+export const scanForVideos = (): Promise<void> => axiosClient.post("/videos/scan")

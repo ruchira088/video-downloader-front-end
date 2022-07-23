@@ -58,7 +58,7 @@ const Watch = (
     Maybe.fromNull(videoPlayer.current).forEach((videoElement) => {
       videoElement.currentTime = video.timestamp.asSeconds()
     })
-  })
+  }, [video.timestamp.asSeconds()])
 
   const onUpdateVideoTitle: (title: string) => Promise<void> = (title) =>
     updateVideoTitle(video.videoMetadata.id, title).then(video.updateVideo)

@@ -7,6 +7,8 @@ import BackendInformation from "./components/BackendInformation"
 import { configuration } from "services/Configuration"
 import FrontendInformation from "./components/FrontendInformation"
 import moment from "moment"
+import { Button } from "@material-ui/core"
+import { scanForVideos } from "../../services/video/VideoService"
 
 interface ServiceInformationItem {
   readonly label: string
@@ -56,6 +58,7 @@ const ServiceInformation = () => {
       <div className="front-end">
         <FrontendInformation frontendServiceInformation={frontendInformation} />
       </div>
+      <Button variant="contained" onClick={() => scanForVideos()}>Scan For Videos</Button>
     </div>
   )
 }
