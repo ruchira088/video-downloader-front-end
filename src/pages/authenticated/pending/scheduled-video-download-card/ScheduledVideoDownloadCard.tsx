@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import ScheduledVideoDownload from "models/ScheduledVideoDownload"
 import ProgressBar from "pages/authenticated/pending/download-progress-bar/DownloadProgressBar"
-import styles from "./ScheduledVideoDownloadCard.module.css"
+import styles from "./ScheduledVideoDownloadCard.module.scss"
 import { Downloadable } from "../ScheduledVideos"
 import DownloadInformation from "./DownloadInformation"
 import { updateSchedulingStatus } from "services/scheduling/SchedulingService"

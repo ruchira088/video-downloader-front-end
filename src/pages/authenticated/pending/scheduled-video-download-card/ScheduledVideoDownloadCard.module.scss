@@ -1,0 +1,10 @@
+.card {
+  max-width: 60em;
+  padding: 1em 2em;
+}
+
+button {
+  &.deleteButton {
+    margin-bottom: 1em;
+  }
+}

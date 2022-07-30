@@ -15,6 +15,7 @@ import { DownloadProgress } from "models/DownloadProgress"
 import { parseDownloadProgress } from "utils/ResponseParser"
 import { SortBy } from "models/SortBy"
 import styles from "./ScheduledVideos.module.css"
+import { ImageList, ImageListItem } from "@material-ui/core"
 
 const DOWNLOAD_HISTORY_SIZE = 10
 
@@ -36,6 +37,18 @@ const ScheduledVideos = () => {
   const [scheduledVideoDownloads, setScheduledVideoDownloads] = useState<
     Map<string, ScheduledVideoDownload & Downloadable>
   >(Map<string, ScheduledVideoDownload & Downloadable>())
+
+  const columns = () => Math.ceil(document.body.clientWidth / 500)
+
+  const [columnCount, setColumnCount] = useState<number>(columns())
+
+  useEffect(() => {
+    const onWindowResize = () => { setColumnCount(columns()) }
+
+    window.addEventListener("resize", onWindowResize)
+
+    return () => window.removeEventListener("resize", onWindowResize)
+  })
 
   useEffect(() => {
     fetchScheduledVideos(None(), 0, 100, SortBy.Date).then((results) =>
@@ -109,20 +122,23 @@ const ScheduledVideos = () => {
 
   return (
     <div className={styles.scheduledVideos}>
-      {scheduledVideoDownloads
-        .sortBy((value) => -1 * value.scheduledAt.unix())
-        .map((scheduledVideoDownload, index) => (
-          <ScheduledVideoDownloadCard
-            scheduledVideoDownload={scheduledVideoDownload}
-            key={index}
-            onDelete={(videoId) =>
-              deleteScheduledVideoById(videoId).then(() =>
-                setScheduledVideoDownloads((scheduledVideos) => scheduledVideos.delete(videoId))
-              )
-            }
-          />
-        ))
-        .toList()}
+      <ImageList cols={columnCount} rowHeight="auto">
+        {scheduledVideoDownloads
+          .sortBy((value) => -1 * value.scheduledAt.unix())
+          .map((scheduledVideoDownload, index) => (
+            <ImageListItem cols={1} key={index}>
+              <ScheduledVideoDownloadCard
+                scheduledVideoDownload={scheduledVideoDownload}
+                onDelete={(videoId) =>
+                  deleteScheduledVideoById(videoId).then(() =>
+                    setScheduledVideoDownloads((scheduledVideos) => scheduledVideos.delete(videoId))
+                  )
+                }
+              />
+            </ImageListItem>
+          ))
+          .toList()}
+      </ImageList>
     </div>
   )
 }
