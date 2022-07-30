@@ -26,6 +26,8 @@ import { CANCEL } from "services/http/HttpClient"
 
 const PAGE_SIZE = 50
 
+let isLoading = false
+
 const Videos = () => {
   const queryParams = new URLSearchParams(useLocation().search)
   const windowWidth = () => document.body.clientWidth
@@ -38,7 +40,6 @@ const Videos = () => {
   const [searchTerm, setSearchTerm] = useState<Maybe<string>>(parseSearchParam(queryParams, SearchTermSearchParam))
   const [pageNumber, setPageNumber] = useState<number>(0)
   const [hasMore, setHasMore] = useState<boolean>(true)
-  const [isLoading, setLoading] = useState<boolean>(false)
   const [durationRange, setDurationRange] = useState<DurationRange>(
     parseSearchParam(queryParams, DurationRangeSearchParam)
   )
@@ -51,22 +52,22 @@ const Videos = () => {
 
   const loadMoreVideos = (): void => {
     if (!isLoading) {
-      setLoading(true)
+      isLoading = true
 
       searchVideos(searchTerm, durationRange, sizeRange, videoSites, pageNumber, PAGE_SIZE, sortBy, cancelTokenSource)
         .then(({ results }) => {
           if (results.length < PAGE_SIZE) {
             setHasMore(false)
+          } else {
+            setPageNumber((pageNumber) => pageNumber + 1)
           }
 
           setVideos((videos: List<Video>) => videos.concat(results))
         })
         .catch(() => setHasMore(false))
         .finally(() => {
-          setLoading(false)
+          isLoading = false
         })
-
-      setPageNumber((pageNumber) => pageNumber + 1)
     }
   }
 
@@ -86,7 +87,7 @@ const Videos = () => {
       updateQueryParameter(name, encoder, value)
       setVideos(List())
       setHasMore(true)
-      setLoading(false)
+      isLoading = false
     }
   }
 
