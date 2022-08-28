@@ -19,7 +19,7 @@ export const dataSizePrettyPrint: PrettyPrint<number> = {
   },
 }
 
-export default function RangeDisplay<A>(props: { range: Range<A>; printer: PrettyPrint<A>; className?: string }): JSX.Element {
+export default function RangeDisplay<A extends {}>(props: { range: Range<A>; printer: PrettyPrint<A>; className?: string }): JSX.Element {
   return (
     <div className={props.className}>
       <span>{props.printer.print(props.range.min)}</span>

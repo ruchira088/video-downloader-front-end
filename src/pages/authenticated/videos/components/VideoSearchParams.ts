@@ -101,7 +101,7 @@ class VideoSitesSearchParameter
   name: VideoSearchParamName.Sites = VideoSearchParamName.Sites
 }
 
-export function parseSearchParam<A, B extends VideoSearchParamName>(
+export function parseSearchParam<A extends {}, B extends VideoSearchParamName>(
   urlSearchParams: URLSearchParams,
   videoSearchParameter: VideoSearchParameter<A, B>
 ): A {

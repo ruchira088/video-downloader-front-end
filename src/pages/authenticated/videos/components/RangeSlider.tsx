@@ -5,7 +5,7 @@ import { Codec } from "models/Codec"
 import RangeDisplay, { PrettyPrint } from "./RangeDisplay"
 import styles from "./RangeSlider.module.css"
 
-export default function RangeSlider<A>(props: {
+export default function RangeSlider<A extends {}>(props: {
   range: Range<A>
   onChange: (value: Range<A>) => void
   maxValue: A

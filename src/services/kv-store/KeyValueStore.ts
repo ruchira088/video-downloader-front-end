@@ -16,7 +16,7 @@ export interface KeySpace<K, V> {
   readonly valueCodec: Codec<V, string>
 }
 
-export default interface KeyValueStore<K, V> {
+export default interface KeyValueStore<K, V extends {}> {
   put(key: K, value: V): void
 
   get(key: K): Maybe<V>
@@ -24,7 +24,7 @@ export default interface KeyValueStore<K, V> {
   remove(key: K): Maybe<V>
 }
 
-export class LocalKeyValueStore<K, V> implements KeyValueStore<K, V> {
+export class LocalKeyValueStore<K, V extends {}> implements KeyValueStore<K, V> {
   constructor(readonly keySpace: KeySpace<K, V>) {}
 
   get(key: K): Maybe<V> {

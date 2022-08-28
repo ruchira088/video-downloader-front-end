@@ -8,7 +8,7 @@ export const LoadingComponent = () => (
   </>
 )
 
-export default function loadableComponent<A>(Component: ComponentType<A>, mayBeValue: Maybe<A>) {
+export default function loadableComponent<A extends {}>(Component: ComponentType<A>, mayBeValue: Maybe<A>) {
   return (
     <>
       {mayBeValue.fold(<LoadingComponent />)((values) => (

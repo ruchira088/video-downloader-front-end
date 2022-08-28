@@ -1,16 +1,16 @@
 import { Either, Just, Maybe, None, Right } from "monet"
 import { Decoder, Encoder } from "models/Codec"
 
-export default interface Range<A> {
+export default interface Range<A extends {}> {
   min: A
   max: Maybe<A>
 }
 
-export function toNumberArray<A>(range: Range<A>, maximum: A, encoder: Encoder<A, number>): number[] {
+export function toNumberArray<A extends {}>(range: Range<A>, maximum: A, encoder: Encoder<A, number>): number[] {
   return [encoder.encode(range.min), range.max.map(encoder.encode).getOrElse(encoder.encode(maximum))]
 }
 
-export function fromNumberArray<A>(
+export function fromNumberArray<A extends {}>(
   input: number[],
   decoder: Decoder<number, A>,
   isMax: (value: A) => boolean
@@ -24,7 +24,7 @@ export function fromNumberArray<A>(
     )
 }
 
-export function rangeEncoder<A>(encoder: Encoder<A, string>): Encoder<Range<A>, string> {
+export function rangeEncoder<A extends {}>(encoder: Encoder<A, string>): Encoder<Range<A>, string> {
   return {
     encode(range: Range<A>): string {
       return encoder.encode(range.min) + "-" + range.max.map((max) => encoder.encode(max)).getOrElse("")
@@ -32,7 +32,7 @@ export function rangeEncoder<A>(encoder: Encoder<A, string>): Encoder<Range<A>, 
   }
 }
 
-export function rangeDecoder<A>(decoder: Decoder<string, A>): Decoder<string, Range<A>> {
+export function rangeDecoder<A extends {}>(decoder: Decoder<string, A>): Decoder<string, Range<A>> {
   return {
     decode(input: string): Either<Error, Range<A>> {
       const [minString, maxString] = input.split("-")
