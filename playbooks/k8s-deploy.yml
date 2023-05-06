@@ -15,7 +15,7 @@
     - name: Create K8s resource files
       import_tasks: tasks/k8s-resource-files.yml
       vars:
-        hostname: "{{ 'video.home.ruchij.com' if env == 'production' else git_branch + '.video.dev.ruchij.com' }}"
+        hostname: "{{ 'video.vm.ruchij.com' if env == 'production' else git_branch + '.video.dev.ruchij.com' }}"
         ghcr_credentials: "{{ lookup('aws_ssm', '/github/ghcr/docker-config', region='ap-southeast-2') }}"
 
     - name: Create kubeconfig

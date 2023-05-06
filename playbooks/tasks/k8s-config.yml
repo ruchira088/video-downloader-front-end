@@ -11,5 +11,6 @@
     dest: k8s-output/kubeconfig
     content: "{{ lookup('aws_ssm', '/infrastructure/prod/k8s/config' if env == 'production' else '/infrastructure/dev/k8s/config', region='ap-southeast-2') }}"
 
-- set_fact:
-    kube_config: k8s-output/kubeconfig
+- name: Set kubeconfig file location
+  set_fact:
+    kube_config: /Users/ruchira/.kube/config
