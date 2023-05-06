@@ -13,4 +13,4 @@
 
 - name: Set kubeconfig file location
   set_fact:
-    kube_config: /Users/ruchira/.kube/config
+    kube_config: k8s-output/kubeconfig
