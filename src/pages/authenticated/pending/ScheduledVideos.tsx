@@ -16,6 +16,7 @@ import { parseDownloadProgress } from "utils/ResponseParser"
 import { SortBy } from "models/SortBy"
 import styles from "./ScheduledVideos.module.css"
 import { ImageList, ImageListItem } from "@material-ui/core"
+import { Ordering } from "../../../models/Ordering"
 
 const DOWNLOAD_HISTORY_SIZE = 10
 
@@ -51,7 +52,7 @@ const ScheduledVideos = () => {
   })
 
   useEffect(() => {
-    fetchScheduledVideos(None(), 0, 100, SortBy.Date).then((results) =>
+    fetchScheduledVideos(None(), 0, 100, SortBy.Date, Ordering.Ascending).then((results) =>
       setScheduledVideoDownloads((scheduledVideoDownloads) =>
         scheduledVideoDownloads.concat(
           Map(

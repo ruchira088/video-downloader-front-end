@@ -9,6 +9,7 @@ import { SchedulingStatus } from "models/SchedulingStatus"
 import { WorkerStatus } from "models/WorkerStatus"
 import { WorkerStatusResponse } from "../../models/WorkerStatusResponse"
 import SearchResult from "../../models/SearchResult"
+import { Ordering } from "../../models/Ordering"
 
 export const scheduledVideoDownloadStream = (): EventSource =>
   new EventSource(`${configuration.apiService}/schedule/active`, {
@@ -44,7 +45,8 @@ export const fetchScheduledVideos = (
   searchTerm: Maybe<string>,
   pageNumber: number,
   pageSize: number,
-  sortBy: SortBy
+  sortBy: SortBy,
+  ordering: Ordering
 ): Promise<ScheduledVideoDownload[]> =>
   axiosClient
     .get<SearchResult<Record<string, unknown>>>(
@@ -60,6 +62,7 @@ export const fetchScheduledVideos = (
           `page-size=${pageSize}`,
           `page-number=${pageNumber}`,
           `sort-by=${sortBy}`,
+          `order=${ordering}`,
           `search-term=${searchTerm.getOrElse("")}`,
         ].join("&")
     )
