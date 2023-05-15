@@ -125,7 +125,7 @@ const ScheduledVideos = () => {
     <div className={styles.scheduledVideos}>
       <ImageList cols={columnCount} rowHeight="auto">
         {scheduledVideoDownloads
-          .sortBy((value) => -1 * value.scheduledAt.unix())
+          .sortBy((value) => value.scheduledAt.unix())
           .map((scheduledVideoDownload, index) => (
             <ImageListItem cols={1} key={index}>
               <ScheduledVideoDownloadCard
