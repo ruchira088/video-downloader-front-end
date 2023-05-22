@@ -52,7 +52,7 @@ const ScheduledVideos = () => {
   })
 
   useEffect(() => {
-    fetchScheduledVideos(None(), 0, 100, SortBy.Date, Ordering.Ascending).then((results) =>
+    fetchScheduledVideos(None(), 0, 250, SortBy.Date, Ordering.Ascending).then((results) =>
       setScheduledVideoDownloads((scheduledVideoDownloads) =>
         scheduledVideoDownloads.concat(
           Map(
