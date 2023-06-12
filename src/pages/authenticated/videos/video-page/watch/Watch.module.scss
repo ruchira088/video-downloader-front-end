@@ -1,0 +1,19 @@
+.video {
+  max-height: 80vh;
+  max-width: 80vw;
+}
+
+.title {
+  font-size: 1.5em;
+  margin-bottom: 0.2em;
+}
+
+.videoMetadata {
+  .metadataLabel, .metadataValue {
+    margin: 0.25em;
+  }
+
+  .metadataValue {
+    font-weight: bold;
+  }
+}
