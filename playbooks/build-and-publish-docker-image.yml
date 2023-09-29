@@ -6,7 +6,7 @@
     - name: Install dependencies
       import_tasks: tasks/install-dependencies.yml
 
-    - name: Fetch git information
+    - name: Build and publish Docker image
       import_tasks: tasks/build-and-publish-docker-image.yml
       vars:
         publish: true
