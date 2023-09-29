@@ -1,4 +1,4 @@
-import { FormControlLabel, Switch } from "@material-ui/core"
+import { FormControlLabel, Switch } from "@mui/material"
 import React from "react"
 import { Settings } from "components/quick-settings/QuickSettings"
 

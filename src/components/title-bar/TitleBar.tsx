@@ -1,5 +1,5 @@
 import React from "react"
-import Grid from "@material-ui/core/Grid"
+import Grid from "@mui/material/Grid"
 import QuickSettings, { Settings } from "components/quick-settings/QuickSettings"
 import styles from "./TitleBar.module.css"
 import Navigator from "components/navigator/Navigator"

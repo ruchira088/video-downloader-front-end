@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { Maybe, NonEmptyList } from "monet"
-import { MenuItem, Select } from "@material-ui/core"
+import { MenuItem, Select } from "@mui/material"
 import { videoServiceSummary } from "services/video/VideoService"
 
 const VideoSelector = (props: {

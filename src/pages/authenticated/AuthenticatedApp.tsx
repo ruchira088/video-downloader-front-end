@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { BrowserRouter as Router } from "react-router-dom"
-import { Grid } from "@material-ui/core"
+import { Grid } from "@mui/material"
 import "./AuthenticatedApp.css"
 import ApplicationContext, {
   ApplicationContext as Context,

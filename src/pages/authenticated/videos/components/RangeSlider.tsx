@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import Range, { fromNumberArray, toNumberArray } from "models/Range"
-import { Slider } from "@material-ui/core"
+import { Slider } from "@mui/material"
 import { Codec } from "models/Codec"
 import RangeDisplay, { PrettyPrint } from "./RangeDisplay"
 import styles from "./RangeSlider.module.css"

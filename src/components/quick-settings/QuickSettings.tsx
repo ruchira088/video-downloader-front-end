@@ -1,5 +1,5 @@
 import React from "react"
-import { FormGroup } from "@material-ui/core"
+import { FormGroup } from "@mui/material"
 import { ApplicationContext } from "context/ApplicationContext"
 import styles from "./QuickSettings.module.css"
 import SafeModeSwitch from "./switches/SafeModeSwitch"

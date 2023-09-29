@@ -1,6 +1,6 @@
 import React from "react"
 import { Link } from "react-router-dom"
-import { Grid } from "@material-ui/core"
+import { Grid } from "@mui/material"
 import styles from "./Navigator.module.css"
 
 interface NavigationTab {

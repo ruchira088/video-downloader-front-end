@@ -7,7 +7,7 @@ import BackendInformation from "./components/BackendInformation"
 import { configuration } from "services/Configuration"
 import FrontendInformation from "./components/FrontendInformation"
 import moment from "moment"
-import { Button } from "@material-ui/core"
+import { Button } from "@mui/material"
 import { scanForVideos } from "../../services/video/VideoService"
 
 interface ServiceInformationItem {

@@ -17,8 +17,8 @@
 - name: Build production bundle
   shell: |
     cd ../ && \
-      yarn install --frozen-lockfile && \
-      yarn build
+      npm ci && \
+      npm run build
 
 - name: Build Docker image
   when: not publish

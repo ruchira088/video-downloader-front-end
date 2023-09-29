@@ -1,5 +1,5 @@
 import React, { ChangeEvent, Dispatch, SetStateAction, useState } from "react"
-import { Button, TextField } from "@material-ui/core"
+import { Button, TextField } from "@mui/material"
 import { login } from "services/authentication/AuthenticationService"
 import { AuthenticationToken } from "models/AuthenticationToken"
 import styles from "./LoginForm.module.css"

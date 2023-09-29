@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Button, TextField } from "@material-ui/core"
+import { Button, TextField } from "@mui/material"
 import { scheduleVideo } from "services/scheduling/SchedulingService"
 import Preview from "components/schedule/preview/Preview"
 import styles from "./Schedule.module.css"

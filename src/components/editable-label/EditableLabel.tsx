@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import styles from "./EditableLabel.module.css"
-import { TextField } from "@material-ui/core"
+import { TextField } from "@mui/material"
 
 const ReadModeLabel = ({ textValue, enabledEditMode }: { textValue: string; enabledEditMode: () => void }) => {
   const [showEdit, setShowEdit] = useState(false)

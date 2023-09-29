@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Duration } from "moment"
 import { Maybe } from "monet"
-import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle } from "@material-ui/core"
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material"
 import ApplicationContext from "context/ApplicationContext"
 import Video from "models/Video"
 import { imageUrl, videoUrl } from "services/asset/AssetService"

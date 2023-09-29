@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { WorkerStatus } from "models/WorkerStatus"
 import { fetchWorkerStatus, updateWorkerStatus } from "services/scheduling/SchedulingService"
-import { FormControlLabel, Switch } from "@material-ui/core"
+import { FormControlLabel, Switch } from "@mui/material"
 
 export default () => {
   const [workerStatus, setWorkerStatus] = useState(WorkerStatus.Available)

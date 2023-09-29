@@ -5,7 +5,7 @@ import { Snapshot } from "models/Snapshot"
 import ApplicationContext from "context/ApplicationContext"
 import { shortHumanReadableDuration } from "utils/Formatter"
 import styles from "./VideoSnapshots.module.css"
-import { Grid } from "@material-ui/core"
+import { Grid } from "@mui/material"
 
 const VideoSnapshot = (snapshot: Snapshot) => (
   <ApplicationContext.Consumer>

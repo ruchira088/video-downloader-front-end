@@ -21,10 +21,10 @@ jobs:
         uses: actions/setup-node@v3
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
 #      - name: Execute test suite
-#        run: yarn test
+#        run: npm test
 
       - name: Send failure Slack message
         if: failure()

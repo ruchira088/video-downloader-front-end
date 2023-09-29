@@ -15,7 +15,7 @@ import { DownloadProgress } from "models/DownloadProgress"
 import { parseDownloadProgress } from "utils/ResponseParser"
 import { SortBy } from "models/SortBy"
 import styles from "./ScheduledVideos.module.css"
-import { ImageList, ImageListItem } from "@material-ui/core"
+import { ImageList, ImageListItem } from "@mui/material"
 import { Ordering } from "../../../models/Ordering"
 
 const DOWNLOAD_HISTORY_SIZE = 10

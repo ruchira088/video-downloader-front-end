@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { ImageList, ImageListItem } from "@material-ui/core"
+import { ImageList, ImageListItem } from "@mui/material"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { Maybe, NonEmptyList } from "monet"
 import { List } from "immutable"
