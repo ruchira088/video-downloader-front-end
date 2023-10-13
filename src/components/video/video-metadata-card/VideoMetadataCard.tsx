@@ -79,7 +79,7 @@ const VideoMetadataCard = (metadata: VideoMetadata & { disableSnapshots?: boolea
             <div className={styles.size}>{humanReadableSize(metadata.size)}</div>
             <div className={styles.duration}>{shortHumanReadableDuration(metadata.duration)}</div>
           </div>
-          <div>{translate(metadata.title, safeMode)}</div>
+          <div className={styles.videoTitle}>{translate(metadata.title, safeMode)}</div>
         </div>
       )}
     </ApplicationContext.Consumer>

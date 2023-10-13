@@ -12,3 +12,7 @@
 .loginButton button {
   margin: auto;
 }
+
+.textField {
+  margin: 0.25em;
+}

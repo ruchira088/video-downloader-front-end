@@ -48,7 +48,7 @@ const Videos = () => {
   const [width, setWidth] = useState<number>(windowWidth())
 
   const navigate = useNavigate()
-  const columns = Math.ceil(width / 350)
+  const columns = Math.max(1, Math.floor(width / 350))
 
   const loadMoreVideos = (): void => {
     if (!isLoading) {
@@ -97,7 +97,9 @@ const Videos = () => {
   }
 
   useEffect(() => {
-    const onResize = () => { setWidth(windowWidth()) }
+    const onResize = () => {
+      setWidth(windowWidth())
+    }
 
     window.addEventListener("resize", onResize)
 

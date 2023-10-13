@@ -58,6 +58,7 @@ const LoginForm = ({ onAuthenticate }: { onAuthenticate: (token: AuthenticationT
             label="Email"
             helperText={errors.email.getOrElse("")}
             type="email"
+            className={styles.textField}
             fullWidth
           />
           <TextField
@@ -67,6 +68,7 @@ const LoginForm = ({ onAuthenticate }: { onAuthenticate: (token: AuthenticationT
             helperText={errors.password.getOrElse("")}
             label="Password"
             type="password"
+            className={styles.textField}
             fullWidth
           />
         </div>
