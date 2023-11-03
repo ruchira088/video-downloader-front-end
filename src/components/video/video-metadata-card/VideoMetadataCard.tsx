@@ -79,11 +79,23 @@ const VideoMetadataCard = (metadata: VideoMetadata & { disableSnapshots?: boolea
             <div className={styles.size}>{humanReadableSize(metadata.size)}</div>
             <div className={styles.duration}>{shortHumanReadableDuration(metadata.duration)}</div>
           </div>
-          <div className={styles.videoTitle}>{translate(metadata.title, safeMode)}</div>
+          <div className={styles.videoTitle}>{translate(trimTitle(metadata.title), safeMode)}</div>
         </div>
       )}
     </ApplicationContext.Consumer>
   )
+}
+
+const trimTitle =
+  (title: string): string =>  {
+    const textLimit = 35
+    const lastTerminatingSpace = title.indexOf(" ", textLimit)
+
+    if (lastTerminatingSpace === -1) {
+      return title.substring(0, textLimit)
+    } else {
+      return title.substring(0, lastTerminatingSpace)
+    }
 }
 
 export default VideoMetadataCard
