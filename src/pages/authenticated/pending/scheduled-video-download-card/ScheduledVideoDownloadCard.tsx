@@ -27,7 +27,7 @@ const ScheduledVideoDownloadCard = (props: {
       >
         Delete
       </Button>
-      <VideoMetadataCard {...props.scheduledVideoDownload.videoMetadata} disableSnapshots={true} />
+      <VideoMetadataCard {...props.scheduledVideoDownload.videoMetadata} classNames={styles.videoMetadata} disableSnapshots={true} />
       {props.scheduledVideoDownload.videoMetadata.size > props.scheduledVideoDownload.downloadedBytes && (
         <div>
           <ProgressBar

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react"
+import classNames from "classnames"
 import VideoMetadata from "models/VideoMetadata"
 import ApplicationContext from "context/ApplicationContext"
 import { imageUrl } from "services/asset/AssetService"
@@ -10,7 +11,7 @@ import { Snapshot } from "models/Snapshot"
 import { fetchVideoSnapshots } from "services/video/VideoService"
 import VideoSiteCard from "../video-site-card/VideoSiteCard";
 
-const VideoMetadataCard = (metadata: VideoMetadata & { disableSnapshots?: boolean }) => {
+const VideoMetadataCard = (metadata: VideoMetadata & { disableSnapshots?: boolean, classNames?: string }) => {
   const [maybeSnapshots, setMaybeSnapshots] = useState<Maybe<Snapshot[]>>(None())
   const [maybeIntervalTimeout, setMaybeIntervalTimeout] = useState<Maybe<NodeJS.Timeout>>(None())
   const [index, setIndex] = useState<number>(0)
@@ -66,7 +67,7 @@ const VideoMetadataCard = (metadata: VideoMetadata & { disableSnapshots?: boolea
   return (
     <ApplicationContext.Consumer>
       {({ safeMode }) => (
-        <div className={styles.videoMetadataCard}>
+        <div className={classNames(styles.videoMetadataCard, metadata.classNames)}>
           <div className={styles.imageContainer}>
             <VideoSiteCard videoSite={metadata.videoSite}/>
             <img
