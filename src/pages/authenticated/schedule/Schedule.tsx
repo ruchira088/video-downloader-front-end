@@ -4,6 +4,7 @@ import { scheduleVideo } from "services/scheduling/SchedulingService"
 import Preview from "components/schedule/preview/Preview"
 import styles from "./Schedule.module.css"
 import { LoadingComponent } from "components/hoc/loading/loadableComponent"
+import { Helmet } from "react-helmet"
 
 const Schedule = () => {
   const [videoUrl, setVideoUrl] = useState(String())
@@ -21,6 +22,9 @@ const Schedule = () => {
 
   return (
     <>
+      <Helmet>
+        <title>Schedule</title>
+      </Helmet>
       <div className={styles.schedule}>
         <TextField onChange={handleTextChange} value={videoUrl} label="Website URL" className={styles.inputUrl} />
         <Button onClick={onScheduleButtonClick} variant="contained" color="primary">

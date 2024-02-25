@@ -9,6 +9,7 @@ import FrontendInformation from "./components/FrontendInformation"
 import moment from "moment"
 import { Button } from "@mui/material"
 import { scanForVideos } from "../../services/video/VideoService"
+import { Helmet } from "react-helmet"
 
 interface ServiceInformationItem {
   readonly label: string
@@ -51,6 +52,9 @@ const ServiceInformation = () => {
 
   return (
     <div className="service-information">
+      <Helmet>
+        <title>Service Information</title>
+      </Helmet>
       <div className="back-end">
         <ServiceInformationItem label="API URL" value={Some(configuration.apiService)} />
         {loadableComponent(BackendInformation, backendInformation)}

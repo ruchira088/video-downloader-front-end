@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import { Maybe, NonEmptyList } from "monet"
 import { List } from "immutable"
 import Axios, { CancelTokenSource } from "axios"
+import {Helmet} from "react-helmet"
 import { searchVideos } from "services/video/VideoService"
 import InfiniteScroll from "react-infinite-scroller"
 import VideoCard from "components/video/video-card/VideoCard"
@@ -95,7 +96,6 @@ const Videos = () => {
     queryParams.set(name, encoder(value))
     navigate({ search: queryParams.toString() })
   }
-
   useEffect(() => {
     const onResize = () => {
       setWidth(windowWidth())
@@ -108,6 +108,9 @@ const Videos = () => {
 
   return (
     <>
+      <Helmet>
+        <title>Videos Page</title>
+      </Helmet>
       <VideoSearch
         videoTitles={videos.map((video) => video.videoMetadata.title).slice(0, 10)}
         searchTerm={searchTerm}

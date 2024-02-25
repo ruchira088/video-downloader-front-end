@@ -17,6 +17,7 @@ import { SortBy } from "models/SortBy"
 import styles from "./ScheduledVideos.module.css"
 import { ImageList, ImageListItem } from "@mui/material"
 import { Ordering } from "../../../models/Ordering"
+import { Helmet } from "react-helmet"
 
 const DOWNLOAD_HISTORY_SIZE = 10
 
@@ -123,6 +124,9 @@ const ScheduledVideos = () => {
 
   return (
     <div className={styles.scheduledVideos}>
+      <Helmet>
+        <title>Pending Videos</title>
+      </Helmet>
       <ImageList cols={columnCount} rowHeight="auto">
         {scheduledVideoDownloads
           .sortBy((value) => value.scheduledAt.unix())
