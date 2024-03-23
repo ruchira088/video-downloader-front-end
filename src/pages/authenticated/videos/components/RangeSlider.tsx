@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, JSX } from "react"
 import Range, { fromNumberArray, toNumberArray } from "models/Range"
 import { Slider } from "@mui/material"
 import { Codec } from "models/Codec"
