@@ -1,2 +1,12 @@
 .scheduledVideos {
 }
+
+.imageListItem {
+    position: relative;
+
+    .sourceLink {
+        position: absolute;
+        top: 65%;
+        left: 10%;
+    }
+}

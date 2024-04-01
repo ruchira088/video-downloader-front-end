@@ -131,7 +131,7 @@ const ScheduledVideos = () => {
         {scheduledVideoDownloads
           .sortBy((value) => value.scheduledAt.unix())
           .map((scheduledVideoDownload, index) => (
-            <ImageListItem cols={1} key={index}>
+            <ImageListItem className={styles.imageListItem} cols={1} key={index}>
               <ScheduledVideoDownloadCard
                 scheduledVideoDownload={scheduledVideoDownload}
                 onDelete={(videoId) =>
@@ -140,6 +140,7 @@ const ScheduledVideos = () => {
                   )
                 }
               />
+              <a className={styles.sourceLink} href={scheduledVideoDownload.videoMetadata.url} target="_blank">Source</a>
             </ImageListItem>
           ))
           .toList()}
