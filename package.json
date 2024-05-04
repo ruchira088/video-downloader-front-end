@@ -1,6 +1,6 @@
 {
   "name": "video-downloader-front-end",
-  "version": "1.4.7",
+  "version": "1.4.8-SNAPSHOT",
   "private": true,
   "devDependencies": {
     "@babel/core": "^7.16.0",
