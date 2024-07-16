@@ -75,6 +75,7 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.14.10",
+    "@popperjs/core": "^2.11.8",
     "axios": "^1.1.2",
     "immutable": "^4.3.6",
     "memoizee": "^0.4.15",
