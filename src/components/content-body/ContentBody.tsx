@@ -7,11 +7,13 @@ import ScheduleVideo from "pages/authenticated/schedule/Schedule"
 import ScheduledVideos from "pages/authenticated/pending/ScheduledVideos"
 import ServerErrorPage from "pages/authenticated/server-error/ServerErrorPage"
 import styles from "./ContentBody.module.css"
+import HistoryPage from "../../pages/authenticated/history/HistoryPage"
 
 const ContentBody = () => (
   <div className={styles.contentBody}>
     <Routes>
       <Route path="/" element={<Videos />} />
+      <Route path="/history" element={<HistoryPage />} />
       <Route path="/video/:videoId" element={<VideoPage />} />
       <Route path="/service-information" element={<ServiceInformation />} />
       <Route path="/schedule" element={<ScheduleVideo />} />

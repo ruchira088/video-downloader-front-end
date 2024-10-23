@@ -11,14 +11,15 @@ interface NavigationTab {
 const navigationTabs: NavigationTab[] = [
   { label: "Videos", path: "/" },
   { label: "Schedule", path: "/schedule" },
+  { label: "History", path: "/history" },
   { label: "Pending", path: "/pending" },
-  { label: "Service Information", path: "/service-information" },
+  { label: "Service Information", path: "/service-information" }
 ]
 
 const Navigator = () => (
   <Grid container className={styles.navigator}>
     {navigationTabs.map((navigationTab, index) => (
-      <Grid item xs={3} key={index}>
+      <Grid item xs={2} key={index}>
         <Link to={navigationTab.path} className={styles.navigatorTab}>
           {navigationTab.label}
         </Link>
