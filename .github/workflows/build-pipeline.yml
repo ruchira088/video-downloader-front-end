@@ -34,6 +34,10 @@ jobs:
     needs:
       - transpile-and-test
 
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -64,6 +68,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-and-publish-docker-image
+
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout code
