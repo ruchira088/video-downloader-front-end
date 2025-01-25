@@ -89,7 +89,8 @@
   },
   "scripts": {
     "start": "REACT_APP_API_URL=https://api.video.home.ruchij.com node scripts/start.js",
-    "start:docker-compose": "REACT_APP_API_URL=https://api.localhost node scripts/start.js",
+    "start:local": "REACT_APP_API_URL=https://api.localhost node scripts/start.js",
+    "start:dev": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js",
     "prettier": "prettier -w .",

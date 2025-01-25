@@ -22,12 +22,22 @@
 
 - name: Build Docker image
   when: not publish
-  shell: |
-    docker build \
-      -f docker/Dockerfile \
-      -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }} \
-      -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
-      ../
+  block:
+    - name: Build production image
+      shell: |
+        docker build \
+          -f docker/Dockerfile \
+          -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }} \
+          -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
+          ../
+
+    - name: Build development image
+      shell: |
+        docker build \
+          -f docker/Dockerfile-dev \
+          -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }} \
+          -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }}-{{ git_commit }} \
+          ../
 
 - name: Build and publish Docker image
   when: publish
@@ -37,7 +47,7 @@
         vars:
           access_token: "{{ lookup('aws_ssm', '/github/packages/read-write-token', region='ap-southeast-2') }}"
 
-      - name: Publish Docker image
+      - name: Publish production Docker image
         shell: |
           docker buildx build \
             --push \
@@ -45,6 +55,16 @@
             -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }} \
             -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
             -f docker/Dockerfile \
+            ../
+
+      - name: Publish development Docker image
+        shell: |
+          docker buildx build \
+            --push \
+            --platform linux/arm64,linux/amd64 \
+            -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }} \
+            -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }}-{{ git_commit }} \
+            -f docker/Dockerfile-dev \
             ../
 
 - name: Clean up
