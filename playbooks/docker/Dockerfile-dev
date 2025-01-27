@@ -1,6 +1,6 @@
 FROM node:lts-slim
 
-LABEL org.opencontainers.image.source=https://github.com/ruchira088/video-downloader-front-end-dev
+LABEL org.opencontainers.image.source=https://github.com/ruchira088/video-downloader-front-end
 
 WORKDIR /opt/front-end
 
