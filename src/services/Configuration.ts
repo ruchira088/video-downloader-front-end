@@ -5,6 +5,8 @@ enum ConfigurationKey {
   SafeMode = "SafeMode",
 }
 
+const API_URL_QUERY_PARAMETER = "API_URL"
+
 const ConfigurationKeySpace: KeySpace<ConfigurationKey, boolean> = {
   name: "Configuration",
 
@@ -33,6 +35,24 @@ const configurationKeyStore = new LocalKeyValueStore(ConfigurationKeySpace)
 
 const savedSafeMode = configurationKeyStore.get(ConfigurationKey.SafeMode)
 
+const apiBaseUrl = (): string => {
+  const location = window.location
+  const queryParams: URLSearchParams = new URLSearchParams(location.search)
+  const apiUrlViaQueryParams = queryParams.get(API_URL_QUERY_PARAMETER)
+
+  return Maybe.fromFalsy(apiUrlViaQueryParams)
+    .cata(
+      () => Maybe.fromFalsy(process.env.REACT_APP_API_URL),
+      apiUrl => {
+        const url = new URL(location.href)
+        url.searchParams.delete(API_URL_QUERY_PARAMETER)
+        window.history.replaceState({}, "", url.toString())
+
+        return Maybe.Some(apiUrl)
+      })
+    .orLazy(() => `https://api.${window.location.hostname}`)
+}
+
 export const setSavedSafeMode = (safeMode: boolean) => configurationKeyStore.put(ConfigurationKey.SafeMode, safeMode)
 
 export interface Configuration {
@@ -41,6 +61,6 @@ export interface Configuration {
 }
 
 export const configuration: Configuration = {
-  apiService: Maybe.fromFalsy(process.env.REACT_APP_API_URL).orLazy(() => `https://api.${window.location.hostname}`),
+  apiService: apiBaseUrl(),
   safeMode: savedSafeMode.getOrElse(false),
 }
