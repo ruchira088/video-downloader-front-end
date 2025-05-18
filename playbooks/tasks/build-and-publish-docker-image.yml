@@ -31,14 +31,6 @@
           -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
           ../
 
-    - name: Build development image
-      shell: |
-        docker build \
-          -f docker/Dockerfile-dev \
-          -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }} \
-          -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }}-{{ git_commit }} \
-          ../
-
 - name: Build and publish Docker image
   when: publish
   block:
