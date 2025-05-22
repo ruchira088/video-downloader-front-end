@@ -24,7 +24,7 @@ export interface VideoSearchParameter<A, B extends VideoSearchParamName> {
 }
 
 class DurationRangeSearchParameter implements VideoSearchParameter<DurationRange, VideoSearchParamName.DurationRange> {
-  default: DurationRange = { min: Duration.fromObject({ minutes: 0 }), max: null }
+  default: DurationRange = { min: Duration.fromObject({ minutes: 0 }), max: None.of() }
 
   name: VideoSearchParamName.DurationRange = VideoSearchParamName.DurationRange
 
@@ -34,7 +34,7 @@ class DurationRangeSearchParameter implements VideoSearchParameter<DurationRange
 }
 
 class SizeRangeSearchParameter implements VideoSearchParameter<Range<number>, VideoSearchParamName.SizeRange> {
-  default: Range<number> = { min: 0, max: null }
+  default: Range<number> = { min: 0, max: None.of() }
 
   name: VideoSearchParamName.SizeRange = VideoSearchParamName.SizeRange
 

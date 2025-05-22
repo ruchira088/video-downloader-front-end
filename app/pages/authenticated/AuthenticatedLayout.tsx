@@ -9,6 +9,7 @@ import {
 import { setSavedSafeMode } from "~/services/Configuration"
 import { ApplicationContext, DEFAULT_APPLICATION_CONTEXT } from "~/context/ApplicationContext"
 import TitleBar from "~/components/title-bar/TitleBar"
+import type { Option } from "~/types/Option"
 
 const AuthenticatedLayout = () => {
   const navigate = useNavigate()
@@ -24,15 +25,15 @@ const AuthenticatedLayout = () => {
   }, [])
 
   const checkAuthentication = async () => {
-    const token: AuthenticationToken | null = getAuthenticationToken()
+    const token: Option<AuthenticationToken> = getAuthenticationToken()
 
-    if (token) {
+    await token.forEach(async () => {
       try {
         await getAuthenticatedUser()
         return
       } catch (e) {
       }
-    }
+    })
 
     navigate(`/sign-in?${REDIRECT_QUERY_PARAMETER}=` + window.location.pathname)
   }

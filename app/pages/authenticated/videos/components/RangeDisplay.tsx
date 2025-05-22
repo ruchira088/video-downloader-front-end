@@ -30,7 +30,7 @@ const RangeDisplay = <A extends {}>(props: RangeDisplayProps<A>): JSX.Element =>
     <div className={props.className}>
       <span>{props.printer.print(props.range.min)}</span>
       <span> - </span>
-      <span>{Option.fromNullable(props.range.max).map(props.printer.print).getOrElse(() => "Max")}</span>
+      <span>{props.range.max.map(props.printer.print).getOrElse(() => "Max")}</span>
     </div>
   )
 

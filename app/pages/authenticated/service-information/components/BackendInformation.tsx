@@ -14,12 +14,12 @@ const BackendInformation = (backendServiceInformation: BackendServiceInformation
       <ServiceInformationItem label="sbt Version" value={Some.of(backendServiceInformation.sbtVersion)} />
       <ServiceInformationItem label="Server Timestamp"
                               value={Some.of(backendServiceInformation.currentTimestamp.toString())} />
-      <ServiceInformationItem label="Git Branch" value={Option.fromNullable(backendServiceInformation.gitBranch)} />
-      <ServiceInformationItem label="Git Commit" value={Option.fromNullable(backendServiceInformation.gitCommit)} />
+      <ServiceInformationItem label="Git Branch" value={backendServiceInformation.gitBranch} />
+      <ServiceInformationItem label="Git Commit" value={backendServiceInformation.gitCommit} />
     <ServiceInformationItem
       label="Build Timestamp"
       value={
-          Option.fromNullable(backendServiceInformation.buildTimestamp)
+          backendServiceInformation.buildTimestamp
             .map(
               (timestamp) =>
                 `${timestamp} (${timestamp.toRelative({ base: DateTime.now()})})`

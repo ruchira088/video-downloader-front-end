@@ -1,3 +1,5 @@
+import { Option } from "~/types/Option"
+
 const localStorage: Storage = window.localStorage
 
 export interface Codec<A, B> {
@@ -17,29 +19,28 @@ export interface KeySpace<K, V> {
 export default interface KeyValueStore<K, V extends {}> {
   put(key: K, value: V): void
 
-  get(key: K): V | null
+  get(key: K): Option<V>
 
-  remove(key: K): V | null
+  remove(key: K): Option<V>
 }
 
 export class LocalKeyValueStore<K, V extends {}> implements KeyValueStore<K, V> {
   constructor(readonly keySpace: KeySpace<K, V>) {}
 
-  get(key: K): V | null {
-    const stringValue: string | null = localStorage.getItem(this.stringKey(key))
+  get(key: K): Option<V> {
+    const stringValue: Option<string> =
+      Option.fromNullable(
+        localStorage.getItem(this.stringKey(key))
+      )
 
-    if (stringValue !== null) {
-      return this.keySpace.valueCodec.decode(stringValue)
-    } else {
-      return null
-    }
+    return stringValue.map(this.keySpace.valueCodec.decode)
   }
 
   put(key: K, value: V): void {
     localStorage.setItem(this.stringKey(key), this.keySpace.valueCodec.encode(value))
   }
 
-  remove(key: K): V | null {
+  remove(key: K): Option<V> {
     const existingValue = this.get(key)
 
     localStorage.removeItem(this.stringKey(key))

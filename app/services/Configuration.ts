@@ -66,5 +66,5 @@ export interface Configuration {
 
 export const configuration: Configuration = {
   apiService: apiBaseUrl(),
-  safeMode: savedSafeMode ?? false,
+  safeMode: savedSafeMode.getOrElse(() => false),
 }

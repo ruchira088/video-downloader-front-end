@@ -13,7 +13,7 @@ export abstract class Option<T> {
 
   abstract toList(): T[]
 
-  abstract forEach(fn: (value: T) => void): void
+  abstract forEach<A>(fn: (value: T) => Promise<A> | A): Promise<A | void> | A
 
   static fromNullable<T>(value: T | null | undefined): Option<T> {
     return value === null || value === undefined ? None.of<T>() : Some.of<T>(value)
@@ -53,8 +53,8 @@ export class Some<T> extends Option<T> {
     return [this.value]
   }
 
-  forEach(fn: (value: T) => void): void {
-    fn(this.value)
+  forEach<A>(fn: (value: T) => Promise<A> | A ): Promise<A | void> | A {
+    return fn(this.value)
   }
 
   static of<A>(value: A): Some<A> {
@@ -62,7 +62,7 @@ export class Some<T> extends Option<T> {
   }
 }
 
-export class None<A> extends Option<A> {
+export class None<T> extends Option<T> {
   value: null = null
 
   map<R>(fn: (value: any) => R): Option<R> {
@@ -73,7 +73,7 @@ export class None<A> extends Option<A> {
     return None.of()
   }
 
-  filter(fn: (value: A) => boolean): Option<A> {
+  filter(fn: (value: T) => boolean): Option<T> {
     return this
   }
 
@@ -81,19 +81,20 @@ export class None<A> extends Option<A> {
     return onNone()
   }
 
-  getOrElse(fn: () => A): A {
+  getOrElse(fn: () => T): T {
     return fn()
   }
 
-  toNullable(): A | null {
+  toNullable(): T | null {
     return null
   }
 
-  toList(): A[] {
+  toList(): T[] {
     return []
   }
 
-  forEach(fn: (value: A) => void): void {
+  forEach<A>(fn: (value: T) => Promise<A>): Promise<A | void> | A  {
+    return Promise.resolve()
   }
 
   static of<A>(): None<A> {

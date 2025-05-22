@@ -1,5 +1,5 @@
 import { z } from "zod/v4"
-import { ZodDateTime } from "~/types/Zod"
+import { ZodDateTime, ZodOptional } from "~/types/Zod"
 
 export const BackendServiceInformation = z.object({
   serviceName: z.string(),
@@ -9,9 +9,9 @@ export const BackendServiceInformation = z.object({
   sbtVersion: z.string(),
   javaVersion: z.string(),
   currentTimestamp: ZodDateTime,
-  gitBranch: z.string().nullish(),
-  gitCommit: z.string().nullish(),
-  buildTimestamp: ZodDateTime.nullish()
+  gitBranch: ZodOptional(z.string()),
+  gitCommit: ZodOptional(z.string()),
+  buildTimestamp: ZodOptional(ZodDateTime)
 })
 
 export type BackendServiceInformation = z.infer<typeof BackendServiceInformation>

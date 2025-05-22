@@ -2,6 +2,7 @@ import { axiosClient } from "~/services/http/HttpClient"
 import { AuthenticationToken } from "~/models/AuthenticationToken"
 import { type KeySpace, LocalKeyValueStore } from "~/services/kv-store/KeyValueStore"
 import { User } from "~/models/User"
+import type { Option } from "~/types/Option"
 
 export enum AuthenticationKey {
   Token = "Token",
@@ -35,7 +36,7 @@ const authenticationKeyValueStore = new LocalKeyValueStore(AuthenticationKeySpac
 
 export const REDIRECT_QUERY_PARAMETER = "redirect"
 
-export const getAuthenticationToken = (): AuthenticationToken | null =>
+export const getAuthenticationToken = (): Option<AuthenticationToken> =>
   authenticationKeyValueStore.get(AuthenticationKey.Token)
 
 export const login = async (email: string, password: string): Promise<AuthenticationToken> => {
@@ -62,5 +63,5 @@ export const logout = async (): Promise<AuthenticationToken> => {
   return authenticationToken
 }
 
-export const removeAuthenticationToken = (): AuthenticationToken | null =>
+export const removeAuthenticationToken = (): Option<AuthenticationToken> =>
   authenticationKeyValueStore.remove(AuthenticationKey.Token)

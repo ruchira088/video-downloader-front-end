@@ -2,6 +2,7 @@ import React, { useEffect } from "react"
 import { Outlet, useNavigate } from "react-router"
 import { getAuthenticatedUser, getAuthenticationToken } from "~/services/authentication/AuthenticationService"
 import type { AuthenticationToken } from "~/models/AuthenticationToken"
+import type { Option } from "~/types/Option"
 
 const UnauthenticatedLayout = () => {
   const navigate = useNavigate()
@@ -10,16 +11,16 @@ const UnauthenticatedLayout = () => {
     checkAuthentication()
   }, [])
 
-  const checkAuthentication = async () => {
-    const token: AuthenticationToken | null = getAuthenticationToken()
+  const checkAuthentication = () => {
+    const token: Option<AuthenticationToken> = getAuthenticationToken()
 
-    if (token) {
+    token.forEach(async () => {
       try {
         await getAuthenticatedUser()
         navigate("/home")
       } catch (e) {
       }
-    }
+    })
   }
 
   return <Outlet />
