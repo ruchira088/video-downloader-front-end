@@ -26,3 +26,5 @@ yarn-error.log*
 playbooks
 !playbooks/docker/default.conf
 release
+
+.react-router
