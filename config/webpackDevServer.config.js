@@ -57,14 +57,14 @@ module.exports = function (proxy, allowedHost) {
       // Note that we only recommend to use `public` folder as an escape hatch
       // for files like `favicon.ico`, `manifest.json`, and libraries that are
       // for some reason broken when imported through webpack. If you just want to
-      // use an image, put it in `src` and `import` it from JavaScript instead.
+      // use an image, put it in `app` and `import` it from JavaScript instead.
       directory: paths.appPublic,
       publicPath: [paths.publicUrlOrPath],
       // By default files from `contentBase` will not trigger a page reload.
       watch: {
         // Reportedly, this avoids CPU overload on some systems.
         // https://github.com/facebook/create-react-app/issues/293
-        // src/node_modules is not ignored to support absolute imports
+        // app/node_modules is not ignored to support absolute imports
         // https://github.com/facebook/create-react-app/issues/1065
         ignored: ignoredFiles(paths.appSrc),
       },

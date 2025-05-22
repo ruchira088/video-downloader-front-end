@@ -321,9 +321,9 @@ module.exports = function (webpackEnv) {
         ...(modules.webpackAliases || {}),
       },
       plugins: [
-        // Prevents users from importing files from outside of src/ (or node_modules/).
-        // This often causes confusion because we only process files within src/ with babel.
-        // To fix this, we prevent you from importing files out of src/ -- if you'd like to,
+        // Prevents users from importing files from outside of app/ (or node_modules/).
+        // This often causes confusion because we only process files within app/ with babel.
+        // To fix this, we prevent you from importing files out of app/ -- if you'd like to,
         // please link the files into your node_modules/ and let module-resolution kick in.
         // Make sure your source files are compiled, as they will not be processed in any way.
         new ModuleScopePlugin(paths.appSrc, [
@@ -705,17 +705,17 @@ module.exports = function (webpackEnv) {
           issue: {
             // This one is specifically to match during CI tests,
             // as micromatch doesn't match
-            // '../cra-template-typescript/template/src/App.tsx'
+            // '../cra-template-typescript/template/app/App.tsx'
             // otherwise.
             include: [
-              { file: '../**/src/**/*.{ts,tsx}' },
-              { file: '**/src/**/*.{ts,tsx}' },
+              { file: '../**/app/**/*.{ts,tsx}' },
+              { file: '**/app/**/*.{ts,tsx}' },
             ],
             exclude: [
-              { file: '**/src/**/__tests__/**' },
-              { file: '**/src/**/?(*.){spec|test}.*' },
-              { file: '**/src/setupProxy.*' },
-              { file: '**/src/setupTests.*' },
+              { file: '**/app/**/__tests__/**' },
+              { file: '**/app/**/?(*.){spec|test}.*' },
+              { file: '**/app/setupProxy.*' },
+              { file: '**/app/setupTests.*' },
             ],
           },
           logger: {
