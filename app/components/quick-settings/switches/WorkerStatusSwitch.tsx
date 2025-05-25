@@ -1,28 +1,39 @@
 import React, { useEffect, useState } from "react"
 import { WorkerStatus } from "~/models/WorkerStatus"
 import { fetchWorkerStatus, updateWorkerStatus } from "~/services/scheduling/SchedulingService"
-import { FormControlLabel, Switch } from "@mui/material"
+import { FormControlLabel, Switch, LinearProgress, CircularProgress } from "@mui/material"
 
-export default () => {
-  const [workerStatus, setWorkerStatus] = useState(WorkerStatus.Available)
+const WorkerStatusSwitch = () => {
+  const [workerStatus, setWorkerStatus] = useState<WorkerStatus | null>(null)
 
   useEffect(() => {
     fetchWorkerStatus().then((status) => setWorkerStatus(status))
-  })
+  }, [])
+
+  const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const updated: WorkerStatus = event.target.checked ? WorkerStatus.Available : WorkerStatus.Paused
+    const existingValue = workerStatus
+    setWorkerStatus(updated)
+
+    try {
+      await updateWorkerStatus(updated)
+    } catch (e) {
+      console.log(e)
+      setWorkerStatus(existingValue)
+    }
+  }
 
   return (
     <FormControlLabel
       control={
         <Switch
           checked={workerStatus === WorkerStatus.Available}
-          onChange={({ target }) => {
-            const updated: WorkerStatus = target.checked ? WorkerStatus.Available : WorkerStatus.Paused
-
-            updateWorkerStatus(updated).then((value) => setWorkerStatus(value))
-          }}
-        />
-      }
+          onChange={onChange}
+          disabled={workerStatus === null}/>
+    }
       label="Worker Status"
     />
   )
 }
+
+export default WorkerStatusSwitch
