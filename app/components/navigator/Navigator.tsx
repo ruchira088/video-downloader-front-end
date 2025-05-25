@@ -1,9 +1,8 @@
 import React from "react"
-import {Link} from "react-router"
-import { Grid } from "@mui/material"
+import { Link } from "react-router"
 import styles from "./Navigator.module.css"
 
-interface NavigationTab {
+type NavigationTab = {
   readonly label: string
   readonly path: string
 }
