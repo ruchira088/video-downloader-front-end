@@ -69,8 +69,6 @@ export class Some<T> extends Option<T> {
 }
 
 export class None<T> extends Option<T> {
-  value: null = null
-
   map<R>(fn: (value: any) => R): Option<R> {
     return None.of()
   }

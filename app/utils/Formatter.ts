@@ -1,29 +1,31 @@
 import { Duration, type DurationUnit } from "luxon"
 import { Option } from "~/types/Option"
 
-interface ByteSize {
+type ByteUnit = "B" | "kB" | "MB" | "GB"
+
+type ByteSize = {
   readonly floor: number
-  readonly suffix: string
+  readonly unit: ByteUnit
 }
 
 const BYTE: ByteSize = {
   floor: 1,
-  suffix: "B",
+  unit: "B",
 }
 
 const KILO_BYTE: ByteSize = {
   floor: 1000,
-  suffix: "kB",
+  unit: "kB",
 }
 
 const MEGA_BYTE: ByteSize = {
   floor: 1000 * KILO_BYTE.floor,
-  suffix: "MB",
+  unit: "MB",
 }
 
 const GIGA_BYTE: ByteSize = {
   floor: 1000 * MEGA_BYTE.floor,
-  suffix: "GB",
+  unit: "GB",
 }
 
 export const humanReadableSize = (size: number, alwaysShowDecimals = false): string => {
@@ -31,8 +33,8 @@ export const humanReadableSize = (size: number, alwaysShowDecimals = false): str
     [GIGA_BYTE, MEGA_BYTE, KILO_BYTE].find((byteSize) => byteSize.floor < size)
   ).getOrElse(() => BYTE)
 
-  return `${(size / byteSize.floor).toFixed(byteSize.suffix === GIGA_BYTE.suffix || alwaysShowDecimals ? 2 : 0)}${
-    byteSize.suffix
+  return `${(size / byteSize.floor).toFixed(byteSize.unit === GIGA_BYTE.unit || alwaysShowDecimals ? 2 : 0)}${
+    byteSize.unit
   }`
 }
 
