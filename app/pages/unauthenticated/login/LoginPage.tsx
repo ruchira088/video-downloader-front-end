@@ -13,7 +13,7 @@ const LoginPage = () => {
   const onAuthenticate = () => {
     const redirect: Option<string> = Option.fromNullable(searchParams.get(REDIRECT_QUERY_PARAMETER))
 
-    const nextUrl = redirect.getOrElse(() => "/home")
+    const nextUrl = redirect.getOrElse(() => "/")
     navigate(nextUrl)
   }
 

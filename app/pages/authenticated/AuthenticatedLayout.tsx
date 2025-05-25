@@ -27,15 +27,19 @@ const AuthenticatedLayout = () => {
   const checkAuthentication = async () => {
     const token: Option<AuthenticationToken> = getAuthenticationToken()
 
+    const redirectUrl = `/sign-in?${REDIRECT_QUERY_PARAMETER}=${window.location.pathname}`
+
     await token.forEach(async () => {
       try {
         await getAuthenticatedUser()
-        return
       } catch (e) {
+        navigate(redirectUrl)
       }
     })
 
-    navigate(`/sign-in?${REDIRECT_QUERY_PARAMETER}=` + window.location.pathname)
+    if (token.isEmpty()) {
+      navigate(redirectUrl)
+    }
   }
 
   return (

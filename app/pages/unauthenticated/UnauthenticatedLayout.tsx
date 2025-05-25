@@ -16,8 +16,8 @@ const UnauthenticatedLayout = () => {
 
     token.forEach(async () => {
       try {
-        await getAuthenticatedUser()
-        navigate("/home")
+        const user = await getAuthenticatedUser()
+        navigate("/")
       } catch (e) {
       }
     })

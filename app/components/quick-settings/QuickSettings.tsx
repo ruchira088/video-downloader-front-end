@@ -1,17 +1,17 @@
-import React from "react"
+import React, { type FC } from "react"
 import { FormGroup } from "@mui/material"
 import { type ApplicationContext } from "~/context/ApplicationContext"
 import styles from "./QuickSettings.module.css"
 import SafeModeSwitch from "./switches/SafeModeSwitch"
 import WorkerStatusSwitch from "./switches/WorkerStatusSwitch"
 
-export type Settings = ApplicationContext & {
-  setApplicationContext: (applicationContext: ApplicationContext) => void
+type QuickSettingsProps = {
+  readonly setApplicationContext: (applicationContext: ApplicationContext) => void
 }
 
-const QuickSettings = (settings: Settings) => (
+const QuickSettings: FC<QuickSettingsProps> = props => (
   <FormGroup className={styles.quickSettings}>
-    <SafeModeSwitch {...settings} />
+    <SafeModeSwitch {...props} />
     <WorkerStatusSwitch />
   </FormGroup>
 )

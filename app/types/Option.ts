@@ -13,6 +13,8 @@ export abstract class Option<T> {
 
   abstract toList(): T[]
 
+  abstract isEmpty(): boolean
+
   abstract forEach<A>(fn: (value: T) => Promise<A> | A): Promise<A | void> | A
 
   static fromNullable<T>(value: T | null | undefined): Option<T> {
@@ -53,6 +55,10 @@ export class Some<T> extends Option<T> {
     return [this.value]
   }
 
+  isEmpty(): boolean {
+    return false
+  }
+
   forEach<A>(fn: (value: T) => Promise<A> | A ): Promise<A | void> | A {
     return fn(this.value)
   }
@@ -91,6 +97,10 @@ export class None<T> extends Option<T> {
 
   toList(): T[] {
     return []
+  }
+
+  isEmpty(): boolean {
+    return true
   }
 
   forEach<A>(fn: (value: T) => Promise<A>): Promise<A | void> | A  {
