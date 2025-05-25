@@ -5,14 +5,16 @@ import { type Codec } from "~/models/Codec"
 import RangeDisplay, { type PrettyPrint } from "./RangeDisplay"
 import styles from "./RangeSlider.module.css"
 
-export default function RangeSlider<A extends {}>(props: {
+type RangeSliderProps<A> = {
   range: Range<A>
   onChange: (value: Range<A>) => void
   maxValue: A
   codec: Codec<A, number>
   printer: PrettyPrint<A>
   title: string
-}): JSX.Element {
+}
+
+function RangeSlider<A>(props: RangeSliderProps<A>): JSX.Element {
   const [transientRange, setTransientRange] = useState(props.range)
 
   const toRange = (values: number | number[]): Range<A> =>
@@ -40,3 +42,5 @@ export default function RangeSlider<A extends {}>(props: {
     </div>
   )
 }
+
+export default RangeSlider

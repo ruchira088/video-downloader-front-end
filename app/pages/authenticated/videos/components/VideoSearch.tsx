@@ -17,6 +17,21 @@ import { Option } from "~/types/Option"
 const MAX_RANGE = Duration.fromObject({minutes: 75})
 const MAX_DATA_SIZE = 10_000_000_000
 
+type VideoSearchProps = {
+  readonly videoTitles: string[]
+  readonly searchTerm: Option<string>
+  readonly onSearchTermChange: (searchTerm: Option<string>) => void
+  readonly sortBy: SortBy
+  readonly onSortByChange: (sortBy: SortBy) => void
+  readonly durationRange: DurationRange
+  readonly onDurationRangeChange: (durationRange: DurationRange) => void
+  readonly sizeRange: Range<number>
+  readonly onSizeRangeChange: (sizeRange: Range<number>) => void
+  readonly videoSites: string[]
+  readonly onVideoSitesChange: (videoSites: string[]) => void
+  readonly isLoading: boolean
+}
+
 const VideoSearch = ({
   videoTitles,
   searchTerm,
@@ -30,20 +45,7 @@ const VideoSearch = ({
   videoSites,
   onVideoSitesChange,
   isLoading,
-}: {
-  videoTitles: string[]
-  searchTerm: Option<string>
-  onSearchTermChange: (searchTerm: Option<string>) => void
-  sortBy: SortBy
-  onSortByChange: (sortBy: SortBy) => void
-  durationRange: DurationRange
-  onDurationRangeChange: (durationRange: DurationRange) => void
-  sizeRange: Range<number>
-  onSizeRangeChange: (sizeRange: Range<number>) => void
-  videoSites: string[]
-  onVideoSitesChange: (videoSites: string[]) => void
-  isLoading: boolean
-}) => (
+}: VideoSearchProps) => (
   <div className={styles.videoFilter}>
     <div className={styles.left}>
       <Autocomplete

@@ -11,7 +11,7 @@ export const Range = <A>(type: z.ZodType<A>) => z.object({
 
 export type Range<A> = z.infer<ReturnType<typeof Range<A>>>
 
-export function toNumberArray<A extends {}>(range: Range<A>, maximum: A, encoder: Encoder<A, number>): number[] {
+export function toNumberArray<A>(range: Range<A>, maximum: A, encoder: Encoder<A, number>): number[] {
   return [encoder.encode(range.min), range.max.map(encoder.encode).getOrElse(() => encoder.encode(maximum))]
 }
 
@@ -29,7 +29,7 @@ export function fromNumberArray<A>(
     )
 }
 
-export function rangeEncoder<A extends {}>(encoder: Encoder<A, string>): Encoder<Range<A>, string> {
+export function rangeEncoder<A>(encoder: Encoder<A, string>): Encoder<Range<A>, string> {
   return {
     encode(range: Range<A>): string {
       return encoder.encode(range.min) + "-" + range.max.map((max) => encoder.encode(max)).getOrElse(() => "")
@@ -37,14 +37,15 @@ export function rangeEncoder<A extends {}>(encoder: Encoder<A, string>): Encoder
   }
 }
 
-export function rangeDecoder<A extends {}>(decoder: Decoder<string, A>): Decoder<string, Range<A>> {
+export function rangeDecoder<A>(decoder: Decoder<string, A>): Decoder<string, Range<A>> {
   return {
     decode(input: string): Either<Error, Range<A>> {
       const [minString, maxString] = input.split("-")
 
       const eitherMin: Either<Error, A> = decoder.decode(minString)
 
-      const maybeEitherMax: Option<Either<Error, A>> = Option.fromNullable(maxString).map(decoder.decode)
+      const maybeEitherMax: Option<Either<Error, A>> =
+        Option.fromNullable(maxString).map(value => value.trim()).filter(value => value !== "").map(decoder.decode)
 
       return eitherMin.flatMap(min =>
         maybeEitherMax.fold<Either<Error, Range<A>>>(

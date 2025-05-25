@@ -59,15 +59,13 @@ export const humanReadableDuration = (duration: Duration): string =>
     .results.join(" ")
 
 export const shortHumanReadableDuration = (duration: Duration): string => {
-  const hasHours = duration.as("hours") >= 1
+  const rescaledDuration = duration.rescale()
 
-  const result =
-    (hasHours ? `${duration.as("hours")}:` : "") +
-    (hasHours ? formatTwoDigits(duration.as("minutes")) : duration.as("minutes")) +
-    ":" +
-    formatTwoDigits(duration.as("seconds"))
-
-  return result
+  if (rescaledDuration.hours >= 1) {
+    return `${rescaledDuration.hours}:${formatTwoDigits(rescaledDuration.minutes)}:${formatTwoDigits(rescaledDuration.seconds)}`
+  } else {
+    return `${rescaledDuration.minutes}:${formatTwoDigits(rescaledDuration.seconds)}`
+  }
 }
 
 const formatTwoDigits = (number: number): string => (number < 10 ? `0${number}` : number.toString())
