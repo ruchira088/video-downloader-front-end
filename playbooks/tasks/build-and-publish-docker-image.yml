@@ -49,16 +49,6 @@
             -f docker/Dockerfile \
             ../
 
-      - name: Publish development Docker image
-        shell: |
-          docker buildx build \
-            --push \
-            --platform linux/arm64,linux/amd64 \
-            -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }} \
-            -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }}-{{ git_commit }} \
-            -f docker/Dockerfile-dev \
-            ../
-
 - name: Clean up
   block:
     - name: Clean up production bundle
