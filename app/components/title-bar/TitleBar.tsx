@@ -1,9 +1,14 @@
-import React from "react"
-import QuickSettings, { type Settings } from "~/components/quick-settings/QuickSettings"
+import React, { type FC } from "react"
+import { type ApplicationContext } from "~/context/ApplicationContext"
+import QuickSettings from "~/components/quick-settings/QuickSettings"
 import styles from "./TitleBar.module.css"
 import Navigator from "~/components/navigator/Navigator"
 
-const TitleBar = (settings: Settings) => (
+type TitleBarProps = {
+  readonly setApplicationContext: (applicationContext: ApplicationContext) => void
+}
+
+const TitleBar: FC<TitleBarProps> = props => (
   <div className={styles.titleBar}>
     <div className={styles.logo}>
       <img src="/small-logo.svg" alt="small logo" className={styles.smallLogo} />
@@ -13,7 +18,7 @@ const TitleBar = (settings: Settings) => (
       <Navigator />
     </div>
     <div className={styles.quickSettings}>
-      <QuickSettings {...settings} />
+      <QuickSettings {...props} />
     </div>
   </div>
 )

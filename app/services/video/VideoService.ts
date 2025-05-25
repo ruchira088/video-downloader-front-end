@@ -11,6 +11,7 @@ import { simpleStringEncoder } from "~/models/Codec"
 import type { CancelTokenSource } from "axios"
 import { ListResponse } from "~/models/ListResponse"
 import type { Option } from "~/types/Option"
+import { zodParse } from "~/types/Zod"
 
 export const searchVideos = async (
   maybeSearchTerm: Option<string>,
@@ -45,49 +46,49 @@ export const searchVideos = async (
 
   const response = await axiosClient.get("/videos/search?" + queryParameters, { cancelToken: cancelTokenSource.token })
 
-  const searchResult: SearchResult<Video> = SearchResult(Video).parse(response.data)
+  const searchResult: SearchResult<Video> = zodParse(SearchResult(Video), response.data)
 
   return searchResult
 }
 
 export const fetchVideoById = async (videoId: string): Promise<Video> => {
   const response = await axiosClient.get(`/videos/id/${videoId}`)
-  const video = Video.parse(response.data)
+  const video = zodParse(Video, response.data)
 
   return video
 }
 
 export const fetchVideoSnapshots = async (videoId: string): Promise<Snapshot[]> => {
   const response = await axiosClient.get(`/videos/id/${videoId}/snapshots`)
-  const snapshots = ListResponse(Snapshot).parse(response.data)
+  const snapshots = zodParse(ListResponse(Snapshot), response.data)
 
   return snapshots.results
 }
 
 export const metadata = async (url: string): Promise<VideoMetadata> => {
   const response = await axiosClient.post("/videos/metadata", { url })
-  const videoMetadata = VideoMetadata.parse(response.data)
+  const videoMetadata = zodParse(VideoMetadata, response.data)
 
   return videoMetadata
 }
 
 export const updateVideoTitle = async (videoId: string, title: string): Promise<Video> => {
   const response = await axiosClient.patch(`/videos/id/${videoId}/metadata`, { title })
-  const video = Video.parse(response.data)
+  const video = zodParse(Video, response.data)
 
   return video
 }
 
 export const videoServiceSummary = async (): Promise<VideoServiceSummary> => {
   const response = await axiosClient.get("/videos/summary")
-  const videoServiceSummary = VideoServiceSummary.parse(response.data)
+  const videoServiceSummary = zodParse(VideoServiceSummary, response.data)
 
   return videoServiceSummary
 }
 
 export const deleteVideo = async (videoId: string, deleteFile: boolean): Promise<Video> => {
   const response = await axiosClient.delete(`/videos/id/${videoId}?delete-video-file=${deleteFile}`)
-  const video = Video.parse(response.data)
+  const video = zodParse(Video, response.data)
 
   return video
 }

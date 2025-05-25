@@ -3,6 +3,7 @@ import { AuthenticationToken } from "~/models/AuthenticationToken"
 import { type KeySpace, LocalKeyValueStore } from "~/services/kv-store/KeyValueStore"
 import { User } from "~/models/User"
 import type { Option } from "~/types/Option"
+import { zodParse } from "~/types/Zod"
 
 export enum AuthenticationKey {
   Token = "Token",
@@ -23,7 +24,7 @@ const AuthenticationKeySpace: KeySpace<AuthenticationKey, AuthenticationToken> =
 
   valueCodec: {
     decode(value: string): AuthenticationToken {
-      return AuthenticationToken.parse(JSON.parse(value))
+      return zodParse(AuthenticationToken, JSON.parse(value))
     },
 
     encode(authenticationToken: AuthenticationToken): string {
@@ -41,7 +42,7 @@ export const getAuthenticationToken = (): Option<AuthenticationToken> =>
 
 export const login = async (email: string, password: string): Promise<AuthenticationToken> => {
   const response = await axiosClient.post("/authentication/login", { email, password })
-  const authenticationToken = AuthenticationToken.parse(response.data)
+  const authenticationToken = zodParse(AuthenticationToken, response.data)
 
   authenticationKeyValueStore.put(AuthenticationKey.Token, authenticationToken)
 
@@ -50,14 +51,14 @@ export const login = async (email: string, password: string): Promise<Authentica
 
 export const getAuthenticatedUser = async (): Promise<User> => {
   const response = await axiosClient.get("/authentication/user")
-  const user = User.parse(response.data)
+  const user = zodParse(User, response.data)
 
   return user
 }
 
 export const logout = async (): Promise<AuthenticationToken> => {
   const response = await axiosClient.delete("authentication/logout")
-  const authenticationToken = AuthenticationToken.parse(response.data)
+  const authenticationToken = zodParse(AuthenticationToken, response.data)
   removeAuthenticationToken()
 
   return authenticationToken

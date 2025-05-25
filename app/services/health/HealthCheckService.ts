@@ -4,10 +4,11 @@ import packageInfo from "../../../package.json"
 import type { FrontendServiceInformation } from "~/models/FrontendServiceInformation"
 import { DateTime } from "luxon"
 import { Option } from "~/types/Option"
+import { zodParse } from "~/types/Zod"
 
 export const backendServiceInformation: () => Promise<BackendServiceInformation> = async () => {
   const response = await axiosClient.get("/service/info")
-  const serviceInformation = BackendServiceInformation.parse(response.data)
+  const serviceInformation = zodParse(BackendServiceInformation, response.data)
 
   return serviceInformation
 }

@@ -9,3 +9,13 @@ export const ZodDuration: z.ZodSchema<Duration> =
 export const ZodDateTime = z.iso.datetime({ offset: true }).transform(value => DateTime.fromISO(value))
 
 export const ZodOptional = <A>(type: z.ZodType<A>) => type.nullish().transform(Option.fromNullable)
+
+export const zodParse = <A>(type: z.ZodType<A>, value: unknown): A => {
+  try {
+    return type.parse(value)
+  } catch (error) {
+    console.error(error)
+
+    throw error
+  }
+}

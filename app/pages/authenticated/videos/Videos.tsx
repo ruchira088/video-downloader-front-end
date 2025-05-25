@@ -105,8 +105,6 @@ const Videos = () => {
     loadMoreVideos()
   }, [])
 
-  console.log(videos)
-
   return (
     <>
       {/*<Helmet>*/}
