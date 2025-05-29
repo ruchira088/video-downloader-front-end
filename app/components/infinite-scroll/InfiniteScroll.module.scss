@@ -1,0 +1,14 @@
+.infiniteScroll {
+  position: relative;
+
+  .loader {
+    position: absolute;
+    bottom: 10em;
+    height: 1px;
+    width: 1px;
+
+    &.populated {
+      bottom: 100em;
+    }
+  }
+}

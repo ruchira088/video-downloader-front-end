@@ -1,27 +1,31 @@
-import React from "react"
+import React, {type FC} from "react"
 
 import styles from "./VideoSiteCard.module.css"
 
-import pornhub from "~/images/logos/porn-hub.png"
-import pornone from "~/images/logos/porn-one.png"
-import spankbang from "~/images/logos/spankbang.png"
-import eporner from "~/images/logos/eporner.png"
-import xfreehd from "~/images/logos/xfreehd.png"
-import xhamster from "~/images/logos/xhamster.png"
-import xnxx from "~/images/logos/xnxx.png"
-import youporn from "~/images/logos/youporn.png"
-import xvideos from "~/images/logos/xvideos.png"
-import youtube from "~/images/logos/youtube.png"
+import pornhub from "~/images/site-logos/porn-hub.png"
+import pornone from "~/images/site-logos/porn-one.png"
+import spankbang from "~/images/site-logos/spankbang.png"
+import eporner from "~/images/site-logos/eporner.png"
+import xfreehd from "~/images/site-logos/xfreehd.png"
+import xhamster from "~/images/site-logos/xhamster.png"
+import xnxx from "~/images/site-logos/xnxx.png"
+import youporn from "~/images/site-logos/youporn.png"
+import xvideos from "~/images/site-logos/xvideos.png"
+import youtube from "~/images/site-logos/youtube.png"
 import { Option } from "~/types/Option"
 
-const VideoSiteCard = (props: { videoSite: string }) =>
+type VideoSiteCardProps = {
+  readonly videoSite: string
+}
+
+const VideoSiteCard: FC<VideoSiteCardProps> = props =>
   Option.fromNullable(videoSiteLogos[props.videoSite])
     .fold(
       () => <span />,
       logo => <img className={styles.videoSiteLogo} src={logo} alt="site logo" />
   )
   
-const videoSiteLogos: { [key: string]: string } = {
+const videoSiteLogos: Record<string, string> = {
   pornhub,
   spankbang,
   pornone,

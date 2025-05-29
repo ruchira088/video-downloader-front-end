@@ -11,7 +11,7 @@ type TitleBarProps = {
 const TitleBar: FC<TitleBarProps> = props => (
   <div className={styles.titleBar}>
     <div className={styles.logo}>
-      <img src="/small-logo.svg" alt="small logo" className={styles.smallLogo} />
+      <img src="/app/images/small-logo.svg" alt="small logo" className={styles.smallLogo} />
       <div className={styles.logoText}>Video Downloader</div>
     </div>
     <div>
