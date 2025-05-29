@@ -22,13 +22,14 @@ import type { Option } from "~/types/Option"
 import ImageListItem from "@mui/material/ImageListItem"
 import VideoCard from "~/components/video/video-card/VideoCard"
 
+import styles from "./videos.module.scss"
+
 const PAGE_SIZE = 50
 
 let isLoading = false
 
 const Videos = () => {
   const [queryParams] = useSearchParams()
-  const windowWidth = () => document.body.clientWidth
 
   const [videos, setVideos] = useState<Video[]>([])
   const [videoSites, setVideoSites] = useState<string[]>(parseSearchParam(queryParams, VideoSitesSearchParam))
@@ -36,15 +37,11 @@ const Videos = () => {
   const [searchTerm, setSearchTerm] = useState<Option<string>>(parseSearchParam(queryParams, SearchTermSearchParam))
   const [pageNumber, setPageNumber] = useState<number>(0)
   const [hasMore, setHasMore] = useState<boolean>(true)
-  const [durationRange, setDurationRange] = useState<DurationRange>(
-    parseSearchParam(queryParams, DurationRangeSearchParam)
-  )
+  const [durationRange, setDurationRange] = useState<DurationRange>(parseSearchParam(queryParams, DurationRangeSearchParam))
   const [sizeRange, setSizeRange] = useState<Range<number>>(parseSearchParam(queryParams, SizeRangeSearchParam))
   const [cancelTokenSource, setCancelTokenSource] = useState<CancelTokenSource>(Axios.CancelToken.source())
-  const [width, setWidth] = useState<number>(windowWidth())
 
   const navigate = useNavigate()
-  const columns = Math.max(1, Math.floor(width / 350))
 
   const loadMoreVideos = (): void => {
     if (!isLoading) {
@@ -91,22 +88,13 @@ const Videos = () => {
     queryParams.set(name, encoder(value))
     navigate({ search: queryParams.toString() })
   }
-  useEffect(() => {
-    const onResize = () => {
-      setWidth(windowWidth())
-    }
-
-    window.addEventListener("resize", onResize)
-
-    return () => window.removeEventListener("resize", onResize)
-  })
 
   useEffect(() => {
     loadMoreVideos()
   }, [])
 
   return (
-    <>
+    <div className={styles.videosPage}>
       {/*<Helmet>*/}
       {/*  <title>Videos Page</title>*/}
       {/*</Helmet>*/}
@@ -124,13 +112,17 @@ const Videos = () => {
         onVideoSitesChange={onChangeSearchParams(VideoSitesSearchParam, setVideoSites)}
         isLoading={isLoading}
       />
-      {videos.map((video, index) => (
-        <ImageListItem cols={1} key={index}>
-          <Link to={`/video/${video.videoMetadata.id}`} key={index}>
-            <VideoCard {...video} />
-          </Link>
-        </ImageListItem>
-      ))}
+      <div className={styles.videosList}>
+        {
+          videos.map((video, index) => (
+              <Link to={`/video/${video.videoMetadata.id}`} key={index} className={styles.videoCard}>
+                <VideoCard video={video} />
+              </Link>
+            )
+          )
+        }
+      </div>
+
       {/*<InfiniteScroll loadMore={loadMoreVideos} hasMore={hasMore} threshold={500}>*/}
       {/*  <ImageList cols={columns} rowHeight="auto">*/}
       {/*    {videos.map((video, index) => (*/}
@@ -142,7 +134,7 @@ const Videos = () => {
       {/*    ))}*/}
       {/*  </ImageList>*/}
       {/*</InfiniteScroll>*/}
-    </>
+    </div>
   )
 }
 

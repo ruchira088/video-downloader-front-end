@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react"
+import React, { type FC, useContext, useEffect, useState } from "react"
 import classNames from "classnames"
 import { VideoMetadata } from "~/models/VideoMetadata"
 import { ApplicationContext } from "~/context/ApplicationContext"
@@ -12,7 +12,13 @@ import VideoSiteCard from "../video-site-card/VideoSiteCard"
 import { None, Option, Some } from "~/types/Option"
 import { type FileResource, FileResourceType } from "~/models/FileResource"
 
-const VideoMetadataCard = (metadata: VideoMetadata & { disableSnapshots?: boolean, classNames?: string }) => {
+type VideoMetadataCardProps = {
+  readonly videoMetadata: VideoMetadata
+  readonly disableSnapshots?: boolean
+  readonly classNames?: string
+}
+
+const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
   const [maybeSnapshots, setMaybeSnapshots] = useState<Option<Snapshot[]>>(None.of())
   const [maybeIntervalTimeout, setMaybeIntervalTimeout] = useState<Option<NodeJS.Timeout>>(None.of())
   const [index, setIndex] = useState<number>(0)
@@ -22,14 +28,14 @@ const VideoMetadataCard = (metadata: VideoMetadata & { disableSnapshots?: boolea
     maybeSnapshots
       .map((values) => Promise.resolve(values))
       .getOrElse(() =>
-        fetchVideoSnapshots(metadata.id).then((values) => {
+        fetchVideoSnapshots(props.videoMetadata.id).then((values) => {
           setMaybeSnapshots(Some.of(values))
           return values
         })
       )
 
   const onMouseOver = () => {
-    if (!Option.fromNullable(metadata.disableSnapshots).getOrElse(() => false)) {
+    if (!Option.fromNullable(props.disableSnapshots).getOrElse(() => false)) {
       setMaybeIntervalTimeout(
         Some.of(setInterval(() => setIndex((index) => index + 1), 400)
         )
@@ -60,16 +66,16 @@ const VideoMetadataCard = (metadata: VideoMetadata & { disableSnapshots?: boolea
         .flatMap(() => maybeSnapshots)
         .filter((values) => values.length > 0)
         .fold<FileResource<FileResourceType.Thumbnail | FileResourceType.Snapshot>>(
-          () => metadata.thumbnail,
+          () => props.videoMetadata.thumbnail,
           (values) => values.map((snapshot) => snapshot.fileResource)[index % values.length]
         ),
       safeMode
     )
 
   return (
-    <div className={classNames(styles.videoMetadataCard, metadata.classNames)}>
+    <div className={classNames(styles.videoMetadataCard, props.classNames)}>
       <div className={styles.imageContainer}>
-        <VideoSiteCard videoSite={metadata.videoSite}/>
+        <VideoSiteCard videoSite={props.videoMetadata.videoSite}/>
         <img
           onMouseOver={onMouseOver}
           onMouseLeave={onMouseLeave}
@@ -77,10 +83,10 @@ const VideoMetadataCard = (metadata: VideoMetadata & { disableSnapshots?: boolea
           alt="video thumbnail"
           className={styles.thumbnail}
         />
-        <div className={styles.size}>{humanReadableSize(metadata.size)}</div>
-        <div className={styles.duration}>{shortHumanReadableDuration(metadata.duration)}</div>
+        <div className={styles.size}>{humanReadableSize(props.videoMetadata.size)}</div>
+        <div className={styles.duration}>{shortHumanReadableDuration(props.videoMetadata.duration)}</div>
       </div>
-      <div className={styles.videoTitle}>{translate(trimTitle(metadata.title), safeMode)}</div>
+      <div className={styles.videoTitle}>{translate(trimTitle(props.videoMetadata.title), safeMode)}</div>
     </div>
   )
 }

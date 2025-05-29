@@ -1,0 +1,11 @@
+.videosPage {
+  .videosList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+
+    .videoCard {
+      flex: 1 0 20em;
+    }
+  }
+}

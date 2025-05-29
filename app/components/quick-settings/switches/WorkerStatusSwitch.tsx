@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { WorkerStatus } from "~/models/WorkerStatus"
 import { fetchWorkerStatus, updateWorkerStatus } from "~/services/scheduling/SchedulingService"
-import { FormControlLabel, Switch, LinearProgress, CircularProgress } from "@mui/material"
+import { FormControlLabel, Switch } from "@mui/material"
 
 const WorkerStatusSwitch = () => {
   const [workerStatus, setWorkerStatus] = useState<WorkerStatus | null>(null)
@@ -18,7 +18,7 @@ const WorkerStatusSwitch = () => {
     try {
       await updateWorkerStatus(updated)
     } catch (e) {
-      console.log(e)
+      console.error(e)
       setWorkerStatus(existingValue)
     }
   }

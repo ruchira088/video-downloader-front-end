@@ -28,7 +28,7 @@ const VideoDeleteDialog = (props: {
     <Dialog open={props.isVisible} onClose={props.onClose}>
       <DialogTitle>Delete Video?</DialogTitle>
       <DialogContent>
-        <VideoMetadataCard {...props.videoMetadata} />
+        <VideoMetadataCard videoMetadata={props.videoMetadata} />
         <div>
           Delete video file <Checkbox value={deleteFile} onChange={(event) => setDeleteFile(event.target.checked)} />
         </div>

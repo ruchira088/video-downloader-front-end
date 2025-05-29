@@ -27,7 +27,7 @@ const ScheduledVideoDownloadCard = (props: {
       >
         Delete
       </Button>
-      <VideoMetadataCard {...props.scheduledVideoDownload.videoMetadata} classNames={styles.videoMetadata} disableSnapshots={true} />
+      <VideoMetadataCard videoMetadata={props.scheduledVideoDownload.videoMetadata} classNames={styles.videoMetadata} disableSnapshots={true} />
       {props.scheduledVideoDownload.videoMetadata.size > props.scheduledVideoDownload.downloadedBytes && (
         <div>
           <ProgressBar
@@ -57,7 +57,7 @@ const ScheduledVideoDeleteDialog = (props: {
   <Dialog open={props.visible} onClose={props.onClose}>
     <DialogTitle>Delete Scheduled Video?</DialogTitle>
     <DialogContent>
-      <VideoMetadataCard {...props.videoMetadata} disableSnapshots={true} />
+      <VideoMetadataCard videoMetadata={props.videoMetadata} disableSnapshots={true} />
     </DialogContent>
     <DialogActions>
       <Button

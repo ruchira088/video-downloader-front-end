@@ -28,7 +28,7 @@ const Preview = ({ url }: { url: string }) => {
       {showPreview &&
         loadableComponent(
           VideoMetadataCard,
-          maybeVideoMetadata.map((videoMetadata) => ({ ...videoMetadata, disableSnapshots: true }))
+          maybeVideoMetadata.map((videoMetadata) => ({ videoMetadata, disableSnapshots: true }))
         )}
     </div>
   )

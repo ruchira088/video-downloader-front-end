@@ -34,7 +34,7 @@ const HistoryPage = () => {
           videoWatchHistories.map(
             (videoWatchHistory, index) =>
               <Link to={`/video/${videoWatchHistory.video.videoMetadata.id}`} key={index}>
-                <VideoCard {...videoWatchHistory.video}/>
+                <VideoCard video={videoWatchHistory.video}/>
               </Link>
           )
         }
