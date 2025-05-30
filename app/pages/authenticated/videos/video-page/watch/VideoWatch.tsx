@@ -13,7 +13,7 @@ import {VideoMetadata} from "~/models/VideoMetadata"
 import {humanReadableSize, shortHumanReadableDuration} from "~/utils/Formatter"
 
 import styles from "./VideoWatch.module.scss"
-import {Duration} from "luxon"
+import {DateTime, Duration} from "luxon"
 import {Option} from "~/types/Option"
 
 type VideDeleteDialogProps = {
@@ -62,26 +62,37 @@ const VideoLink: FC<VideoLinkProps> = props => {
 }
 
 type MetadataFieldProps = {
-  readonly label: string
+  readonly label?: string
   readonly value: React.ReactNode
+  readonly className?: string
 }
 
 const MetadataField: FC<MetadataFieldProps> = props =>
   <div>
-    <span className={styles.metadataLabel}>{props.label}:</span>
-    <span className={styles.metadataValue}>{props.value}</span>
+    {props.label && <span className={styles.metadataLabel}>{props.label}:</span>}
+    <span className={props.className}>{props.value}</span>
   </div>
 
 type MetadataProps = {
-  readonly videoMetadata: VideoMetadata
+  readonly video: Video
 }
 
 const Metadata: FC<MetadataProps> = props => (
   <div className={styles.videoMetadata}>
-    <MetadataField label="Size" value={humanReadableSize(props.videoMetadata.size)}/>
-    <MetadataField label="Duration"
-                   value={shortHumanReadableDuration(props.videoMetadata.duration)} />
-    <MetadataField label="Source" value={<VideoLink videoMetadata={props.videoMetadata}/>}/>
+    <MetadataField
+      label="Size"
+      value={humanReadableSize(props.video.videoMetadata.size)}
+      className={styles.metadataValue}/>
+    <MetadataField
+      label="Duration"
+      value={shortHumanReadableDuration(props.video.videoMetadata.duration)}
+      className={styles.metadataValue}/>
+    <MetadataField
+      label="Source"
+      value={<VideoLink videoMetadata={props.video.videoMetadata}/>}
+      className={styles.metadataValue}
+    />
+    <MetadataField value={props.video.createdAt.toLocaleString(DateTime.DATETIME_MED)}/>
   </div>
 )
 
@@ -115,14 +126,14 @@ const VideoWatch: FC<VideoWatchProps> = props => {
   }
 
   return (
-    <div className={styles.watch}>
+    <div className={styles.videoWatch}>
       <div className={styles.title}>
         <EditableLabel
           textValue={translate(props.video.videoMetadata.title, safeMode)}
           onUpdateText={onUpdateVideoTitle}
         />
       </div>
-      <Metadata videoMetadata={props.video.videoMetadata} />
+      <Metadata video={props.video}/>
       <video
         ref={videoPlayer}
         controls
