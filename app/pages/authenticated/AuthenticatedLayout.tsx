@@ -4,7 +4,8 @@ import type { AuthenticationToken } from "~/models/AuthenticationToken"
 import {
   getAuthenticatedUser,
   getAuthenticationToken,
-  REDIRECT_QUERY_PARAMETER
+  REDIRECT_QUERY_PARAMETER,
+  removeAuthenticationToken
 } from "~/services/authentication/AuthenticationService"
 import { setSavedSafeMode } from "~/services/Configuration"
 import { ApplicationContext, DEFAULT_APPLICATION_CONTEXT } from "~/context/ApplicationContext"
@@ -33,11 +34,15 @@ const AuthenticatedLayout = () => {
       try {
         await getAuthenticatedUser()
       } catch (e) {
+        console.error(e)
+        removeAuthenticationToken()
+        console.debug("Removing authentication token and redirecting to sign-in page.")
         navigate(redirectUrl)
       }
     })
 
     if (token.isEmpty()) {
+      console.debug("Redirecting to sign-in page.")
       navigate(redirectUrl)
     }
   }

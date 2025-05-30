@@ -11,8 +11,8 @@ axiosClient.interceptors.response.use(
   (value) => Promise.resolve(value),
   (error) => {
     if (error.response?.status === 401) {
+      console.debug("Received 401 status response. Removing authentication token and redirecting to sign-in page.")
       removeAuthenticationToken()
-      window.location.reload()
     } else {
       return Promise.reject(error)
     }

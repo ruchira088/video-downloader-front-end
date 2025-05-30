@@ -15,7 +15,6 @@ export const zodParse = <A>(type: z.ZodType<A>, value: unknown): A => {
     return type.parse(value)
   } catch (error) {
     console.error(error)
-
     throw error
   }
 }

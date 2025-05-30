@@ -42,7 +42,6 @@ export class LocalKeyValueStore<K, V extends {}> implements KeyValueStore<K, V> 
 
   remove(key: K): Option<V> {
     const existingValue = this.get(key)
-
     localStorage.removeItem(this.stringKey(key))
 
     return existingValue
