@@ -2,7 +2,7 @@ import React, { type JSX, useEffect, useState } from "react"
 import { MenuItem, Select } from "@mui/material"
 import { videoServiceSummary } from "~/services/video/VideoService"
 
-const VideoSelector = (props: {
+const VideoSitesSelector = (props: {
   videoSites: string[]
   onChange: (sites: string[]) => void
   className?: string
@@ -29,4 +29,4 @@ const VideoSelector = (props: {
   )
 }
 
-export default VideoSelector
+export default VideoSitesSelector

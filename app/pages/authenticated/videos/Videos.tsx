@@ -5,7 +5,7 @@ import {type SortBy} from "~/models/SortBy"
 import {type DurationRange} from "~/models/DurationRange"
 import VideoSearch from "./components/VideoSearch"
 import {
-  DurationRangeSearchParam,
+  DurationRangeSearchParam, OrderingSearchParam,
   parseSearchParam,
   SearchTermSearchParam,
   SizeRangeSearchParam,
@@ -21,6 +21,7 @@ import VideoCard from "~/components/video/video-card/VideoCard"
 
 import styles from "./Videos.module.scss"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
+import type {Ordering} from "~/models/Ordering"
 
 const PAGE_SIZE = 50
 
@@ -34,6 +35,7 @@ const Videos = () => {
   const [searchTerm, setSearchTerm] = useState<Option<string>>(parseSearchParam(queryParams, SearchTermSearchParam))
   const [durationRange, setDurationRange] = useState<DurationRange>(parseSearchParam(queryParams, DurationRangeSearchParam))
   const [sizeRange, setSizeRange] = useState<Range<number>>(parseSearchParam(queryParams, SizeRangeSearchParam))
+  const [ordering, setOrdering] = useState<Ordering>(parseSearchParam(queryParams, OrderingSearchParam))
   const abortController = useRef(new AbortController())
   const [pageNumber, setPageNumber] = useState(0)
   const isLoading = useRef(false)
@@ -52,6 +54,7 @@ const Videos = () => {
             pageNumber,
             PAGE_SIZE,
             sortBy,
+            ordering,
             abortController.current.signal
         )
 
@@ -68,7 +71,7 @@ const Videos = () => {
 
   useEffect(() => {
     loadVideos()
-  }, [videoSites, sortBy, searchTerm, durationRange, sizeRange, pageNumber])
+  }, [videoSites, sortBy, searchTerm, durationRange, sizeRange, pageNumber, ordering])
 
   function onChangeSearchParams<A, B extends VideoSearchParamName>(
     videoSearchParameter: VideoSearchParameter<A, B>,
@@ -108,6 +111,8 @@ const Videos = () => {
         onSizeRangeChange={onChangeSearchParams(SizeRangeSearchParam, setSizeRange)}
         videoSites={videoSites}
         onVideoSitesChange={onChangeSearchParams(VideoSitesSearchParam, setVideoSites)}
+        ordering={ordering}
+        onOrderingChange={onChangeSearchParams(OrderingSearchParam, setOrdering)}
         isLoading={isLoading.current}
       />
 

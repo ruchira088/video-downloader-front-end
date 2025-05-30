@@ -1,17 +1,17 @@
-import { SearchResult } from "~/models/SearchResult"
-import { Video } from "~/models/Video"
-import { Snapshot } from "~/models/Snapshot"
-import { axiosClient } from "~/services/http/HttpClient"
-import { VideoMetadata } from "~/models/VideoMetadata"
-import { SortBy } from "~/models/SortBy"
-import { VideoServiceSummary } from "~/models/VideoServiceSummary"
-import { type DurationRange, durationRangeStringEncoder } from "~/models/DurationRange"
-import { type Range, rangeEncoder } from "~/models/Range"
-import { simpleStringEncoder } from "~/models/Codec"
-import type { CancelTokenSource } from "axios"
-import { ListResponse } from "~/models/ListResponse"
-import type { Option } from "~/types/Option"
-import { zodParse } from "~/types/Zod"
+import {SearchResult} from "~/models/SearchResult"
+import {Video} from "~/models/Video"
+import {Snapshot} from "~/models/Snapshot"
+import {axiosClient} from "~/services/http/HttpClient"
+import {VideoMetadata} from "~/models/VideoMetadata"
+import {SortBy} from "~/models/SortBy"
+import {VideoServiceSummary} from "~/models/VideoServiceSummary"
+import {type DurationRange, durationRangeStringEncoder} from "~/models/DurationRange"
+import {type Range, rangeEncoder} from "~/models/Range"
+import {simpleStringEncoder} from "~/models/Codec"
+import {ListResponse} from "~/models/ListResponse"
+import type {Option} from "~/types/Option"
+import {zodParse} from "~/types/Zod"
+import type {Ordering} from "~/models/Ordering"
 
 export const searchVideos = async (
   maybeSearchTerm: Option<string>,
@@ -21,16 +21,17 @@ export const searchVideos = async (
   pageNumber: number,
   pageSize: number,
   sortBy: SortBy,
+  ordering: Ordering,
   abortSignal: AbortSignal
 ): Promise<SearchResult<Video>> => {
-  const pageNumberQuery = "page-number=" + pageNumber
-  const pageSizeQuery = "page-size=" + pageSize
-  const sortByQuery = "sort-by=" + sortBy
+  const pageNumberQuery = `page-number=${pageNumber}`
+  const pageSizeQuery = `page-size=${pageSize}`
+  const sortByQuery = `sort-by=${sortBy}`
   const sizeQuery = "size=" + rangeEncoder(simpleStringEncoder()).encode(sizeRange)
   const durationQuery = "duration=" + rangeEncoder(durationRangeStringEncoder).encode(durationRange)
-  const searchTermQuery = maybeSearchTerm.map((term) => "search-term=" + term).getOrElse(() => "")
-  const sitesQuery = videoSites.length === 0 ? "" : videoSites.join(",")
-
+  const searchTermQuery = maybeSearchTerm.map((term) => `search-term=${term}`).toNullable()
+  const sitesQuery = videoSites.length === 0 ? "" : `site=${videoSites.join(",")}`
+  const orderingQuery = "order=" + ordering
 
   const queryParameters: string = [
     pageNumberQuery,
@@ -40,8 +41,9 @@ export const searchVideos = async (
     durationQuery,
     searchTermQuery,
     sitesQuery,
+    orderingQuery,
   ]
-    .filter((query) => query !== "")
+    .filter((query) => query != null && query !== "")
     .join("&")
 
   const response = await axiosClient.get("/videos/search?" + queryParameters, { signal: abortSignal })

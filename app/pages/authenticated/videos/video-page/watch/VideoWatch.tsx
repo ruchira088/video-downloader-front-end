@@ -104,7 +104,7 @@ type VideoWatchProps = {
 }
 
 const VideoWatch: FC<VideoWatchProps> = props => {
-  const videoPlayer = useRef<HTMLVideoElement>(null)
+  const videoPlayer = useRef<HTMLVideoElement | null>(null)
   const [isDeleteDialogVisible, setDeleteDialogVisibility] = useState<boolean>(false)
   const { safeMode } = useContext(ApplicationContext)
 

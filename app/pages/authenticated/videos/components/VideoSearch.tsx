@@ -13,6 +13,8 @@ import { Duration } from "luxon"
 
 import styles from "./VideoSearch.module.css"
 import { Option } from "~/types/Option"
+import type {Ordering} from "~/models/Ordering"
+import OrderingComponent from "~/components/OrderingComponent"
 
 const MAX_RANGE = Duration.fromObject({minutes: 75})
 const MAX_DATA_SIZE = 10_000_000_000
@@ -29,6 +31,8 @@ type VideoSearchProps = {
   readonly onSizeRangeChange: (sizeRange: Range<number>) => void
   readonly videoSites: string[]
   readonly onVideoSitesChange: (videoSites: string[]) => void
+  readonly ordering: Ordering
+  readonly onOrderingChange: (ordering: Ordering) => void
   readonly isLoading: boolean
 }
 
@@ -44,6 +48,8 @@ const VideoSearch = ({
   onSizeRangeChange,
   videoSites,
   onVideoSitesChange,
+  ordering,
+  onOrderingChange,
   isLoading,
 }: VideoSearchProps) => (
   <div className={styles.videoFilter}>
@@ -66,6 +72,7 @@ const VideoSearch = ({
           className={styles.videoSiteSelector}
         />
         <SortBySelection value={sortBy} onChange={onSortByChange} className={styles.sortBy} />
+        <OrderingComponent ordering={ordering} onOrderingChange={onOrderingChange}/>
       </div>
     </div>
 
