@@ -1,9 +1,20 @@
+.videoSnapshotsGallery {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+
+.videoSnapshotContainer {
+  flex: 1 0 17.5em;
+}
+
 .videoSnapshot {
   position: relative;
 }
 
 .videoSnapshotImage {
   max-width: 100%;
+  display: block;
 }
 
 .timestamp {

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react"
 import { Video } from "~/models/Video"
 import loadableComponent from "~/components/hoc/loading/loadableComponent"
-import { fetchVideoById, fetchVideoSnapshots } from "~/services/video/VideoService"
-import Watch from "./watch/Watch"
+import { fetchVideoById, fetchVideoSnapshotsByVideoId } from "~/services/video/VideoService"
+import VideoWatch from "./watch/VideoWatch"
 import { Snapshot } from "~/models/Snapshot"
 import { useSearchParams } from "react-router"
 import { None, Option, Some } from "~/types/Option"
@@ -21,12 +21,19 @@ const VideoPage = (props: Route.ComponentProps) => {
       .getOrElse(() => 0)
   })
 
-  useEffect(() => {
-    fetchVideoById(videoId).then((video) => setVideo(Some.of(video)))
-  }, [videoId])
+  const fetchVideo = async () => {
+    const video = await fetchVideoById(videoId)
+    setVideo(Some.of(video))
+  }
+
+  const fetchVideoSnapshots = async () => {
+    const snapshots = await fetchVideoSnapshotsByVideoId(videoId)
+    setVideoSnapshots(snapshots)
+  }
 
   useEffect(() => {
-    fetchVideoSnapshots(videoId).then((snapshots) => setVideoSnapshots(snapshots))
+    fetchVideo()
+    fetchVideoSnapshots()
   }, [videoId])
 
   return (
@@ -40,9 +47,9 @@ const VideoPage = (props: Route.ComponentProps) => {
       {/*  video.map((value) => value.videoMetadata),*/}
       {/*)}*/}
       {loadableComponent(
-        Watch,
+        VideoWatch,
         video.map((value) => ({
-          ...value,
+          video: value,
           timestamp,
           snapshots: videoSnapshots,
           updateVideo: (video: Video) => setVideo(Some.of(video)),

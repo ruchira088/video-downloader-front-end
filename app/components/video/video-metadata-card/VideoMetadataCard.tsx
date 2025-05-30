@@ -7,7 +7,7 @@ import translate from "~/services/translation/TranslationService"
 import { humanReadableSize, shortHumanReadableDuration } from "~/utils/Formatter"
 import styles from "./VideoMetadataCard.module.css"
 import { Snapshot } from "~/models/Snapshot"
-import { fetchVideoSnapshots } from "~/services/video/VideoService"
+import { fetchVideoSnapshotsByVideoId } from "~/services/video/VideoService"
 import VideoSiteCard from "../video-site-card/VideoSiteCard"
 import { None, Option, Some } from "~/types/Option"
 import { type FileResource, FileResourceType } from "~/models/FileResource"
@@ -28,7 +28,7 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
     maybeSnapshots
       .map((values) => Promise.resolve(values))
       .getOrElse(() =>
-        fetchVideoSnapshots(props.videoMetadata.id).then((values) => {
+        fetchVideoSnapshotsByVideoId(props.videoMetadata.id).then((values) => {
           setMaybeSnapshots(Some.of(values))
           return values
         })

@@ -1,11 +1,10 @@
-import React, { type FC, useContext } from "react"
-import { imageUrl } from "~/services/asset/AssetService"
-import { Snapshot } from "~/models/Snapshot"
-import { ApplicationContext } from "~/context/ApplicationContext"
-import { shortHumanReadableDuration } from "~/utils/Formatter"
-import styles from "./VideoSnapshots.module.css"
-import { Grid } from "@mui/material"
-import { Link } from "react-router"
+import React, {type FC, useContext} from "react"
+import {Link} from "react-router"
+import {imageUrl} from "~/services/asset/AssetService"
+import {Snapshot} from "~/models/Snapshot"
+import {ApplicationContext} from "~/context/ApplicationContext"
+import {shortHumanReadableDuration} from "~/utils/Formatter"
+import styles from "./VideoSnapshotsGallery.module.css"
 
 type VideoSnapshotProps = {
   readonly snapshot: Snapshot
@@ -37,15 +36,15 @@ type VideoSnapshotsProps = {
   readonly snapshots: Snapshot[]
 }
 
-const VideoSnapshots: FC<VideoSnapshotsProps> = props => (
-  <Grid container spacing={1}>
-    {[...props.snapshots].sort(videoSnapshotSortFn)
-      .map((snapshot, index) => (
-        <div key={index}>
-          <VideoSnapshot snapshot={snapshot} />
+const VideoSnapshotsGallery: FC<VideoSnapshotsProps> = props => (
+  <div className={styles.videoSnapshotsGallery}>
+    {[...props.snapshots].sort(videoSnapshotSortFn).concat(Array(5).fill(null))
+      .map((snapshot, index) =>
+        <div className={styles.videoSnapshotContainer}>
+          {snapshot !== null && <VideoSnapshot snapshot={snapshot} key={index}/>}
         </div>
-      ))}
-  </Grid>
+      )}
+  </div>
 )
 
-export default VideoSnapshots
+export default VideoSnapshotsGallery

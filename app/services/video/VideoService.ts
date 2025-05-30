@@ -58,7 +58,7 @@ export const fetchVideoById = async (videoId: string): Promise<Video> => {
   return video
 }
 
-export const fetchVideoSnapshots = async (videoId: string): Promise<Snapshot[]> => {
+export const fetchVideoSnapshotsByVideoId = async (videoId: string): Promise<Snapshot[]> => {
   const response = await axiosClient.get(`/videos/id/${videoId}/snapshots`)
   const snapshots = zodParse(ListResponse(Snapshot), response.data)
 
