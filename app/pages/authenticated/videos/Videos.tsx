@@ -122,11 +122,16 @@ const Videos = () => {
         hasMore={hasMore.current}
         className={styles.videosList}>
         {
-          videos.map(
+          videos.concat(Array(10).fill(null)).map(
               (video, index) =>
-                  <Link to={`/video/${video.videoMetadata.id}`} key={index} className={styles.videoCard}>
-                    <VideoCard video={video}/>
-                  </Link>
+                <div key={index} className={styles.videoCard}>
+                  {
+                    video != null &&
+                    <Link to={`/video/${video.videoMetadata.id}`}>
+                      <VideoCard video={video}/>
+                    </Link>
+                  }
+                </div>
           )
         }
       </InfiniteScroll>
