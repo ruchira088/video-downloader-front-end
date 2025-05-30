@@ -1,4 +1,4 @@
-import {type FC, type JSX, useEffect, useRef} from "react"
+import {type FC, type ReactNode, useEffect, useRef} from "react"
 import classNames from "classnames"
 
 import styles from "./InfiniteScroll.module.scss"
@@ -7,7 +7,7 @@ type InfiniteScrollProps = {
     readonly loadMore: () => void
     readonly isLoading: boolean
     readonly hasMore: boolean
-    readonly children: JSX.Element[]
+    readonly children: ReactNode
     readonly className?: string
 }
 
@@ -38,7 +38,7 @@ const InfiniteScroll: FC<InfiniteScrollProps> = props => {
     return (
         <div className={classNames(styles.infiniteScroll, props.className)}>
             {props.children}
-            <div ref={loadingTrigger} className={classNames(styles.loader, {[styles.populated]: props.children.length > 25})}/>
+            <div ref={loadingTrigger} className={classNames(styles.loader)}/>
         </div>
     )
 }

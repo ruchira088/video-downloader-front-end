@@ -3,12 +3,8 @@
 
   .loader {
     position: absolute;
-    bottom: 10em;
+    bottom: 100em;
     height: 1px;
     width: 1px;
-
-    &.populated {
-      bottom: 100em;
-    }
   }
 }

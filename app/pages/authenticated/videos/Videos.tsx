@@ -1,5 +1,4 @@
-import React, {useRef, useState} from "react"
-import Axios, {type CancelTokenSource} from "axios"
+import React, {useEffect, useRef, useState} from "react"
 import {searchVideos} from "~/services/video/VideoService"
 import {Video} from "~/models/Video"
 import {type SortBy} from "~/models/SortBy"
@@ -16,13 +15,12 @@ import {
   VideoSitesSearchParam
 } from "./components/VideoSearchParams"
 import {Range} from "~/models/Range"
-import {CANCEL} from "~/services/http/HttpClient"
 import {Link, useNavigate, useSearchParams} from "react-router"
 import type {Option} from "~/types/Option"
 import VideoCard from "~/components/video/video-card/VideoCard"
 
 import styles from "./Videos.module.scss"
-import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll";
+import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
 
 const PAGE_SIZE = 50
 
@@ -34,14 +32,14 @@ const Videos = () => {
   const [videoSites, setVideoSites] = useState<string[]>(parseSearchParam(queryParams, VideoSitesSearchParam))
   const [sortBy, setSortBy] = useState<SortBy>(parseSearchParam(queryParams, SortBySearchParam))
   const [searchTerm, setSearchTerm] = useState<Option<string>>(parseSearchParam(queryParams, SearchTermSearchParam))
-  const [hasMore, setHasMore] = useState<boolean>(true)
   const [durationRange, setDurationRange] = useState<DurationRange>(parseSearchParam(queryParams, DurationRangeSearchParam))
   const [sizeRange, setSizeRange] = useState<Range<number>>(parseSearchParam(queryParams, SizeRangeSearchParam))
-  const [cancelTokenSource, setCancelTokenSource] = useState<CancelTokenSource>(Axios.CancelToken.source())
-  const pageNumber = useRef(0)
+  const abortController = useRef(new AbortController())
+  const [pageNumber, setPageNumber] = useState(0)
   const isLoading = useRef(false)
+  const hasMore = useRef(true)
 
-  const loadMoreVideos = async (): Promise<void> => {
+  const loadVideos = async (): Promise<void> => {
     if (!isLoading.current) {
       isLoading.current = true
 
@@ -51,16 +49,14 @@ const Videos = () => {
             durationRange,
             sizeRange,
             videoSites,
-            pageNumber.current,
+            pageNumber,
             PAGE_SIZE,
             sortBy,
-            cancelTokenSource
+            abortController.current.signal
         )
 
         if (results.length < PAGE_SIZE) {
-          setHasMore(false)
-        } else {
-          pageNumber.current += 1
+          hasMore.current = false
         }
 
         setVideos(videos => videos.concat(results))
@@ -69,6 +65,10 @@ const Videos = () => {
       }
     }
   }
+
+  useEffect(() => {
+    loadVideos()
+  }, [videoSites, sortBy, searchTerm, durationRange, sizeRange, pageNumber])
 
   function onChangeSearchParams<A, B extends VideoSearchParamName>(
     videoSearchParameter: VideoSearchParameter<A, B>,
@@ -79,13 +79,12 @@ const Videos = () => {
 
   function onChange<A>(name: string, encoder: (value: A) => string, f: (value: A) => void): (value: A) => void {
     return (value: A) => {
-      cancelTokenSource.cancel(CANCEL)
-      setCancelTokenSource(Axios.CancelToken.source())
-      pageNumber.current = 0
+      abortController.current = new AbortController()
       f(value)
       updateQueryParameter(name, encoder, value)
+      setPageNumber(0)
       setVideos([])
-      setHasMore(true)
+      hasMore.current =true
       isLoading.current = false
     }
   }
@@ -112,7 +111,11 @@ const Videos = () => {
         isLoading={isLoading.current}
       />
 
-      <InfiniteScroll loadMore={loadMoreVideos} isLoading={isLoading.current} hasMore={hasMore} className={styles.videosList}>
+      <InfiniteScroll
+        loadMore={() => setPageNumber(pageNumber => pageNumber + 1)}
+        isLoading={isLoading.current}
+        hasMore={hasMore.current}
+        className={styles.videosList}>
         {
           videos.map(
               (video, index) =>

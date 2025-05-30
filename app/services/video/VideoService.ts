@@ -21,7 +21,7 @@ export const searchVideos = async (
   pageNumber: number,
   pageSize: number,
   sortBy: SortBy,
-  cancelTokenSource: CancelTokenSource
+  abortSignal: AbortSignal
 ): Promise<SearchResult<Video>> => {
   const pageNumberQuery = "page-number=" + pageNumber
   const pageSizeQuery = "page-size=" + pageSize
@@ -44,7 +44,7 @@ export const searchVideos = async (
     .filter((query) => query !== "")
     .join("&")
 
-  const response = await axiosClient.get("/videos/search?" + queryParameters, { cancelToken: cancelTokenSource.token })
+  const response = await axiosClient.get("/videos/search?" + queryParameters, { signal: abortSignal })
 
   const searchResult: SearchResult<Video> = zodParse(SearchResult(Video), response.data)
 
