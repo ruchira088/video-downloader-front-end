@@ -1,5 +1,5 @@
-import { Duration, type DurationUnit } from "luxon"
-import { Option } from "~/types/Option"
+import {Duration, type DurationUnit} from "luxon"
+import {Option} from "~/types/Option"
 
 type ByteUnit = "B" | "kB" | "MB" | "GB"
 
@@ -39,24 +39,19 @@ export const humanReadableSize = (size: number, alwaysShowDecimals = false): str
 }
 
 
-export const humanReadableDuration = (duration: Duration): string =>
-  (["hours", "minutes", "seconds"] as DurationUnit[])
-    .reduce<{ remainingDuration: Duration; results: string[] }>(
-      ({ remainingDuration, results }, unit) => {
-        const unitLength = remainingDuration.as(unit)
+export const humanReadableDuration = (duration: Duration): string => {
+  const rescaledDuration = duration.rescale()
+  const durationUnits = ["hour", "minute", "second"] as DurationUnit[]
 
-        if (unitLength > 0) {
-          return {
-            remainingDuration: remainingDuration.minus(Duration.fromObject({[unit]: unitLength})),
-            results: results.concat(`${unitLength} ${unit}`),
-          }
-        } else {
-          return { remainingDuration, results }
-        }
-      },
-      { remainingDuration: duration, results: [] }
-    )
-    .results.join(" ")
+  const stringValue =
+    durationUnits
+      .map<[number, DurationUnit]>(unit => [rescaledDuration.get(unit), unit])
+      .filter(([value, _]) => value > 0)
+      .map(([value, unit]) => `${value} ${unit}${value > 1 ? "s" : ""}`)
+      .join(" ")
+
+  return stringValue
+}
 
 export const shortHumanReadableDuration = (duration: Duration): string => {
   const rescaledDuration = duration.rescale()

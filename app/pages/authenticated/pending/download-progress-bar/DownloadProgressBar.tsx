@@ -11,13 +11,12 @@ const DownloadProgressBar = (progressValue: ProgressValue) => {
   const percentage = Number(((progressValue.currentValue / progressValue.completeValue) * 100).toFixed(2))
 
   return (
-    <div className="download-progress-bar">
-      <div className="progress" />
+    <div>
       <div>{percentage} %</div>
       <div>
         {humanReadableSize(progressValue.currentValue)} / {humanReadableSize(progressValue.completeValue)}
       </div>
-      <LinearProgress value={percentage} />
+      <LinearProgress variant="determinate" value={percentage} />
     </div>
   )
 }

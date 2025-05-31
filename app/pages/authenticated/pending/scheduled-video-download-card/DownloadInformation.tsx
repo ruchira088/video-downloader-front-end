@@ -1,7 +1,7 @@
 import React from "react"
 import { type ScheduledVideoDownload } from "~/models/ScheduledVideoDownload"
 import type { BytesPerSecond, Downloadable } from "../ScheduledVideos"
-import { humanReadableDuration, humanReadableSize } from "~/utils/Formatter"
+import {humanReadableDuration, humanReadableSize, shortHumanReadableDuration} from "~/utils/Formatter"
 import { Duration } from "luxon"
 
 const DownloadInformation = (scheduledVideoDownload: ScheduledVideoDownload & Downloadable) =>
@@ -23,6 +23,6 @@ const DownloadInformation = (scheduledVideoDownload: ScheduledVideoDownload & Do
     .toNullable()
 
 const remainingDuration = (totalSize: number, currentSize: number, downloadRate: BytesPerSecond): string =>
-  humanReadableDuration(Duration.fromObject({ seconds: (totalSize - currentSize) / downloadRate }))
+  humanReadableDuration(Duration.fromObject({ seconds: Math.round((totalSize - currentSize) / downloadRate) }))
 
 export default DownloadInformation

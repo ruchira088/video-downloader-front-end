@@ -52,6 +52,13 @@ export const updateSchedulingStatus = async (videoId: string, status: Scheduling
   return scheduledVideoDownload
 }
 
+export const retryFailedScheduledVideos = async (): Promise<ScheduledVideoDownload[]> => {
+  const response = await axiosClient.post("/schedule/retry-failed")
+  const scheduledVideoDownloads: ListResponse<ScheduledVideoDownload> = zodParse(ListResponse(ScheduledVideoDownload), response.data)
+
+  return scheduledVideoDownloads.results
+}
+
 export const fetchWorkerStatus = async (): Promise<WorkerStatus> => {
   const response = await axiosClient.get("/schedule/worker-status")
   const workerStatus = zodParse(WorkerStatusResult, response.data).workerStatus

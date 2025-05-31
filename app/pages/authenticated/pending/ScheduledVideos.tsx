@@ -4,6 +4,7 @@ import {
   deleteScheduledVideoById,
   fetchScheduledVideoById,
   fetchScheduledVideos,
+  retryFailedScheduledVideos,
   scheduledVideoDownloadStream
 } from "~/services/scheduling/SchedulingService"
 import ScheduledVideoDownloadCard from "./scheduled-video-download-card/ScheduledVideoDownloadCard"
@@ -15,9 +16,10 @@ import {Ordering} from "~/models/Ordering"
 import {None, Option, Some} from "~/types/Option"
 import type {DateTime} from "luxon"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
+import {Button} from "@mui/material"
 
 const DOWNLOAD_HISTORY_SIZE = 10
-const PAGE_SIZE = 50
+const PAGE_SIZE = 25
 
 export type BytesPerSecond = number
 
@@ -58,13 +60,12 @@ const ScheduledVideos = () => {
     useState(Map<string, DownloadableScheduledVideo>())
 
   const [pageNumber, setPageNumber] = useState(0)
-  const isLoading = useRef(false)
+  const [disableRetry, setDisableRetry] = useState(false)
   const hasMore = useRef(true)
+  const isLoading = useRef(false)
 
   const retrieveScheduledVideos = async () => {
     isLoading.current = true
-
-    console.log("Fetch page " + pageNumber + " of scheduled videos.")
 
     try {
       const scheduledVideos = await fetchScheduledVideos(None.of(), pageNumber, PAGE_SIZE, SortBy.Date, Ordering.Ascending)
@@ -124,11 +125,31 @@ const ScheduledVideos = () => {
     }
   }
 
+  const retryAll = async () => {
+    setDisableRetry(true)
+
+    try {
+      await retryFailedScheduledVideos()
+      isLoading.current = false
+      hasMore.current = true
+      setPageNumber(0)
+      setScheduledVideoDownloads(Map())
+    } finally {
+      setDisableRetry(false)
+    }
+  }
+
   return (
     <div className={styles.scheduledVideos}>
       {/*<Helmet>*/}
       {/*  <title>Pending Videos</title>*/}
       {/*</Helmet>*/}
+      <Button
+        onClick={retryAll}
+        disabled={disableRetry}
+        variant="contained">
+        Retry All Failed
+      </Button>
       <InfiniteScroll
         loadMore={loadMore}
         hasMore={hasMore.current}
@@ -137,25 +158,30 @@ const ScheduledVideos = () => {
         {
           scheduledVideoDownloads
             .sortBy((value) => value.scheduledAt.toMillis())
+            .toList()
+            .toArray().concat(Array(10).fill(null))
             .map((scheduledVideoDownload, index) => (
                 <div key={index} className={styles.scheduledVideoCard}>
-                  <ScheduledVideoDownloadCard
-                    scheduledVideoDownload={scheduledVideoDownload}
-                    onDelete={(videoId) =>
-                      deleteScheduledVideoById(videoId).then(() =>
-                        setScheduledVideoDownloads((scheduledVideos) => scheduledVideos.delete(videoId))
-                      )
-                    }
-                  />
-                  <a className={styles.sourceLink}
-                     href={scheduledVideoDownload.videoMetadata.url}
-                     target="_blank">
-                    Source
-                  </a>
+                  {scheduledVideoDownload != null &&
+                    <div>
+                      <ScheduledVideoDownloadCard
+                        scheduledVideoDownload={scheduledVideoDownload}
+                        onDelete={(videoId) =>
+                          deleteScheduledVideoById(videoId).then(() =>
+                            setScheduledVideoDownloads((scheduledVideos) => scheduledVideos.delete(videoId))
+                          )
+                        }
+                      />
+                      <a className={styles.sourceLink}
+                         href={scheduledVideoDownload.videoMetadata.url}
+                         target="_blank">
+                        Source
+                      </a>
+                    </div>
+                  }
                 </div>
               )
             )
-            .toList()
         }
       </InfiniteScroll>
     </div>
