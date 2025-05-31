@@ -96,7 +96,7 @@ export const fetchScheduledVideos = async (
           "page-number": pageNumber,
           "page-size": pageSize,
           "sort-by": sortBy,
-          ordering: ordering,
+          order: ordering,
           "search-term": searchTerm.getOrElse(() => ""),
         }
       }

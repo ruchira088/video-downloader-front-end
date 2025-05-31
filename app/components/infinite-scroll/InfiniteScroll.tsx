@@ -5,7 +5,6 @@ import styles from "./InfiniteScroll.module.scss"
 
 type InfiniteScrollProps = {
     readonly loadMore: () => void
-    readonly isLoading: boolean
     readonly hasMore: boolean
     readonly children: ReactNode
     readonly className?: string
@@ -19,7 +18,7 @@ const InfiniteScroll: FC<InfiniteScrollProps> = props => {
             const intersectionObserver = new IntersectionObserver(entries => {
                 if (entries.length > 0) {
                     const entry = entries[0]
-                    if (entry.isIntersecting && props.hasMore && !props.isLoading) {
+                    if (entry.isIntersecting && props.hasMore) {
                         props.loadMore()
                     }
                 }

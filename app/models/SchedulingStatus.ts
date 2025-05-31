@@ -1,7 +1,7 @@
 export enum SchedulingStatus {
   Active = "Active",
   Completed = "Completed",
-  Downloaded = "Downloads",
+  Downloaded = "Downloaded",
   Acquired = "Acquired",
   Stale = "Stale",
   Error = "Error",

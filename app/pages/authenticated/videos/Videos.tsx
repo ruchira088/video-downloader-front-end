@@ -42,30 +42,28 @@ const Videos = () => {
   const hasMore = useRef(true)
 
   const loadVideos = async (): Promise<void> => {
-    if (!isLoading.current) {
-      isLoading.current = true
+    isLoading.current = true
 
-      try {
-        const {results} = await searchVideos(
-            searchTerm,
-            durationRange,
-            sizeRange,
-            videoSites,
-            pageNumber,
-            PAGE_SIZE,
-            sortBy,
-            ordering,
-            abortController.current.signal
-        )
+    try {
+      const {results} = await searchVideos(
+        searchTerm,
+        durationRange,
+        sizeRange,
+        videoSites,
+        pageNumber,
+        PAGE_SIZE,
+        sortBy,
+        ordering,
+        abortController.current.signal
+      )
 
-        if (results.length < PAGE_SIZE) {
-          hasMore.current = false
-        }
-
-        setVideos(videos => videos.concat(results))
-      } finally {
-        isLoading.current = false
+      if (results.length < PAGE_SIZE) {
+        hasMore.current = false
       }
+
+      setVideos(videos => videos.concat(results))
+    } finally {
+      isLoading.current = false
     }
   }
 
@@ -97,6 +95,13 @@ const Videos = () => {
     navigate({ search: queryParams.toString() })
   }
 
+  const loadMore = () => {
+    if (!isLoading.current) {
+      isLoading.current = true
+      setPageNumber(pageNumber => pageNumber + 1)
+    }
+  }
+
   return (
     <div className={styles.videosPage}>
       <VideoSearch
@@ -117,7 +122,7 @@ const Videos = () => {
       />
 
       <InfiniteScroll
-        loadMore={() => setPageNumber(pageNumber => pageNumber + 1)}
+        loadMore={loadMore}
         isLoading={isLoading.current}
         hasMore={hasMore.current}
         className={styles.videosList}>

@@ -1,7 +1,11 @@
-.scheduledVideos {
+.scheduledVideoGallery {
+    display: flex;
+    flex-wrap: wrap;
 }
 
-.imageListItem {
+.scheduledVideoCard {
+    flex: 1 0 20em;
+    margin: 1em 0.5em;
     position: relative;
 
     .sourceLink {

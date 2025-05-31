@@ -48,14 +48,20 @@ const HistoryPage = () => {
     retrieveVideoHistory()
   }, [pageNumber])
 
+  const loadMore = () => {
+    if (!isLoading.current) {
+      isLoading.current = true
+      setPageNumber(pageNumber => pageNumber + 1)
+    }
+  }
+
   return (
     <div>
       {/*<Helmet>*/}
       {/*  <title>History</title>*/}
       {/*</Helmet>*/}
       <InfiniteScroll
-        loadMore={() => setPageNumber(pageNumber => pageNumber + 1)}
-        isLoading={isLoading.current}
+        loadMore={loadMore}
         hasMore={hasMore.current}
         className={styles.videoHistoryGallery}
       >
