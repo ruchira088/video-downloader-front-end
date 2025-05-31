@@ -83,7 +83,6 @@ export const updateVideoTitle = async (videoId: string, title: string): Promise<
 
 export const videoServiceSummary = async (): Promise<VideoServiceSummary> => {
   const response = await axiosClient.get("/videos/summary")
-  console.log(response)
   const videoServiceSummary = zodParse(VideoServiceSummary, response.data)
 
   return videoServiceSummary

@@ -7,7 +7,7 @@ export default [
     route("/video/:videoId", "pages/authenticated/videos/video-page/VideoPage.tsx"),
     route("/service-information", "pages/authenticated/service-information/ServiceInformation.tsx"),
     route("/schedule", "pages/authenticated/schedule/Schedule.tsx"),
-    route("/pending", "pages/authenticated/pending/ScheduledVideos.tsx"),
+    route("/downloading", "pages/authenticated/pending/ScheduledVideos.tsx"),
     route("/server-error", "pages/authenticated/server-error/ServerErrorPage.tsx")
   ]),
   layout("pages/unauthenticated/UnauthenticatedLayout.tsx", [

@@ -40,30 +40,34 @@ const Videos = () => {
   const [pageNumber, setPageNumber] = useState(0)
   const isLoading = useRef(false)
   const hasMore = useRef(true)
+  const fetchedPages = useRef(new Set<number>())
 
   const loadVideos = async (): Promise<void> => {
-    isLoading.current = true
+    if (!fetchedPages.current.has(pageNumber)) {
+      isLoading.current = true
+      fetchedPages.current.add(pageNumber)
 
-    try {
-      const {results} = await searchVideos(
-        searchTerm,
-        durationRange,
-        sizeRange,
-        videoSites,
-        pageNumber,
-        PAGE_SIZE,
-        sortBy,
-        ordering,
-        abortController.current.signal
-      )
+      try {
+        const {results} = await searchVideos(
+          searchTerm,
+          durationRange,
+          sizeRange,
+          videoSites,
+          pageNumber,
+          PAGE_SIZE,
+          sortBy,
+          ordering,
+          abortController.current.signal
+        )
 
-      if (results.length < PAGE_SIZE) {
-        hasMore.current = false
+        if (results.length < PAGE_SIZE) {
+          hasMore.current = false
+        }
+
+        setVideos(videos => videos.concat(results))
+      } finally {
+        isLoading.current = false
       }
-
-      setVideos(videos => videos.concat(results))
-    } finally {
-      isLoading.current = false
     }
   }
 
@@ -85,6 +89,7 @@ const Videos = () => {
       updateQueryParameter(name, encoder, value)
       setPageNumber(0)
       setVideos([])
+      fetchedPages.current = new Set<number>()
       hasMore.current =true
       isLoading.current = false
     }

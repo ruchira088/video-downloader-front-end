@@ -1,28 +1,33 @@
-import React from "react"
-import { SortBy } from "~/models/SortBy"
-import { MenuItem, Select, type SelectChangeEvent } from "@mui/material"
+import React, {type FC} from "react"
+import {SortBy} from "~/models/SortBy"
+import {FormControl, InputLabel, MenuItem, Select, type SelectChangeEvent} from "@mui/material"
 
-const SortBySelection = ({
-  value,
-  onChange,
-  className,
-}: {
-  value: SortBy
-  onChange: (value: SortBy) => void
-  className?: string
-}) => (
-  <div className={className}>
+type SortBySelectionProps = {
+  readonly sortBy: SortBy
+  readonly onChange: (value: SortBy) => void
+  readonly className?: string
+}
+
+const SortBySelection: FC<SortBySelectionProps> = props => (
+  <FormControl fullWidth className={props.className}>
+    <InputLabel id="sort-by-selector-label">Sort by</InputLabel>
     <Select
-      value={value}
-      onChange={(changeEvent: SelectChangeEvent<SortBy>) => onChange(changeEvent.target.value as SortBy)}
-    >
-      {Object.keys(SortBy).map((key) => (
-        <MenuItem key={key} value={(SortBy as { [key: string]: string })[key]}>
-          {key}
-        </MenuItem>
-      ))}
+      id="sort-by-selector"
+      labelId="sort-by-selector-label"
+      value={props.sortBy}
+      label="Sort by"
+      onChange={(changeEvent: SelectChangeEvent<SortBy>) => props.onChange(changeEvent.target.value as SortBy)}>
+      {
+        Object.entries(SortBy)
+          .map(([key, value]) => (
+              <MenuItem key={key} value={value}>
+                {key}
+              </MenuItem>
+            )
+          )
+      }
     </Select>
-  </div>
+  </FormControl>
 )
 
 export default SortBySelection

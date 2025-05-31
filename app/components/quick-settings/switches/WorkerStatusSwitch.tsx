@@ -31,7 +31,7 @@ const WorkerStatusSwitch = () => {
           onChange={onChange}
           disabled={workerStatus === null}/>
     }
-      label="Worker Status"
+      label="Workers"
     />
   )
 }

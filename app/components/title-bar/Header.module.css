@@ -1,15 +1,16 @@
-.titleBar {
+.header {
   display: flex;
   align-items: center;
-  padding: 0.5em 3em 0em;
+  justify-content: space-between;
 }
 
 .smallLogo {
   max-width: 4em;
 }
 
-.logo {
+.headerLogo {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
+  flex: 1;
 }

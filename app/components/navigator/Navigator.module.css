@@ -1,8 +1,11 @@
 .navigator {
+    display: flex;
+    flex: 10;
 }
 
 .navigatorTab {
+    text-align: center;
+    flex: auto;
 }
-
 .navigatorTab:hover {
 }

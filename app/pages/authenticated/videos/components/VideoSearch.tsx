@@ -1,20 +1,20 @@
 import React from "react"
-import { SortBy } from "~/models/SortBy"
-import { type DurationRange, durationRangeNumberDecoder, durationRangeNumberEncoder } from "~/models/DurationRange"
+import {SortBy} from "~/models/SortBy"
+import {type DurationRange, durationRangeNumberDecoder, durationRangeNumberEncoder} from "~/models/DurationRange"
 import SortBySelection from "~/components/sort-by-selection/SortBySelection"
-import { Autocomplete, TextField } from "@mui/material"
-import { type Range } from "~/models/Range"
-import { maybeString } from "~/utils/StringUtils"
+import {Autocomplete, TextField} from "@mui/material"
+import {type Range} from "~/models/Range"
+import {maybeString} from "~/utils/StringUtils"
 import RangeSlider from "./RangeSlider"
 import VideoSitesSelector from "./VideoSitesSelector"
-import { codec, identityCodec } from "~/models/Codec"
-import { dataSizePrettyPrint, durationPrettyPrint } from "./RangeDisplay"
-import { Duration } from "luxon"
+import {codec, identityCodec} from "~/models/Codec"
+import {dataSizePrettyPrint, durationPrettyPrint} from "./RangeDisplay"
+import {Duration} from "luxon"
 
 import styles from "./VideoSearch.module.css"
-import { Option } from "~/types/Option"
+import {Option} from "~/types/Option"
 import type {Ordering} from "~/models/Ordering"
-import OrderingComponent from "~/components/OrderingComponent"
+import OrderingComponent from "~/components/ordering/OrderingComponent"
 
 const MAX_RANGE = Duration.fromObject({minutes: 75})
 const MAX_DATA_SIZE = 10_000_000_000
@@ -66,12 +66,8 @@ const VideoSearch = ({
         className={styles.search}
       />
       <div className={styles.selectors}>
-        <VideoSitesSelector
-          videoSites={videoSites}
-          onChange={onVideoSitesChange}
-          className={styles.videoSiteSelector}
-        />
-        <SortBySelection value={sortBy} onChange={onSortByChange} className={styles.sortBy} />
+        <VideoSitesSelector videoSites={videoSites} onChange={onVideoSitesChange} className={styles.videoSiteSelector}/>
+        <SortBySelection sortBy={sortBy} onChange={onSortByChange} className={styles.sortBy}/>
         <OrderingComponent ordering={ordering} onOrderingChange={onOrderingChange}/>
       </div>
     </div>
