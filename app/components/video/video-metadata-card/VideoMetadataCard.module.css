@@ -1,11 +1,10 @@
 .thumbnail {
-  max-width: 100%;
+  width: 100%;
   max-height: 15em;
   border-radius: 0.2em;
 }
 
 .imageContainer {
-  position: relative;
 }
 
 .duration {
