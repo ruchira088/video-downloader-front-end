@@ -123,7 +123,6 @@ const Videos = () => {
 
       <InfiniteScroll
         loadMore={loadMore}
-        isLoading={isLoading.current}
         hasMore={hasMore.current}
         className={styles.videosList}>
         {
