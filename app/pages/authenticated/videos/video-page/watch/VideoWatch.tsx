@@ -16,14 +16,14 @@ import styles from "./VideoWatch.module.scss"
 import {DateTime, Duration} from "luxon"
 import {Option} from "~/types/Option"
 
-type VideDeleteDialogProps = {
+type VideoDeleteDialogProps = {
   readonly isVisible: boolean
   readonly onClose: () => void
   readonly videoMetadata: VideoMetadata
   readonly onDelete: (deleteFile: boolean) => Promise<void>
 }
 
-const VideoDeleteDialog: FC<VideDeleteDialogProps> = props => {
+const VideoDeleteDialog: FC<VideoDeleteDialogProps> = props => {
   const [deleteFile, setDeleteFile] = useState<boolean>(false)
 
   return (

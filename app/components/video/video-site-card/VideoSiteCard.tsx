@@ -12,7 +12,7 @@ import xnxx from "~/images/site-logos/xnxx.png"
 import youporn from "~/images/site-logos/youporn.png"
 import xvideos from "~/images/site-logos/xvideos.png"
 import youtube from "~/images/site-logos/youtube.png"
-import { Option } from "~/types/Option"
+import {Option} from "~/types/Option"
 
 type VideoSiteCardProps = {
   readonly videoSite: string
@@ -21,8 +21,8 @@ type VideoSiteCardProps = {
 const VideoSiteCard: FC<VideoSiteCardProps> = props =>
   Option.fromNullable(videoSiteLogos[props.videoSite])
     .fold(
-      () => <span />,
-      logo => <img className={styles.videoSiteLogo} src={logo} alt="site logo" />
+      () => <span className={styles.siteName}>{props.videoSite}</span>,
+      logo => <img className={styles.videoSiteLogo} src={logo} alt={`${props.videoSite} logo`} />
   )
   
 const videoSiteLogos: Record<string, string> = {

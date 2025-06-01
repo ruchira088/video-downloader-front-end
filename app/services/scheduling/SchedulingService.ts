@@ -10,7 +10,7 @@ import type { Option } from "~/types/Option"
 import { zodParse } from "~/types/Zod"
 import { ListResponse } from "~/models/ListResponse"
 import { DownloadProgress } from "~/models/DownloadProgress"
-import { EventStreamEventType } from "~/pages/authenticated/pending/EventStreamEventType"
+import { EventStreamEventType } from "~/pages/authenticated/downloading/EventStreamEventType"
 
 export const scheduledVideoDownloadStream = (onDownloadProgress: (downloadProgress: DownloadProgress) => void): (() => void) => {
   const eventSource = new EventSource(`${configuration.apiService}/schedule/active`, { withCredentials: true })

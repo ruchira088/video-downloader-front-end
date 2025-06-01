@@ -5,6 +5,7 @@
 }
 
 .imageContainer {
+  position: relative;
 }
 
 .duration {
@@ -40,4 +41,14 @@
 
 .videoTitle {
   margin-top: 0.5em;
+}
+
+.videoSiteUrl {
+  position: absolute;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.25);
+    filter: brightness(1.5);
+  }
 }

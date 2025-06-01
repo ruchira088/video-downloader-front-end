@@ -8,27 +8,17 @@ import {
   scheduledVideoDownloadStream
 } from "~/services/scheduling/SchedulingService"
 import ScheduledVideoDownloadCard from "./scheduled-video-download-card/ScheduledVideoDownloadCard"
-import {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
 import {DownloadProgress} from "~/models/DownloadProgress"
 import {SortBy} from "~/models/SortBy"
 import styles from "./ScheduledVideos.module.css"
 import {Ordering} from "~/models/Ordering"
 import {None, Option, Some} from "~/types/Option"
-import type {DateTime} from "luxon"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
 import {Button} from "@mui/material"
+import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVideo"
 
 const DOWNLOAD_HISTORY_SIZE = 10
 const PAGE_SIZE = 25
-
-export type BytesPerSecond = number
-
-export type Downloadable = {
-  downloadedBytes: number
-  lastUpdatedAt: Option<DateTime>
-  downloadHistory: BytesPerSecond[]
-  downloadSpeed: Option<BytesPerSecond>
-}
 
 const average = (numbers: number[]): Option<number> =>
   numbers
@@ -36,7 +26,7 @@ const average = (numbers: number[]): Option<number> =>
     .map((total) => total / numbers.length)
 
 const gatherDownloadHistory =
-  (downloadProgress: DownloadProgress, scheduledVideoDownloads: Map<string, ScheduledVideoDownload & Downloadable>): number[] =>
+  (downloadProgress: DownloadProgress, scheduledVideoDownloads: Map<string, DownloadableScheduledVideo>): number[] =>
     Option.fromNullable(scheduledVideoDownloads.get(downloadProgress.videoId))
       .map((existing) => {
         const maybeCurrentRate = existing.lastUpdatedAt
@@ -48,15 +38,13 @@ const gatherDownloadHistory =
           )
 
         return existing.downloadHistory
-          .concat(maybeCurrentRate.filter((rate) => rate !== 0).fold<BytesPerSecond[]>(() => [], (value) => [value]))
+          .concat(maybeCurrentRate.filter((rate) => rate !== 0).fold<number[]>(() => [], (value) => [value]))
           .slice(-1 * DOWNLOAD_HISTORY_SIZE)
       })
       .getOrElse(() => [])
 
-type DownloadableScheduledVideo = ScheduledVideoDownload & Downloadable
-
 const ScheduledVideos = () => {
-  const [scheduledVideoDownloads, setScheduledVideoDownloads] =
+  const [downloadableScheduledVideos, setDownloadableScheduledVideos] =
     useState(Map<string, DownloadableScheduledVideo>())
 
   const [pageNumber, setPageNumber] = useState(0)
@@ -86,7 +74,9 @@ const ScheduledVideos = () => {
         ])
       )
 
-      setScheduledVideoDownloads((scheduledVideoDownloads) => scheduledVideoDownloads.concat(downloadableScheduledVideoMap))
+      setDownloadableScheduledVideos((downloadableScheduledVideos) =>
+        downloadableScheduledVideos.concat(downloadableScheduledVideoMap)
+      )
     } finally {
       isLoading.current = false
     }
@@ -111,7 +101,7 @@ const ScheduledVideos = () => {
       })
     }
 
-    setScheduledVideoDownloads(updateScheduledVideoDownloads)
+    setDownloadableScheduledVideos(updateScheduledVideoDownloads)
   }
 
   useEffect(() => {
@@ -133,10 +123,15 @@ const ScheduledVideos = () => {
       isLoading.current = false
       hasMore.current = true
       setPageNumber(0)
-      setScheduledVideoDownloads(Map())
+      setDownloadableScheduledVideos(Map())
     } finally {
       setDisableRetry(false)
     }
+  }
+
+  const onDelete = async (videoId: string) => {
+    await deleteScheduledVideoById(videoId)
+    setDownloadableScheduledVideos((downloadableScheduledVideos) => downloadableScheduledVideos.delete(videoId))
   }
 
   return (
@@ -156,28 +151,17 @@ const ScheduledVideos = () => {
         className={styles.scheduledVideoGallery}
       >
         {
-          scheduledVideoDownloads
+          downloadableScheduledVideos
             .sortBy((value) => value.scheduledAt.toMillis())
             .toList()
             .toArray().concat(Array(10).fill(null))
-            .map((scheduledVideoDownload, index) => (
+            .map((downloadableScheduledVideos, index) => (
                 <div key={index} className={styles.scheduledVideoCard}>
-                  {scheduledVideoDownload != null &&
-                    <div>
-                      <ScheduledVideoDownloadCard
-                        scheduledVideoDownload={scheduledVideoDownload}
-                        onDelete={(videoId) =>
-                          deleteScheduledVideoById(videoId).then(() =>
-                            setScheduledVideoDownloads((scheduledVideos) => scheduledVideos.delete(videoId))
-                          )
-                        }
-                      />
-                      <a className={styles.sourceLink}
-                         href={scheduledVideoDownload.videoMetadata.url}
-                         target="_blank">
-                        Source
-                      </a>
-                    </div>
+                  {downloadableScheduledVideos != null &&
+                    <ScheduledVideoDownloadCard
+                      downloadableScheduledVideo={downloadableScheduledVideos}
+                      onDelete={onDelete}
+                    />
                   }
                 </div>
               )

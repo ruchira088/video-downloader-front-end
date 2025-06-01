@@ -1,21 +1,23 @@
-import React, { type FC, useContext, useEffect, useState } from "react"
+import React, {type FC, type ReactNode, useContext, useEffect, useState} from "react"
 import classNames from "classnames"
-import { VideoMetadata } from "~/models/VideoMetadata"
-import { ApplicationContext } from "~/context/ApplicationContext"
-import { imageUrl } from "~/services/asset/AssetService"
+import {VideoMetadata} from "~/models/VideoMetadata"
+import {ApplicationContext} from "~/context/ApplicationContext"
+import {imageUrl} from "~/services/asset/AssetService"
 import translate from "~/services/translation/TranslationService"
-import { humanReadableSize, shortHumanReadableDuration } from "~/utils/Formatter"
+import {humanReadableSize, shortHumanReadableDuration} from "~/utils/Formatter"
 import styles from "./VideoMetadataCard.module.css"
-import { Snapshot } from "~/models/Snapshot"
-import { fetchVideoSnapshotsByVideoId } from "~/services/video/VideoService"
+import {Snapshot} from "~/models/Snapshot"
+import {fetchVideoSnapshotsByVideoId} from "~/services/video/VideoService"
 import VideoSiteCard from "../video-site-card/VideoSiteCard"
-import { None, Option, Some } from "~/types/Option"
-import { type FileResource, FileResourceType } from "~/models/FileResource"
+import {None, Option, Some} from "~/types/Option"
+import {type FileResource, FileResourceType} from "~/models/FileResource"
 
 type VideoMetadataCardProps = {
   readonly videoMetadata: VideoMetadata
   readonly disableSnapshots?: boolean
+  readonly enableSourceLink?: boolean
   readonly classNames?: string
+  readonly children?: ReactNode
 }
 
 const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
@@ -75,7 +77,14 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
   return (
     <div className={classNames(styles.videoMetadataCard, props.classNames)}>
       <div className={styles.imageContainer}>
-        <VideoSiteCard videoSite={props.videoMetadata.videoSite}/>
+        { props.children }
+        {
+          props.enableSourceLink &&
+          <a href={props.videoMetadata.url} target="_blank" className={styles.videoSiteUrl}>
+            <VideoSiteCard videoSite={props.videoMetadata.videoSite}/>
+          </a>
+        }
+        {!props.enableSourceLink && <VideoSiteCard videoSite={props.videoMetadata.videoSite}/>}
         <img
           onMouseOver={onMouseOver}
           onMouseLeave={onMouseLeave}
