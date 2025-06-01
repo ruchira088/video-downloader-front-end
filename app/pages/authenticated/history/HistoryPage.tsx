@@ -66,12 +66,14 @@ const HistoryPage = () => {
         className={styles.videoHistoryGallery}
       >
         {
-          videoWatchHistories.map(
+          videoWatchHistories.concat(Array(10).fill(null)).map(
             (videoWatchHistory, index) =>
               <div key={index} className={styles.videoHistoryCard}>
-                <Link to={`/video/${videoWatchHistory.video.videoMetadata.id}`}>
-                  <VideoCard video={videoWatchHistory.video}/>
-                </Link>
+                { videoWatchHistory !== null &&
+                  <Link to={`/video/${videoWatchHistory.video.videoMetadata.id}`}>
+                    <VideoCard video={videoWatchHistory.video}/>
+                  </Link>
+                }
               </div>
           )
         }

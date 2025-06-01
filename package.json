@@ -42,7 +42,7 @@
     "build": "react-router build",
     "start": "VITE_API_URL=https://api.video.home.ruchij.com react-router dev",
     "start:local": "VITE_API_URL=https://api.localhost react-router dev",
-    "start:dev": "react-router dev",
+    "start:dev": "VITE_API_URL=https://api.dev.video.dev.ruchij.com react-router dev",
     "typecheck": "react-router typegen && tsc",
     "release": "node release/index.cjs"
   }
