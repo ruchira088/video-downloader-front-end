@@ -1,6 +1,7 @@
 import React, { type JSX, useState } from "react"
-import { fromNumberArray, type Range, toNumberArray } from "~/models/Range"
 import { Slider } from "@mui/material"
+import classNames from "classnames"
+import { fromNumberArray, type Range, toNumberArray } from "~/models/Range"
 import { type Codec } from "~/models/Codec"
 import RangeDisplay, { type PrettyPrint } from "./RangeDisplay"
 import styles from "./RangeSlider.module.css"
@@ -12,6 +13,7 @@ type RangeSliderProps<A> = {
   codec: Codec<A, number>
   printer: PrettyPrint<A>
   title: string
+  className?: string
 }
 
 function RangeSlider<A>(props: RangeSliderProps<A>): JSX.Element {
@@ -27,7 +29,7 @@ function RangeSlider<A>(props: RangeSliderProps<A>): JSX.Element {
       .getOrElse(() => props.range)
 
   return (
-    <div className={styles.rangeSlider}>
+    <div className={classNames(styles.rangeSlider, props.className)}>
       <div className={styles.description}>
         <span className={styles.title}>{props.title}</span>
         <RangeDisplay range={transientRange} printer={props.printer} className={styles.rangeDisplay} />

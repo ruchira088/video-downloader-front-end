@@ -80,6 +80,7 @@ const VideoSearch = ({
         maxValue={MAX_RANGE}
         codec={codec(durationRangeNumberEncoder, durationRangeNumberDecoder)}
         printer={durationPrettyPrint}
+        className={styles.slider}
       />
       <RangeSlider
         title="Size"
@@ -88,6 +89,7 @@ const VideoSearch = ({
         maxValue={MAX_DATA_SIZE}
         codec={identityCodec()}
         printer={dataSizePrettyPrint}
+        className={styles.slider}
       />
     </div>
   </div>

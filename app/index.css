@@ -9,3 +9,7 @@ body {
 a {
   text-decoration: none;
 }
+
+body {
+  padding: 1em;
+}

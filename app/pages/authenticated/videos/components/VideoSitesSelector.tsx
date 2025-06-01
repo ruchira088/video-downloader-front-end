@@ -1,6 +1,17 @@
 import React, {type FC, useEffect, useState} from "react"
-import {FormControl, InputLabel, MenuItem, Select} from "@mui/material"
+import {Box, Checkbox, Chip, FormControl, InputLabel, ListItemText, MenuItem, Select} from "@mui/material"
 import {videoServiceSummary} from "~/services/video/VideoService"
+
+import styles from "./VideoSitesSelector.module.scss"
+
+const menuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: 256,
+      width: 250
+    }
+  }
+}
 
 type VideoSitesSelectorProps = {
   readonly videoSites: string[]
@@ -18,18 +29,22 @@ const VideoSitesSelector: FC<VideoSitesSelectorProps> = props => {
   return (
     <FormControl fullWidth className={props.className}>
       <InputLabel id="video-sites-selector-label">Sites</InputLabel>
-      <Select
+      <Select<string[]>
         multiple={true}
         id="video-sites-selector"
         labelId="video-sites-selector-label"
         label="Sites"
         onChange={(changeEvent) => props.onChange(changeEvent.target.value as string[])}
-        value={props.videoSites}>
+        renderValue={(selected) => <SelectedSites sites={selected}/>}
+        value={props.videoSites}
+        MenuProps={menuProps}
+      >
         {
           availableVideoSites
             .map((videoSite) => (
-                <MenuItem key={videoSite} value={videoSite}>
-                  {videoSite}
+                <MenuItem key={videoSite} value={videoSite} className={styles.menuItem}>
+                  <Checkbox checked={props.videoSites.includes(videoSite)}/>
+                  <ListItemText primary={videoSite}/>
                 </MenuItem>
               )
             )
@@ -39,5 +54,18 @@ const VideoSitesSelector: FC<VideoSitesSelectorProps> = props => {
 
   )
 }
+
+type SelectedSitesProps = {
+  readonly sites: string[]
+  readonly className?: string
+}
+
+const SelectedSites: FC<SelectedSitesProps> = props =>
+  <Box>
+    {props.sites.map((site) =>
+      <Chip key={site} label={site}/>
+    )
+    }
+  </Box>
 
 export default VideoSitesSelector
