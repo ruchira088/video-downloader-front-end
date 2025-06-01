@@ -6,10 +6,11 @@ import {Ordering} from "~/models/Ordering"
 type OrderingComponentProps = {
   readonly ordering: Ordering,
   readonly onOrderingChange: (ordering: Ordering) => void,
+  readonly className?: string,
 }
 
 const OrderingComponent: FC<OrderingComponentProps> = props =>
-  <FormControl>
+  <FormControl className={props.className}>
     <RadioGroup value={props.ordering} onChange={value => props.onOrderingChange(value.target.value as Ordering)}>
       <FormControlLabel value={Ordering.Ascending} control={<Radio/>} label={<div>Ascending</div>}/>
       <FormControlLabel value={Ordering.Descending} control={<Radio/>} label={<div>Descending</div>}/>

@@ -11,7 +11,7 @@ import {codec, identityCodec} from "~/models/Codec"
 import {dataSizePrettyPrint, durationPrettyPrint} from "./RangeDisplay"
 import {Duration} from "luxon"
 
-import styles from "./VideoSearch.module.css"
+import styles from "./VideoSearch.module.scss"
 import {Option} from "~/types/Option"
 import type {Ordering} from "~/models/Ordering"
 import OrderingComponent from "~/components/ordering/OrderingComponent"
@@ -52,7 +52,7 @@ const VideoSearch = ({
   onOrderingChange,
   isLoading,
 }: VideoSearchProps) => (
-  <div className={styles.videoFilter}>
+  <div className={styles.videoSearch}>
     <div className={styles.left}>
       <Autocomplete
         freeSolo
@@ -68,7 +68,7 @@ const VideoSearch = ({
       <div className={styles.selectors}>
         <VideoSitesSelector videoSites={videoSites} onChange={onVideoSitesChange} className={styles.videoSiteSelector}/>
         <SortBySelection sortBy={sortBy} onChange={onSortByChange} className={styles.sortBy}/>
-        <OrderingComponent ordering={ordering} onOrderingChange={onOrderingChange}/>
+        <OrderingComponent ordering={ordering} onOrderingChange={onOrderingChange} className={styles.ordering}/>
       </div>
     </div>
 

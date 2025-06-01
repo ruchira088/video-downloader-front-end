@@ -1,0 +1,34 @@
+.videoSearch {
+    display: flex;
+}
+
+.right {
+    flex: 1.5;
+    padding: 1em 2em;
+}
+
+.left {
+    flex: 1;
+    padding: 1em 2em;
+
+    .selectors {
+        display: flex;
+        align-items: center;
+
+        .videoSiteSelector {
+            flex: 4;
+            margin: 1em 1em 1em 0;
+        }
+
+        .sortBy {
+            flex: 1;
+            min-width: 8em;
+            margin: 1em;
+        }
+
+        .ordering {
+            flex: 1;
+            margin: 1em;
+        }
+    }
+}
