@@ -9,6 +9,23 @@
   text-align: center;
 }
 
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5em;
+
+  .actionButtons {
+    .actionButton {
+      padding: 0.1em;
+    }
+  }
+
+  .status {
+
+  }
+}
+
 .deleteButton {
   position: absolute;
   z-index: 1;

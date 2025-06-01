@@ -1,7 +1,6 @@
 import React, {type FC, useState} from "react"
 import {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
-import ProgressBar from "~/pages/authenticated/downloading/download-progress-bar/DownloadProgressBar"
-import styles from "./ScheduledVideoDownloadCard.module.scss"
+import DownloadProgress from "~/pages/authenticated/downloading/download-progress-bar/DownloadProgress"
 import DownloadInformation from "./DownloadInformation"
 import {updateSchedulingStatus} from "~/services/scheduling/SchedulingService"
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material"
@@ -10,6 +9,7 @@ import {COMMAND_NAMES, SchedulingStatus, TRANSITION_STATES} from "~/models/Sched
 import VideoMetadataCard from "~/components/video/video-metadata-card/VideoMetadataCard"
 import {VideoMetadata} from "~/models/VideoMetadata"
 import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVideo"
+import styles from "./ScheduledVideoDownloadCard.module.scss"
 
 type ScheduledVideoDownloadCardProps = {
   readonly downloadableScheduledVideo: DownloadableScheduledVideo
@@ -33,16 +33,14 @@ const ScheduledVideoDownloadCard: FC<ScheduledVideoDownloadCardProps> = props =>
           X
         </div>
       </VideoMetadataCard>
-      {props.downloadableScheduledVideo.videoMetadata.size > props.downloadableScheduledVideo.downloadedBytes && (
-        <div>
-          <ProgressBar
-            completeValue={props.downloadableScheduledVideo.videoMetadata.size}
-            currentValue={props.downloadableScheduledVideo.downloadedBytes}
-          />
-          <DownloadInformation downloadableScheduledVideo={props.downloadableScheduledVideo}/>
-          <Actions scheduleVideoDownload={props.downloadableScheduledVideo}/>
-        </div>
-      )}
+      <div>
+        <DownloadProgress
+          completeValue={props.downloadableScheduledVideo.videoMetadata.size}
+          currentValue={props.downloadableScheduledVideo.downloadedBytes}
+        />
+        <DownloadInformation downloadableScheduledVideo={props.downloadableScheduledVideo}/>
+        <Actions scheduleVideoDownload={props.downloadableScheduledVideo}/>
+      </div>
       <ScheduledVideoDeleteDialog
         videoMetadata={props.downloadableScheduledVideo.videoMetadata}
         visible={deleteDialogVisibility}
@@ -91,13 +89,16 @@ const Actions: FC<ActionsProps> = ({scheduleVideoDownload}) => {
   const [status, setStatus] = useState(scheduleVideoDownload.status)
 
   return (
-    <div>
+    <div className={styles.actions}>
+      <div className={styles.actionButtons}>
       {
         Option.fromNullable(TRANSITION_STATES[status])
           .getOrElse(() => [] as SchedulingStatus[])
           .map((next: SchedulingStatus, index: number) => (
           <Button
             key={index}
+            variant="contained"
+            className={styles.actionButton}
             onClick={() =>
               updateSchedulingStatus(scheduleVideoDownload.videoMetadata.id, next).then((value) =>
                 setStatus(value.status)
@@ -106,7 +107,11 @@ const Actions: FC<ActionsProps> = ({scheduleVideoDownload}) => {
           >
             {Option.fromNullable(COMMAND_NAMES[next]).getOrElse(() => next)}
           </Button>
-        ))}
+            )
+          )
+      }
+      </div>
+      <div className={styles.status}>{status}</div>
     </div>
   )
 }

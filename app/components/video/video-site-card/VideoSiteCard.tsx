@@ -21,7 +21,7 @@ type VideoSiteCardProps = {
 const VideoSiteCard: FC<VideoSiteCardProps> = props =>
   Option.fromNullable(videoSiteLogos[props.videoSite])
     .fold(
-      () => <span className={styles.siteName}>{props.videoSite}</span>,
+      () => <div className={styles.siteName}>{props.videoSite}</div>,
       logo => <img className={styles.videoSiteLogo} src={logo} alt={`${props.videoSite} logo`} />
   )
   

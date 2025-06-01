@@ -8,16 +8,17 @@ export enum SchedulingStatus {
   WorkersPaused = "WorkersPaused",
   Paused = "Paused",
   Queued = "Queued",
+  Deleted = "Deleted"
 }
 
-export const TRANSITION_STATES: { [key: string]: SchedulingStatus[] } = {
+export const TRANSITION_STATES: Partial<Record<SchedulingStatus, SchedulingStatus[]>> = {
   [SchedulingStatus.Active]: [SchedulingStatus.Paused],
   [SchedulingStatus.Error]: [SchedulingStatus.Queued],
   [SchedulingStatus.Paused]: [SchedulingStatus.Queued],
-  [SchedulingStatus.Queued]: [SchedulingStatus.Paused],
+  [SchedulingStatus.Queued]: [SchedulingStatus.Paused]
 }
 
-export const COMMAND_NAMES: { [key: string]: string } = {
+export const COMMAND_NAMES: Partial<Record<SchedulingStatus, string>> = {
   [SchedulingStatus.Paused]: "Pause",
-  [SchedulingStatus.Queued]: "Queue",
+  [SchedulingStatus.Queued]: "Retry",
 }

@@ -1,8 +1,10 @@
 
+.videoSiteLogo {
+    max-height: 1.5em;
+}
 
 .videoSiteLogo, .siteName {
     max-width: 8em;
-    max-height: 1.5em;
     position: absolute;
     margin-top: 0.4em;
     margin-left: 0.4em;
@@ -14,4 +16,5 @@
     color: darkblue;
     font-weight: bold;
     padding: 0.1em 0.25em;
+    font-size: 1em;
 }

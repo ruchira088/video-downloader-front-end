@@ -1,6 +1,6 @@
 import React, {type FC} from "react"
-import {humanReadableDuration, humanReadableSize} from "~/utils/Formatter"
 import {Duration} from "luxon"
+import {humanReadableDuration, humanReadableSize} from "~/utils/Formatter"
 import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVideo"
 
 type DownloadInformationProps = {

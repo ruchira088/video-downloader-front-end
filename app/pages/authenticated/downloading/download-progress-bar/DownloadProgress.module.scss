@@ -1,0 +1,16 @@
+.downloadProgress {
+  margin-top: 0.5em;
+  .details {
+    display: flex;
+    margin-bottom: 0.25em;
+
+    .percentage, .absolute {
+      flex: 1;
+    }
+
+    .absolute {
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}
