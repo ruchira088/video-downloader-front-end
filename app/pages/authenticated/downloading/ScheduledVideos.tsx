@@ -139,12 +139,15 @@ const ScheduledVideos = () => {
       {/*<Helmet>*/}
       {/*  <title>Pending Videos</title>*/}
       {/*</Helmet>*/}
-      <Button
-        onClick={retryAll}
-        disabled={disableRetry}
-        variant="contained">
-        Retry All Failed
-      </Button>
+      <div className={styles.buttonContainer}>
+        <Button
+          onClick={retryAll}
+          disabled={disableRetry}
+          className={styles.retryAll}
+          variant="contained">
+          Retry All
+        </Button>
+      </div>
       <InfiniteScroll
         loadMore={loadMore}
         hasMore={hasMore.current}
