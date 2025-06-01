@@ -1,6 +1,6 @@
 {
   "name": "video-downloader-front-end",
-  "version": "1.4.25-SNAPSHOT",
+  "version": "1.4.25",
   "private": true,
   "type": "module",
   "devDependencies": {
@@ -44,6 +44,6 @@
     "start:local": "VITE_API_URL=https://api.localhost react-router dev",
     "start:dev": "react-router dev",
     "typecheck": "react-router typegen && tsc",
-    "release": "node release/index.js"
+    "release": "node release/index.cjs"
   }
 }

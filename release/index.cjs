@@ -1,8 +1,8 @@
-const { readFile, writeFile } = require("fs")
-const readLine = require("readline")
-const { promisify } = require("util")
-const path = require("path")
-const SimpleGit = require("simple-git")
+import {readFile, writeFile} from "fs"
+import readLine from "readline"
+import {promisify} from "util"
+import path from "path"
+import SimpleGit from "simple-git"
 
 const PROD_BRANCH = "master"
 const DEV_BRANCH = "dev"
