@@ -5,7 +5,7 @@ import {
   fetchScheduledVideoById,
   fetchScheduledVideos,
   retryFailedScheduledVideos,
-  scheduledVideoDownloadStream
+  scheduledVideoDownloadStream, updateSchedulingStatus
 } from "~/services/scheduling/SchedulingService"
 import ScheduledVideoDownloadCard from "./scheduled-video-download-card/ScheduledVideoDownloadCard"
 import {DownloadProgress} from "~/models/DownloadProgress"
@@ -16,6 +16,7 @@ import {None, Option, Some} from "~/types/Option"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
 import {Button} from "@mui/material"
 import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVideo"
+import type {SchedulingStatus} from "~/models/SchedulingStatus"
 
 const DOWNLOAD_HISTORY_SIZE = 10
 const PAGE_SIZE = 25
@@ -29,17 +30,15 @@ const gatherDownloadHistory =
   (downloadProgress: DownloadProgress, scheduledVideoDownloads: Map<string, DownloadableScheduledVideo>): number[] =>
     Option.fromNullable(scheduledVideoDownloads.get(downloadProgress.videoId))
       .map((existing) => {
-        const maybeCurrentRate = existing.lastUpdatedAt
-          .filter((lastUpdatedAt) => downloadProgress.updatedAt.toMillis() > lastUpdatedAt.toMillis())
-          .map(
-            (lastUpdatedAt) =>
-              (1000 * Math.max(downloadProgress.bytes - existing.downloadedBytes, 0)) /
-              (downloadProgress.updatedAt.toMillis() - lastUpdatedAt.toMillis())
-          )
+        if (downloadProgress.updatedAt.toMillis() > existing.lastUpdatedAt.toMillis()) {
+          const downloadRate =
+            (1000 * Math.max(downloadProgress.bytes - existing.downloadedBytes, 0)) /
+              (downloadProgress.updatedAt.toMillis() - existing.lastUpdatedAt.toMillis())
 
-        return existing.downloadHistory
-          .concat(maybeCurrentRate.filter((rate) => rate !== 0).fold<number[]>(() => [], (value) => [value]))
-          .slice(-1 * DOWNLOAD_HISTORY_SIZE)
+          return existing.downloadHistory.concat(downloadRate).slice(-DOWNLOAD_HISTORY_SIZE)
+        } else {
+          return existing.downloadHistory
+        }
       })
       .getOrElse(() => [])
 
@@ -68,7 +67,6 @@ const ScheduledVideos = () => {
           {
             ...scheduledVideoDownload,
             downloadSpeed: None.of(),
-            lastUpdatedAt: None.of(),
             downloadHistory: []
           }
         ])
@@ -95,7 +93,7 @@ const ScheduledVideos = () => {
       return scheduledVideoDownloads.set(scheduledVideoDownload.videoMetadata.id, {
         ...scheduledVideoDownload,
         downloadedBytes: downloadProgress.bytes,
-        lastUpdatedAt: Some.of(downloadProgress.updatedAt),
+        lastUpdatedAt: downloadProgress.updatedAt,
         downloadSpeed: average(downloadHistory),
         downloadHistory
       })
@@ -129,9 +127,22 @@ const ScheduledVideos = () => {
     }
   }
 
-  const onDelete = async (videoId: string) => {
+  const onDelete = (videoId: string) => async () => {
     await deleteScheduledVideoById(videoId)
     setDownloadableScheduledVideos((downloadableScheduledVideos) => downloadableScheduledVideos.delete(videoId))
+  }
+
+  const onUpdateStatus = (videoId: string) => async (schedulingStatus: SchedulingStatus) => {
+    await updateSchedulingStatus(videoId, schedulingStatus)
+    const scheduledVideoDownload = await fetchScheduledVideoById(videoId)
+
+    setDownloadableScheduledVideos((downloadableScheduledVideos) =>
+      downloadableScheduledVideos.set(videoId, {
+        ...scheduledVideoDownload,
+        downloadSpeed: None.of(),
+        downloadHistory: []
+      })
+    )
   }
 
   return (
@@ -163,8 +174,8 @@ const ScheduledVideos = () => {
                   {downloadableScheduledVideos != null &&
                     <ScheduledVideoDownloadCard
                       downloadableScheduledVideo={downloadableScheduledVideos}
-                      onDelete={onDelete}
-                    />
+                      onDelete={onDelete(downloadableScheduledVideos.videoMetadata.id)}
+                      onUpdateStatus={onUpdateStatus(downloadableScheduledVideos.videoMetadata.id)}/>
                   }
                 </div>
               )

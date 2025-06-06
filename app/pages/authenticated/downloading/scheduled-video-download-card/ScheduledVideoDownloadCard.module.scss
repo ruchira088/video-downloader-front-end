@@ -21,7 +21,20 @@
     }
   }
 
-  .status {
+  .statusInfo {
+    position: relative;
+
+    .errorDetails {
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 0.8em;
+      position: absolute;
+      right: 0;
+      white-space: nowrap;
+      &:hover {
+        opacity: 0.5;
+      }
+    }
 
   }
 }
@@ -45,7 +58,7 @@
 
   &:hover {
     color: lightgrey;
-    background: darken(red, 10%);
+    background: color.adjust(red, $lightness: -20%);
     transform: scale(1.25);
   }
 }

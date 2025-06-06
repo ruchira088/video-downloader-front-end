@@ -1,3 +1,5 @@
+import {None, type Option, Some} from "~/types/Option"
+
 export enum SchedulingStatus {
   Active = "Active",
   Completed = "Completed",
@@ -18,7 +20,14 @@ export const TRANSITION_STATES: Partial<Record<SchedulingStatus, SchedulingStatu
   [SchedulingStatus.Queued]: [SchedulingStatus.Paused]
 }
 
-export const COMMAND_NAMES: Partial<Record<SchedulingStatus, string>> = {
-  [SchedulingStatus.Paused]: "Pause",
-  [SchedulingStatus.Queued]: "Retry",
+export const getActionName = (current: SchedulingStatus, next: SchedulingStatus): Option<string> => {
+  if (next === SchedulingStatus.Paused) {
+    return Some.of("Pause")
+  } else if (current === SchedulingStatus.Error && next === SchedulingStatus.Queued) {
+    return Some.of("Retry")
+  } else if (next === SchedulingStatus.Queued) {
+    return Some.of("Resume")
+  } else {
+    return None.of()
+  }
 }
