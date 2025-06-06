@@ -46,6 +46,7 @@ const ScheduledVideoDownloadCard: FC<ScheduledVideoDownloadCardProps> = props =>
         <DownloadProgress
           completeValue={props.downloadableScheduledVideo.videoMetadata.size}
           currentValue={props.downloadableScheduledVideo.downloadedBytes}
+          schedulingStatus={props.downloadableScheduledVideo.status}
         />
         <DownloadInformation downloadableScheduledVideo={props.downloadableScheduledVideo}/>
         <Actions
@@ -81,7 +82,7 @@ const ErrorDetailsDialog: FC<ErrorDetailsDialogProps> = props => (
   <Dialog open={props.isVisible} onClose={props.onClose}>
     <DialogTitle>Error Details</DialogTitle>
     <DialogContent>
-
+      {props.scheduleVideoDownload.errorInfo?.message}
     </DialogContent>
     <DialogActions>
       <Button onClick={() => props.onUpdateStatus(SchedulingStatus.Queued).finally(props.onClose)}>Retry</Button>

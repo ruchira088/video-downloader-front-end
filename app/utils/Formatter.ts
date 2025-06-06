@@ -28,12 +28,12 @@ const GIGA_BYTE: ByteSize = {
   unit: "GB",
 }
 
-export const humanReadableSize = (size: number, alwaysShowDecimals = false): string => {
+export const humanReadableSize = (size: number, alwaysShowDecimals = false, separator: string = ""): string => {
   const byteSize = Option.fromNullable(
     [GIGA_BYTE, MEGA_BYTE, KILO_BYTE].find((byteSize) => byteSize.floor < size)
   ).getOrElse(() => BYTE)
 
-  return `${(size / byteSize.floor).toFixed(byteSize.unit === GIGA_BYTE.unit || alwaysShowDecimals ? 2 : 0)}${
+  return `${(size / byteSize.floor).toFixed(byteSize.unit === GIGA_BYTE.unit || alwaysShowDecimals ? 2 : 0)}${separator}${
     byteSize.unit
   }`
 }

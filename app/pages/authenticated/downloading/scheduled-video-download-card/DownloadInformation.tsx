@@ -9,9 +9,10 @@ type DownloadInformationProps = {
 
 const DownloadInformation: FC<DownloadInformationProps> = ({downloadableScheduledVideo}) =>
   downloadableScheduledVideo.downloadSpeed
+    .filter(speed => speed > 0)
     .map((speed: number) => (
       <div>
-        <div>{humanReadableSize(speed, true)}</div>
+        <div>{humanReadableSize(speed, true, " ")}/s</div>
         <div>
           {
             remainingDuration(
