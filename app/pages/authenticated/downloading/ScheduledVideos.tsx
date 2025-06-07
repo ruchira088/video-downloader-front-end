@@ -20,7 +20,7 @@ import {SchedulingStatus} from "~/models/SchedulingStatus"
 import {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
 
 const DOWNLOAD_HISTORY_SIZE = 10
-const PAGE_SIZE = 25
+const PAGE_SIZE = 50
 
 const average = (numbers: number[]): Option<number> =>
   numbers

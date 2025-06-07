@@ -1,4 +1,3 @@
-import memoizee from "memoizee"
 import {configuration} from "~/services/Configuration"
 import {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
 import {axiosClient} from "~/services/http/HttpClient"
@@ -45,15 +44,12 @@ export const scheduleVideo = async (videoSiteUrl: string): Promise<ScheduledVide
   return scheduledVideoDownload
 }
 
-const unmemoizedFetchScheduledVideoById = async (videoId: string): Promise<ScheduledVideoDownload> => {
+const fetchScheduledVideoById = async (videoId: string): Promise<ScheduledVideoDownload> => {
   const response = await axiosClient.get(`/schedule/id/${videoId}`)
   const scheduledVideoDownload = zodParse(ScheduledVideoDownload, response.data)
 
   return scheduledVideoDownload
 }
-
-export const fetchScheduledVideoById: (videoId: string) => Promise<ScheduledVideoDownload> =
-  memoizee(unmemoizedFetchScheduledVideoById, { promise: true })
 
 export const updateSchedulingStatus = async (videoId: string, status: SchedulingStatus): Promise<ScheduledVideoDownload> => {
   const response = await axiosClient.put(`/schedule/id/${videoId}`, { status })
