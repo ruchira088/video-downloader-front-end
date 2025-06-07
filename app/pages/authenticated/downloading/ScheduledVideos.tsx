@@ -2,7 +2,6 @@ import React, {useEffect, useRef, useState} from "react"
 import {Map} from "immutable"
 import {
   deleteScheduledVideoById,
-  fetchScheduledVideoById,
   fetchScheduledVideos,
   retryFailedScheduledVideos,
   scheduledVideoDownloadStream,
@@ -29,20 +28,17 @@ const average = (numbers: number[]): Option<number> =>
     .map((total) => total / numbers.length)
 
 const gatherDownloadHistory =
-  (downloadProgress: DownloadProgress, scheduledVideoDownloads: Map<string, DownloadableScheduledVideo>): number[] =>
-    Option.fromNullable(scheduledVideoDownloads.get(downloadProgress.videoId))
-      .map((existing) => {
-        if (downloadProgress.updatedAt.toMillis() > existing.lastUpdatedAt.toMillis()) {
-          const downloadRate =
-            (1000 * Math.max(downloadProgress.bytes - existing.downloadedBytes, 0)) /
-              (downloadProgress.updatedAt.toMillis() - existing.lastUpdatedAt.toMillis())
+  (downloadProgress: DownloadProgress, scheduledVideoDownload: DownloadableScheduledVideo): number[] => {
+    if (downloadProgress.updatedAt.toMillis() > scheduledVideoDownload.lastUpdatedAt.toMillis()) {
+      const downloadRate =
+        (1000 * Math.max(downloadProgress.bytes - scheduledVideoDownload.downloadedBytes, 0)) /
+        (downloadProgress.updatedAt.toMillis() - scheduledVideoDownload.lastUpdatedAt.toMillis())
 
-          return existing.downloadHistory.concat(downloadRate).slice(-DOWNLOAD_HISTORY_SIZE)
-        } else {
-          return existing.downloadHistory
-        }
-      })
-      .getOrElse(() => [])
+      return scheduledVideoDownload.downloadHistory.concat(downloadRate).slice(-DOWNLOAD_HISTORY_SIZE)
+    } else {
+      return scheduledVideoDownload.downloadHistory
+    }
+  }
 
 const ScheduledVideos = () => {
   const [downloadableScheduledVideos, setDownloadableScheduledVideos] =
@@ -86,27 +82,27 @@ const ScheduledVideos = () => {
     retrieveScheduledVideos()
   }, [pageNumber])
 
-  const onDownloadProgress = async (downloadProgress: DownloadProgress) => {
-    const scheduledVideoDownload = await fetchScheduledVideoById(downloadProgress.videoId)
+  const onDownloadProgress = (downloadProgress: DownloadProgress) =>
+    setDownloadableScheduledVideos(scheduledVideoDownloads =>
+      Option.fromNullable(scheduledVideoDownloads.get(downloadProgress.videoId))
+        .fold<Map<string, DownloadableScheduledVideo>>(
+          () => scheduledVideoDownloads,
+          scheduledVideoDownload => {
+            const downloadHistory = gatherDownloadHistory(downloadProgress, scheduledVideoDownload)
+            return scheduledVideoDownloads.set(downloadProgress.videoId, {
+              ...scheduledVideoDownload,
+              downloadedBytes: downloadProgress.bytes,
+              lastUpdatedAt: downloadProgress.updatedAt,
+              downloadSpeed: average(downloadHistory),
+              downloadHistory
+            })
+          }
+        )
+    )
 
-    const updateScheduledVideoDownloads = (scheduledVideoDownloads: Map<string, DownloadableScheduledVideo>) => {
-      const downloadHistory = gatherDownloadHistory(downloadProgress, scheduledVideoDownloads)
-
-      return scheduledVideoDownloads.set(scheduledVideoDownload.videoMetadata.id, {
-        ...scheduledVideoDownload,
-        downloadedBytes: downloadProgress.bytes,
-        lastUpdatedAt: downloadProgress.updatedAt,
-        downloadSpeed: average(downloadHistory),
-        downloadHistory
-      })
-    }
-
-    setDownloadableScheduledVideos(updateScheduledVideoDownloads)
-  }
-
-  const onScheduledVideoDownloadUpdate = (scheduledVideoDownload: ScheduledVideoDownload) => {
+  const onScheduledVideoDownloadUpdate = (scheduledVideoDownload: ScheduledVideoDownload) =>
     setDownloadableScheduledVideos(downloadableScheduledVideos => {
-      if (scheduledVideoDownload.status === SchedulingStatus.Completed) {
+      if ([SchedulingStatus.Completed, SchedulingStatus.Deleted].includes(scheduledVideoDownload.status)) {
         return downloadableScheduledVideos.delete(scheduledVideoDownload.videoMetadata.id)
       } else {
         return downloadableScheduledVideos.set(
@@ -119,7 +115,7 @@ const ScheduledVideos = () => {
         )
       }
     })
-  }
+
 
   useEffect(() => {
     return scheduledVideoDownloadStream(onDownloadProgress, onScheduledVideoDownloadUpdate)
@@ -137,23 +133,15 @@ const ScheduledVideos = () => {
 
     try {
       await retryFailedScheduledVideos()
-      isLoading.current = false
-      hasMore.current = true
-      setPageNumber(0)
-      setDownloadableScheduledVideos(Map())
     } finally {
       setDisableRetry(false)
     }
   }
 
-  const onDelete = (videoId: string) => async () => {
-    await deleteScheduledVideoById(videoId)
-    setDownloadableScheduledVideos((downloadableScheduledVideos) => downloadableScheduledVideos.delete(videoId))
-  }
+  const onDelete = (videoId: string) => () => deleteScheduledVideoById(videoId)
 
   const onUpdateStatus = (videoId: string) => async (schedulingStatus: SchedulingStatus) => {
-    await updateSchedulingStatus(videoId, schedulingStatus)
-    const scheduledVideoDownload = await fetchScheduledVideoById(videoId)
+    const scheduledVideoDownload = await updateSchedulingStatus(videoId, schedulingStatus)
 
     setDownloadableScheduledVideos((downloadableScheduledVideos) =>
       downloadableScheduledVideos.set(videoId, {

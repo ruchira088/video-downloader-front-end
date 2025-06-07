@@ -18,8 +18,8 @@ enum ModalDialogType {
 
 type ScheduledVideoDownloadCardProps = {
   readonly downloadableScheduledVideo: DownloadableScheduledVideo
-  readonly onDelete: () => Promise<void>
-  readonly onUpdateStatus: (schedulingStatus: SchedulingStatus) => Promise<void>
+  readonly onDelete: () => Promise<any>
+  readonly onUpdateStatus: (schedulingStatus: SchedulingStatus) => Promise<any>
 }
 
 const ScheduledVideoDownloadCard: FC<ScheduledVideoDownloadCardProps> = props => {
