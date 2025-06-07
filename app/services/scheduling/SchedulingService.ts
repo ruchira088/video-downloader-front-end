@@ -1,29 +1,39 @@
 import memoizee from "memoizee"
-import { configuration } from "~/services/Configuration"
-import { ScheduledVideoDownload } from "~/models/ScheduledVideoDownload"
-import { axiosClient } from "~/services/http/HttpClient"
-import { SortBy } from "~/models/SortBy"
-import { SchedulingStatus } from "~/models/SchedulingStatus"
-import { WorkerStatus, WorkerStatusResult } from "~/models/WorkerStatus"
-import { Ordering } from "~/models/Ordering"
-import type { Option } from "~/types/Option"
-import { zodParse } from "~/types/Zod"
-import { ListResponse } from "~/models/ListResponse"
-import { DownloadProgress } from "~/models/DownloadProgress"
-import { EventStreamEventType } from "~/pages/authenticated/downloading/EventStreamEventType"
+import {configuration} from "~/services/Configuration"
+import {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
+import {axiosClient} from "~/services/http/HttpClient"
+import {SortBy} from "~/models/SortBy"
+import {SchedulingStatus} from "~/models/SchedulingStatus"
+import {WorkerStatus, WorkerStatusResult} from "~/models/WorkerStatus"
+import {Ordering} from "~/models/Ordering"
+import type {Option} from "~/types/Option"
+import {zodParse} from "~/types/Zod"
+import {ListResponse} from "~/models/ListResponse"
+import {DownloadProgress} from "~/models/DownloadProgress"
+import {EventStreamEventType} from "~/pages/authenticated/downloading/EventStreamEventType"
 
-export const scheduledVideoDownloadStream = (onDownloadProgress: (downloadProgress: DownloadProgress) => void): (() => void) => {
-  const eventSource = new EventSource(`${configuration.apiService}/schedule/active`, { withCredentials: true })
+export const scheduledVideoDownloadStream = (
+  onDownloadProgress: (downloadProgress: DownloadProgress) => void,
+  onScheduledVideoDownloadUpdate: (scheduledVideoDownload: ScheduledVideoDownload) => void
+): (() => void) => {
+  const eventSource = new EventSource(`${configuration.apiService}/schedule/updates`, {withCredentials: true})
 
-  const onMessageEvent = (messageEvent: MessageEvent) => {
+  const onActionDownloadMessage = (messageEvent: MessageEvent) => {
     const downloadProgress = zodParse(DownloadProgress, JSON.parse(messageEvent.data))
     onDownloadProgress(downloadProgress)
   }
 
-  eventSource.addEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, onMessageEvent)
+  const onScheduledVideoDownloadUpdateMessage = (messageEvent: MessageEvent) => {
+    const scheduledVideoDownload = zodParse(ScheduledVideoDownload, JSON.parse(messageEvent.data))
+    onScheduledVideoDownloadUpdate(scheduledVideoDownload)
+  }
+
+  eventSource.addEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, onActionDownloadMessage)
+  eventSource.addEventListener(EventStreamEventType.SCHEDULED_VIDEO_DOWNLOAD_UPDATE, onScheduledVideoDownloadUpdateMessage)
 
   return () => {
-    eventSource.removeEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, onMessageEvent)
+    eventSource.removeEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, onActionDownloadMessage)
+    eventSource.removeEventListener(EventStreamEventType.SCHEDULED_VIDEO_DOWNLOAD_UPDATE, onScheduledVideoDownloadUpdateMessage)
     eventSource.close()
   }
 }

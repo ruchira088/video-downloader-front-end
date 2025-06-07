@@ -5,7 +5,8 @@ import {
   fetchScheduledVideoById,
   fetchScheduledVideos,
   retryFailedScheduledVideos,
-  scheduledVideoDownloadStream, updateSchedulingStatus
+  scheduledVideoDownloadStream,
+  updateSchedulingStatus
 } from "~/services/scheduling/SchedulingService"
 import ScheduledVideoDownloadCard from "./scheduled-video-download-card/ScheduledVideoDownloadCard"
 import {DownloadProgress} from "~/models/DownloadProgress"
@@ -16,7 +17,8 @@ import {None, Option, Some} from "~/types/Option"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
 import {Button} from "@mui/material"
 import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVideo"
-import type {SchedulingStatus} from "~/models/SchedulingStatus"
+import {SchedulingStatus} from "~/models/SchedulingStatus"
+import {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
 
 const DOWNLOAD_HISTORY_SIZE = 10
 const PAGE_SIZE = 25
@@ -102,8 +104,25 @@ const ScheduledVideos = () => {
     setDownloadableScheduledVideos(updateScheduledVideoDownloads)
   }
 
+  const onScheduledVideoDownloadUpdate = (scheduledVideoDownload: ScheduledVideoDownload) => {
+    setDownloadableScheduledVideos(downloadableScheduledVideos => {
+      if (scheduledVideoDownload.status === SchedulingStatus.Completed) {
+        return downloadableScheduledVideos.delete(scheduledVideoDownload.videoMetadata.id)
+      } else {
+        return downloadableScheduledVideos.set(
+          scheduledVideoDownload.videoMetadata.id,
+          {
+            ...scheduledVideoDownload,
+            downloadSpeed: None.of(),
+            downloadHistory: []
+          }
+        )
+      }
+    })
+  }
+
   useEffect(() => {
-    return scheduledVideoDownloadStream(onDownloadProgress)
+    return scheduledVideoDownloadStream(onDownloadProgress, onScheduledVideoDownloadUpdate)
   }, [])
 
   const loadMore = () => {
