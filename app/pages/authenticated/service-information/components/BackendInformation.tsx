@@ -16,8 +16,9 @@ const BackendInformation: FC<BackendInformationProps> = ({backendServiceInformat
       <ServiceInformationItem label="Java Version" value={Some.of(backendServiceInformation.javaVersion)} />
       <ServiceInformationItem label="Scala Version" value={Some.of(backendServiceInformation.scalaVersion)} />
       <ServiceInformationItem label="sbt Version" value={Some.of(backendServiceInformation.sbtVersion)} />
-      <ServiceInformationItem label="Server Timestamp"
-                              value={Some.of(backendServiceInformation.currentTimestamp.toString())} />
+    <ServiceInformationItem
+      label="Server Timestamp"
+      value={Some.of(backendServiceInformation.currentTimestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS))}/>
       <ServiceInformationItem label="Git Branch" value={backendServiceInformation.gitBranch} />
       <ServiceInformationItem label="Git Commit" value={backendServiceInformation.gitCommit} />
     <ServiceInformationItem
@@ -26,7 +27,7 @@ const BackendInformation: FC<BackendInformationProps> = ({backendServiceInformat
           backendServiceInformation.buildTimestamp
             .map(
               (timestamp) =>
-                `${timestamp} (${timestamp.toRelative({ base: DateTime.now()})})`
+                `${timestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)} (${timestamp.toRelative({base: DateTime.now()})})`
             )
       }
     />
