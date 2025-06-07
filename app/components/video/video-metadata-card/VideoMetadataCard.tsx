@@ -3,7 +3,6 @@ import classNames from "classnames"
 import {VideoMetadata} from "~/models/VideoMetadata"
 import {ApplicationContext} from "~/context/ApplicationContext"
 import {imageUrl} from "~/services/asset/AssetService"
-import translate from "~/services/translation/TranslationService"
 import {humanReadableSize, shortHumanReadableDuration} from "~/utils/Formatter"
 import styles from "./VideoMetadataCard.module.css"
 import {Snapshot} from "~/models/Snapshot"
@@ -11,6 +10,7 @@ import {fetchVideoSnapshotsByVideoId} from "~/services/video/VideoService"
 import VideoSiteCard from "../video-site-card/VideoSiteCard"
 import {None, Option, Some} from "~/types/Option"
 import {type FileResource, FileResourceType} from "~/models/FileResource"
+import {translate} from "~/services/sanitize/SanitizationService"
 
 type VideoMetadataCardProps = {
   readonly videoMetadata: VideoMetadata

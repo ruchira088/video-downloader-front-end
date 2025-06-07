@@ -4,7 +4,6 @@ import {ApplicationContext} from "~/context/ApplicationContext"
 import {Video} from "~/models/Video"
 import {imageUrl, videoUrl} from "~/services/asset/AssetService"
 import {Snapshot} from "~/models/Snapshot"
-import translate from "~/services/translation/TranslationService"
 import VideoSnapshotsGallery from "~/components/video/video-snapshots/VideoSnapshotsGallery"
 import EditableLabel from "~/components/editable-label/EditableLabel"
 import {deleteVideo, updateVideoTitle} from "~/services/video/VideoService"
@@ -15,6 +14,7 @@ import {humanReadableSize, shortHumanReadableDuration} from "~/utils/Formatter"
 import styles from "./VideoWatch.module.scss"
 import {DateTime, Duration} from "luxon"
 import {Option} from "~/types/Option"
+import {translate} from "~/services/sanitize/SanitizationService"
 
 type VideoDeleteDialogProps = {
   readonly isVisible: boolean

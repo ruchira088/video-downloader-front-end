@@ -1,6 +1,4 @@
-import memoize from "memoizee"
-import { randomPickNonEmptyList } from "~/utils/Random"
-import { type AssetUrl } from "~/services/asset/AssetService"
+import {type AssetUrl} from "~/services/asset/AssetService"
 
 import image_01 from "~/images/safe-images/image-01.jpg"
 import image_02 from "~/images/safe-images/image-02.jpg"
@@ -31,12 +29,26 @@ const SAFE_PHRASES: string[] = [
   "Chuck Norris doesn’t wear a video-page. He decides what time it is.",
 ]
 
-export const imageMappings: (key: string) => string = memoize(() => randomPickNonEmptyList(SAFE_IMAGES), {
-  max: 100,
-  length: 1,
-})
+const hashCode =
+  (stringValue: string) =>
+    stringValue.trim()
+      .split("")
+      .map((subString, index) => subString.charCodeAt(0) + index)
+      .reduce((acc, value) => acc + value, 0)
 
-export const phraseMappings: (key: string) => string = memoize(() => randomPickNonEmptyList(SAFE_PHRASES), {
-  max: 100,
-  length: 1,
-})
+const mappings = <A>(values: A[]) => {
+  if (values.length === 0) {
+    throw new Error("Cannot create mappings with an empty list")
+  }
+
+  return (key: string): A => {
+    const hash = hashCode(key)
+    return values[hash % values.length]
+  }
+}
+
+export const imageMappings: (key: string) => string = mappings(SAFE_IMAGES)
+
+export const phraseMappings: (key: string) => string = mappings(SAFE_PHRASES)
+
+export const translate = (phrase: string, safeMode: boolean): string => safeMode ? phraseMappings(phrase) : phrase
