@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react"
-import { backendServiceInformation, frontendServiceInformation } from "~/services/health/HealthCheckService"
-import { BackendServiceInformation } from "~/models/BackendServiceInformation"
-import loadableComponent from "~/components/hoc/loading/loadableComponent"
+import React, {useEffect, useState} from "react"
+import {backendServiceInformation, frontendServiceInformation} from "~/services/health/HealthCheckService"
+import {BackendServiceInformation} from "~/models/BackendServiceInformation"
+import {LoadableComponent} from "~/components/hoc/loading/LoadableComponent"
 import BackendInformation from "./components/BackendInformation"
-import { configuration } from "~/services/Configuration"
+import {configuration} from "~/services/Configuration"
 import FrontendInformation from "./components/FrontendInformation"
-import { Button } from "@mui/material"
-import { scanForVideos } from "~/services/video/VideoService"
-import { None, type Option, Some } from "~/types/Option"
-import { DateTime } from "luxon"
+import {Button} from "@mui/material"
+import {scanForVideos} from "~/services/video/VideoService"
+import {None, type Option, Some} from "~/types/Option"
+import {DateTime} from "luxon"
 
 interface ServiceInformationItem {
   readonly label: string
@@ -65,7 +65,9 @@ const ServiceInformation = () => {
       {/*</Helmet>*/}
       <div className="back-end">
         <ServiceInformationItem label="API URL" value={Some.of(configuration.apiService)} />
-        {loadableComponent(BackendInformation, backendInformation)}
+        <LoadableComponent>
+          {backendInformation.map((backendServiceInfo) => <BackendInformation backendServiceInformation={backendServiceInfo}/>)}
+        </LoadableComponent>
       </div>
       <div className="front-end">
         <FrontendInformation frontendServiceInformation={frontendInformation} />

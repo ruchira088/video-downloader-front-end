@@ -6,14 +6,6 @@
     path: ../build
     state: absent
 
-- name: Set environment values in .env.production
-  copy:
-    content: |
-      VITE_GIT_BRANCH={{ git_branch }}
-      VITE_GIT_COMMIT={{ git_commit }}
-      VITE_BUILD_TIMESTAMP={{ ansible_date_time.iso8601 }}
-    dest: ../.env.production
-
 - name: Build production bundle
   shell: |
     cd ../ && \
@@ -56,7 +48,7 @@
         path: ../build
         state: absent
 
-    - name: Clean up production env file
+    - name: Clean up env file
       file:
-        path: ../.env.production
+        path: ../.env
         state: absent

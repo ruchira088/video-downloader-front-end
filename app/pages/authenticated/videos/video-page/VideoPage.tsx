@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react"
-import { Video } from "~/models/Video"
-import loadableComponent from "~/components/hoc/loading/loadableComponent"
-import { fetchVideoById, fetchVideoSnapshotsByVideoId } from "~/services/video/VideoService"
+import React, {useEffect, useState} from "react"
+import {Video} from "~/models/Video"
+import {LoadableComponent} from "~/components/hoc/loading/LoadableComponent"
+import {fetchVideoById, fetchVideoSnapshotsByVideoId} from "~/services/video/VideoService"
 import VideoWatch from "./watch/VideoWatch"
-import { Snapshot } from "~/models/Snapshot"
-import { useSearchParams } from "react-router"
-import { None, Option, Some } from "~/types/Option"
-import type { Route } from "./+types/VideoPage"
-import { Duration } from "luxon"
+import {Snapshot} from "~/models/Snapshot"
+import {useSearchParams} from "react-router"
+import {None, Option, Some} from "~/types/Option"
+import type {Route} from "./+types/VideoPage"
+import {Duration} from "luxon"
 
 const VideoPage = (props: Route.ComponentProps) => {
   const [queryParams] = useSearchParams()
@@ -37,25 +37,17 @@ const VideoPage = (props: Route.ComponentProps) => {
   }, [videoId])
 
   return (
-    <div className="video-page">
-      {/*{loadableComponent(*/}
-      {/*  ({ title }: { title: string }) => (*/}
-      {/*    <Helmet>*/}
-      {/*      <title>{title}</title>*/}
-      {/*    </Helmet>*/}
-      {/*  ),*/}
-      {/*  video.map((value) => value.videoMetadata),*/}
-      {/*)}*/}
-      {loadableComponent(
-        VideoWatch,
-        video.map((value) => ({
-          video: value,
-          timestamp,
-          snapshots: videoSnapshots,
-          updateVideo: (video: Video) => setVideo(Some.of(video)),
-        })),
-      )}
-    </div>
+    <LoadableComponent>
+      {
+        video.map((value) =>
+          <VideoWatch
+            video={value}
+            timestamp={timestamp}
+            updateVideo={(video: Video) => setVideo(Some.of(video))} snapshots={videoSnapshots}
+          />
+        )
+      }
+    </LoadableComponent>
   )
 }
 

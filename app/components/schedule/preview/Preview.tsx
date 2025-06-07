@@ -1,35 +1,43 @@
-import React, { useEffect, useState } from "react"
-import loadableComponent from "~/components/hoc/loading/loadableComponent"
-import { metadata } from "~/services/video/VideoService"
+import React, {type FC, useEffect, useState} from "react"
+import {LoadableComponent} from "~/components/hoc/loading/LoadableComponent"
 import VideoMetadataCard from "~/components/video/video-metadata-card/VideoMetadataCard"
-import { type VideoMetadata } from "~/models/VideoMetadata"
-import { None, Option } from "~/types/Option"
+import {type VideoMetadata} from "~/models/VideoMetadata"
+import {None, Option} from "~/types/Option"
+import {metadata} from "~/services/video/VideoService"
 
-const Preview = ({ url }: { url: string }) => {
-  const [showPreview, setShowPreview] = useState(false)
+type PreviewProps = {
+  readonly url: string
+}
+
+const Preview: FC<PreviewProps> = props => {
   const [maybeVideoMetadata, setMaybeVideoMetadata] = useState<Option<VideoMetadata>>(None.of())
+
+  const isEmptyUrl = props.url.trim().length === 0
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (url.trim().length !== 0) {
-        setShowPreview(true)
-        metadata(url).then((result) => setMaybeVideoMetadata(Option.fromNullable(result)))
+      if (!isEmptyUrl) {
+        metadata(props.url).then((result) => setMaybeVideoMetadata(Option.fromNullable(result)))
       }
     }, 500)
 
-    setShowPreview(false)
     setMaybeVideoMetadata(None.of())
 
     return () => clearTimeout(timeoutId)
-  }, [url])
+  }, [props.url])
 
   return (
-    <div className="preview">
-      {showPreview &&
-        loadableComponent(
-          VideoMetadataCard,
-          maybeVideoMetadata.map((videoMetadata) => ({ videoMetadata, disableSnapshots: true }))
-        )}
+    <div>
+      {
+        !isEmptyUrl &&
+        <LoadableComponent>
+          {
+            maybeVideoMetadata.map((videoMetadata) =>
+              <VideoMetadataCard videoMetadata={videoMetadata} disableSnapshots={true}/>
+            )
+          }
+        </LoadableComponent>
+      }
     </div>
   )
 }

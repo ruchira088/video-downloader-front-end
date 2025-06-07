@@ -1,10 +1,14 @@
-import React from "react"
-import { BackendServiceInformation } from "~/models/BackendServiceInformation"
-import { ServiceInformationItem } from "../ServiceInformation"
-import { Option, Some } from "~/types/Option"
-import { DateTime, Duration } from "luxon"
+import React, {type FC} from "react"
+import {BackendServiceInformation} from "~/models/BackendServiceInformation"
+import {ServiceInformationItem} from "../ServiceInformation"
+import {Some} from "~/types/Option"
+import {DateTime} from "luxon"
 
-const BackendInformation = (backendServiceInformation: BackendServiceInformation) => (
+type BackendInformationProps = {
+  readonly backendServiceInformation: BackendServiceInformation
+}
+
+const BackendInformation: FC<BackendInformationProps> = ({backendServiceInformation}) => (
   <div>
       <ServiceInformationItem label="Service Name" value={Some.of(backendServiceInformation.serviceName)} />
       <ServiceInformationItem label="Service Version" value={Some.of(backendServiceInformation.serviceVersion)} />

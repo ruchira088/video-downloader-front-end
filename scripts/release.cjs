@@ -72,7 +72,7 @@ const createVersion = (git, cli) =>
     )
 
 const cli = readLine.createInterface({ input: process.stdin, output: process.stdout })
-const simpleGit = new SimpleGit()
+const simpleGit = SimpleGit()
 
 createVersion(simpleGit, cli)
   .then(console.log)

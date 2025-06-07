@@ -37,11 +37,12 @@
     "zod": "^3.25.17"
   },
   "scripts": {
-    "build": "react-router build",
-    "start": "VITE_API_URL=https://api.video.home.ruchij.com react-router dev",
-    "start:local": "VITE_API_URL=https://api.localhost react-router dev",
-    "start:dev": "VITE_API_URL=https://api.dev.video.dev.ruchij.com react-router dev",
+    "build": "npm run env-vars && react-router build",
+    "start": "npm run env-vars && VITE_API_URL=https://api.video.home.ruchij.com react-router dev",
+    "start:local": "npm run env-vars && VITE_API_URL=https://api.localhost react-router dev",
+    "start:dev": "npm run env-vars && VITE_API_URL=https://api.dev.video.dev.ruchij.com react-router dev",
     "typecheck": "react-router typegen && tsc",
-    "release": "node release/index.cjs"
+    "release": "node scripts/release.cjs",
+    "env-vars": "node scripts/env-vars.mjs"
   }
 }

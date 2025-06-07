@@ -4,10 +4,18 @@
   flex-direction: column;
   align-items: center;
   margin-bottom: 5em;
+
+  .scheduleButton {
+    margin: 2em;
+  }
+}
+
+.schedulingProgress {
+  width: 50%;
+  margin: 1em 0 3em 0;
 }
 
 div.inputUrl {
-  margin-bottom: 2em;
   width: 40%;
   min-width: 30em;
 }
