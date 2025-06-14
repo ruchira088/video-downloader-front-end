@@ -207,7 +207,6 @@ const ServiceInformation = () => {
             <HealthCheckInformation healthCheckDetails={healthCheckDetails}/>)
         }
       </LoadableComponent>
-      <Button variant="contained" onClick={() => scanForVideos()}>Scan For Videos</Button>
     </div>
   )
 }

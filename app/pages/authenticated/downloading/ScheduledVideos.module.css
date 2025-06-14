@@ -17,4 +17,8 @@
     display: flex;
     justify-content: flex-end;
     margin: 0 0.5em;
+
+    .scanForVideos {
+        margin-right: 1em;
+    }
 }
