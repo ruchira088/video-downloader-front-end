@@ -1,6 +1,7 @@
 import React, {useState} from "react"
 import {Button, LinearProgress, TextField} from "@mui/material"
 import {scheduleVideo} from "~/services/scheduling/SchedulingService"
+import Helmet from "~/components/helmet/Helmet"
 import Preview from "~/components/schedule/preview/Preview"
 import styles from "./Schedule.module.css"
 
@@ -19,9 +20,7 @@ const Schedule = () => {
 
   return (
     <>
-      {/*<Helmet>*/}
-      {/*  <title>Schedule</title>*/}
-      {/*</Helmet>*/}
+      <Helmet title="Schedule"/>
       <div className={styles.schedule}>
         <TextField onChange={handleTextChange} value={videoUrl} label="Website URL" className={styles.inputUrl} />
         <Button onClick={onScheduleButtonClick} variant="contained" color="primary" className={styles.scheduleButton}>

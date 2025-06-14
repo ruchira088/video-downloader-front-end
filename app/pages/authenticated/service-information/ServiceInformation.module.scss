@@ -1,0 +1,42 @@
+.serviceInformation {
+  .serviceDetails {
+    display: flex;
+
+    .backend, .frontend {
+      flex: 1;
+    }
+
+    .serviceInformationItem {
+      display: flex;
+      .serviceInformationItemLabel {
+        font-weight: bold;
+        margin-right: 0.5em;
+      }
+    }
+  }
+
+  .healthChecks {
+    .healthChecksTitle {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+
+    .healthCheckField {
+      display: flex;
+      align-items: center;
+
+      .healthCheckLabel {
+        font-weight: bold;
+        margin-right: 0.5em;
+      }
+
+      .healthCheckValue {
+        display: flex;
+
+        .healthCheckStatus {
+          margin-right: 0.1em;
+        }
+      }
+    }
+  }
+}

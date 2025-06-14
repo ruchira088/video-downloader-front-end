@@ -5,6 +5,7 @@ import {Video} from "~/models/Video"
 import {imageUrl, videoUrl} from "~/services/asset/AssetService"
 import {Snapshot} from "~/models/Snapshot"
 import VideoSnapshotsGallery from "~/components/video/video-snapshots/VideoSnapshotsGallery"
+import Helmet from "~/components/helmet/Helmet"
 import EditableLabel from "~/components/editable-label/EditableLabel"
 import {deleteVideo, updateVideoTitle} from "~/services/video/VideoService"
 import VideoMetadataCard from "~/components/video/video-metadata-card/VideoMetadataCard"
@@ -125,11 +126,14 @@ const VideoWatch: FC<VideoWatchProps> = props => {
     setDeleteDialogVisibility(false)
   }
 
+  const title = translate(props.video.videoMetadata.title, safeMode)
+
   return (
     <div className={styles.videoWatch}>
       <div className={styles.title}>
+        <Helmet title={title}/>
         <EditableLabel
-          textValue={translate(props.video.videoMetadata.title, safeMode)}
+          textValue={title}
           onUpdateText={onUpdateVideoTitle}
         />
       </div>

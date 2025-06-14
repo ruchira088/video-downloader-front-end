@@ -18,6 +18,7 @@ import {Button} from "@mui/material"
 import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVideo"
 import {SchedulingStatus} from "~/models/SchedulingStatus"
 import {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
+import Helmet from "~/components/helmet/Helmet"
 
 const DOWNLOAD_HISTORY_SIZE = 10
 const PAGE_SIZE = 50
@@ -154,9 +155,7 @@ const ScheduledVideos = () => {
 
   return (
     <div className={styles.scheduledVideos}>
-      {/*<Helmet>*/}
-      {/*  <title>Pending Videos</title>*/}
-      {/*</Helmet>*/}
+      <Helmet title="Downloding Videos"/>
       <div className={styles.buttonContainer}>
         <Button
           onClick={retryAll}

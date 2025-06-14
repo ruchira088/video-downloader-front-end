@@ -1,6 +1,7 @@
 import React from "react"
 import LoginForm from "./components/login-form/LoginForm"
 import { useNavigate, useSearchParams } from "react-router"
+import Helmet from "~/components/helmet/Helmet"
 import { Option } from "~/types/Option"
 import { REDIRECT_QUERY_PARAMETER } from "~/services/authentication/AuthenticationService"
 
@@ -19,6 +20,7 @@ const LoginPage = () => {
 
   return (
     <div className={styles.loginPage}>
+      <Helmet title="Login" />
       <LoginForm onAuthenticate={onAuthenticate} />
     </div>
   )

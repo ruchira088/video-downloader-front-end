@@ -22,6 +22,7 @@ import VideoCard from "~/components/video/video-card/VideoCard"
 import styles from "./Videos.module.scss"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
 import type {Ordering} from "~/models/Ordering"
+import Helmet from "~/components/helmet/Helmet"
 
 const PAGE_SIZE = 50
 
@@ -109,6 +110,7 @@ const Videos = () => {
 
   return (
     <div className={styles.videosPage}>
+      <Helmet title="Videos"/>
       <VideoSearch
         videoTitles={videos.map((video) => video.videoMetadata.title).slice(0, 10)}
         searchTerm={searchTerm}

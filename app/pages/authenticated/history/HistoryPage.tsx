@@ -3,6 +3,7 @@ import {Link} from "react-router"
 import {getVideoHistory} from "~/services/history/HistoryService"
 import {VideoWatchHistory} from "~/models/VideoWatchHistory"
 import VideoCard from "~/components/video/video-card/VideoCard"
+import Helmet from "~/components/helmet/Helmet"
 
 import styles from "./HistoryPage.module.scss"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
@@ -56,10 +57,8 @@ const HistoryPage = () => {
   }
 
   return (
-    <div>
-      {/*<Helmet>*/}
-      {/*  <title>History</title>*/}
-      {/*</Helmet>*/}
+    <>
+      <Helmet title="History"/>
       <InfiniteScroll
         loadMore={loadMore}
         hasMore={hasMore.current}
@@ -78,7 +77,7 @@ const HistoryPage = () => {
           )
         }
       </InfiniteScroll>
-    </div>
+    </>
   )
 
 }

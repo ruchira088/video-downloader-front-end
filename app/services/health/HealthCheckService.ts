@@ -1,16 +1,24 @@
-import { BackendServiceInformation } from "~/models/BackendServiceInformation"
-import { axiosClient } from "~/services/http/HttpClient"
+import {BackendServiceInformation} from "~/models/BackendServiceInformation"
+import {axiosClient} from "~/services/http/HttpClient"
 import packageInfo from "../../../package.json"
-import type { FrontendServiceInformation } from "~/models/FrontendServiceInformation"
-import { DateTime } from "luxon"
-import { Option } from "~/types/Option"
-import { zodParse } from "~/types/Zod"
+import type {FrontendServiceInformation} from "~/models/FrontendServiceInformation"
+import {DateTime} from "luxon"
+import {Option} from "~/types/Option"
+import {zodParse} from "~/types/Zod"
+import {HealthCheck} from "~/models/HealthCheck"
 
-export const backendServiceInformation: () => Promise<BackendServiceInformation> = async () => {
+export const retrieveBackendServiceInformation = async (): Promise<BackendServiceInformation> => {
   const response = await axiosClient.get("/service/info")
-  const serviceInformation = zodParse(BackendServiceInformation, response.data)
+  const backendServiceInformation = zodParse(BackendServiceInformation, response.data)
 
-  return serviceInformation
+  return backendServiceInformation
+}
+
+export const performHealthCheck = async (): Promise<HealthCheck> => {
+  const response = await axiosClient.get("/service/health", { validateStatus: () => true })
+  const healthCheck: HealthCheck = zodParse(HealthCheck, response.data)
+
+  return healthCheck
 }
 
 export const frontendServiceInformation = (env: ImportMetaEnv): FrontendServiceInformation => ({
