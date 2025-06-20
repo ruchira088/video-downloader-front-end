@@ -3,6 +3,7 @@ import {Video} from "~/models/Video"
 import {Snapshot} from "~/models/Snapshot"
 import {axiosClient} from "~/services/http/HttpClient"
 import {VideoMetadata} from "~/models/VideoMetadata"
+import {VideoScan} from "~/models/VideoScan"
 import {SortBy} from "~/models/SortBy"
 import {VideoServiceSummary} from "~/models/VideoServiceSummary"
 import {type DurationRange, durationRangeStringEncoder} from "~/models/DurationRange"
@@ -96,3 +97,10 @@ export const deleteVideo = async (videoId: string, deleteFile: boolean): Promise
 }
 
 export const scanForVideos = (): Promise<void> => axiosClient.post("/videos/scan")
+
+export const fetchVideoScanStatus = async (): Promise<VideoScan> => {
+  const response = await axiosClient.get("/videos/scan")
+  const videoScan = zodParse(VideoScan, response.data)
+
+  return videoScan
+}

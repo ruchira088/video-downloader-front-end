@@ -14,6 +14,7 @@ import styles from "./ScheduledVideos.module.css"
 import {Ordering} from "~/models/Ordering"
 import {None, Option, Some} from "~/types/Option"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
+import VideoScanButton from "~/components/scan/VideoScanButton"
 import {Button} from "@mui/material"
 import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVideo"
 import {SchedulingStatus} from "~/models/SchedulingStatus"
@@ -154,13 +155,13 @@ const ScheduledVideos = () => {
     )
   }
 
+
+
   return (
     <div className={styles.scheduledVideos}>
       <Helmet title="Downloding Videos"/>
       <div className={styles.buttonContainer}>
-        <Button variant="contained" onClick={() => scanForVideos()} className={styles.scanForVideos}>
-          Scan For Videos
-        </Button>
+        <VideoScanButton className={styles.scanForVideos}/>
         <Button
           onClick={retryAll}
           disabled={disableRetry}
