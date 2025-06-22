@@ -1,21 +1,22 @@
-import React, {type FC, useContext, useEffect, useRef, useState} from "react"
-import {Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material"
-import {ApplicationContext} from "~/context/ApplicationContext"
-import {Video} from "~/models/Video"
-import {imageUrl, videoUrl} from "~/services/asset/AssetService"
-import {Snapshot} from "~/models/Snapshot"
+import React, { type FC, useContext, useEffect, useRef, useState } from "react"
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material"
+import { ApplicationContext } from "~/context/ApplicationContext"
+import { Video } from "~/models/Video"
+import { imageUrl, videoUrl } from "~/services/asset/AssetService"
+import { Snapshot } from "~/models/Snapshot"
 import VideoSnapshotsGallery from "~/components/video/video-snapshots/VideoSnapshotsGallery"
 import Helmet from "~/components/helmet/Helmet"
 import EditableLabel from "~/components/editable-label/EditableLabel"
-import {deleteVideo, updateVideoTitle} from "~/services/video/VideoService"
+import { deleteVideo, updateVideoTitle } from "~/services/video/VideoService"
 import VideoMetadataCard from "~/components/video/video-metadata-card/VideoMetadataCard"
-import {VideoMetadata} from "~/models/VideoMetadata"
-import {humanReadableSize, shortHumanReadableDuration} from "~/utils/Formatter"
+import Timestamp from "~/components/timestamp/Timestamp"
+import { VideoMetadata } from "~/models/VideoMetadata"
+import { humanReadableSize, shortHumanReadableDuration } from "~/utils/Formatter"
 
 import styles from "./VideoWatch.module.scss"
-import {DateTime, Duration} from "luxon"
-import {Option} from "~/types/Option"
-import {translate} from "~/services/sanitize/SanitizationService"
+import { Duration } from "luxon"
+import { Option } from "~/types/Option"
+import { translate } from "~/services/sanitize/SanitizationService"
 
 type VideoDeleteDialogProps = {
   readonly isVisible: boolean
@@ -93,7 +94,7 @@ const Metadata: FC<MetadataProps> = props => (
       value={<VideoLink videoMetadata={props.video.videoMetadata}/>}
       className={styles.metadataValue}
     />
-    <MetadataField value={props.video.createdAt.toLocaleString(DateTime.DATETIME_MED)}/>
+    <Timestamp timestamp={props.video.createdAt}/>
   </div>
 )
 

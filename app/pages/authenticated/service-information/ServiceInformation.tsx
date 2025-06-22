@@ -1,19 +1,18 @@
-import React, {type FC, useEffect, useState} from "react"
+import React, { type FC, type ReactNode, useEffect, useState } from "react"
 import {
   frontendServiceInformation,
   performHealthCheck,
   retrieveBackendServiceInformation
 } from "~/services/health/HealthCheckService"
-import {BackendServiceInformation} from "~/models/BackendServiceInformation"
-import {LoadableComponent} from "~/components/hoc/loading/LoadableComponent"
+import { BackendServiceInformation } from "~/models/BackendServiceInformation"
+import { LoadableComponent } from "~/components/hoc/loading/LoadableComponent"
 import BackendInformation from "./components/BackendInformation"
-import {configuration} from "~/services/Configuration"
+import { configuration } from "~/services/Configuration"
 import FrontendInformation from "./components/FrontendInformation"
-import {Button, CircularProgress} from "@mui/material"
-import {scanForVideos} from "~/services/video/VideoService"
-import {None, type Option, Some} from "~/types/Option"
+import { CircularProgress } from "@mui/material"
+import { None, type Option, Some } from "~/types/Option"
 import Helmet from "~/components/helmet/Helmet"
-import {DateTime} from "luxon"
+import { DateTime } from "luxon"
 
 import styles from "./ServiceInformation.module.scss"
 import {
@@ -23,10 +22,11 @@ import {
   HealthStatus
 } from "~/models/HealthCheck"
 import classNames from "classnames"
+import Timestamp from "~/components/timestamp/Timestamp"
 
 interface ServiceInformationItem {
   readonly label: string
-  readonly value: Option<string>
+  readonly value: Option<ReactNode>
 }
 
 export const ServiceInformationItem = (serviceInformationItem: ServiceInformationItem) =>
@@ -123,8 +123,7 @@ const HealthCheckInformation: FC<HealthCheckInformationProps> = props => {
       <div className={styles.healthChecksTitle}>Health Checks</div>
       <div>
         <div>Last Health Check</div>
-        <div>{props.healthCheckDetails.timestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)}</div>
-        <div>({props.healthCheckDetails.timestamp.toRelative({base: currentTimestamp})})</div>
+        <Timestamp timestamp={props.healthCheckDetails.timestamp} currentTimestamp={currentTimestamp}/>
       </div>
       <div>
         <HealthCheckField label="Database" healthCheckStatusDetails={props.healthCheckDetails.database}/>

@@ -1,6 +1,7 @@
 .thumbnail {
   width: 100%;
-  max-height: 15em;
+  max-width: 25em;
+  height: 12em;
   border-radius: 0.2em;
 }
 
@@ -31,12 +32,6 @@
 }
 
 .videoMetadataCard {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  width: 100%;
 }
 
 .videoTitle {

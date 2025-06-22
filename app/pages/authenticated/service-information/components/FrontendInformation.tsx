@@ -3,6 +3,7 @@ import {ServiceInformationItem} from "../ServiceInformation"
 import type {FrontendServiceInformation} from "~/models/FrontendServiceInformation"
 import {Some} from "~/types/Option"
 import {DateTime} from "luxon"
+import Timestamp from "~/components/timestamp/Timestamp"
 
 const FrontendInformation = ({ frontendServiceInformation }: { frontendServiceInformation: FrontendServiceInformation }) => (
   <div>
@@ -19,7 +20,7 @@ const FrontendInformation = ({ frontendServiceInformation }: { frontendServiceIn
         frontendServiceInformation.buildTimestamp
           .map(
             (timestamp) =>
-              `${timestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)} (${timestamp.toRelative({base: DateTime.now()})})`
+              <Timestamp timestamp={timestamp} format={DateTime.DATETIME_MED_WITH_SECONDS}/>
           )
       }
     />

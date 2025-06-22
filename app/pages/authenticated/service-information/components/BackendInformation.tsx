@@ -3,6 +3,7 @@ import {BackendServiceInformation} from "~/models/BackendServiceInformation"
 import {ServiceInformationItem} from "../ServiceInformation"
 import {Some} from "~/types/Option"
 import {DateTime} from "luxon"
+import Timestamp from "~/components/timestamp/Timestamp"
 
 type BackendInformationProps = {
   readonly backendServiceInformation: BackendServiceInformation
@@ -27,7 +28,7 @@ const BackendInformation: FC<BackendInformationProps> = ({backendServiceInformat
           backendServiceInformation.buildTimestamp
             .map(
               (timestamp) =>
-                `${timestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)} (${timestamp.toRelative({base: DateTime.now()})})`
+                <Timestamp timestamp={timestamp} format={DateTime.DATETIME_MED_WITH_SECONDS}/>
             )
       }
     />

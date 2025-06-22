@@ -20,7 +20,6 @@ import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVid
 import {SchedulingStatus} from "~/models/SchedulingStatus"
 import {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
 import Helmet from "~/components/helmet/Helmet"
-import {scanForVideos} from "~/services/video/VideoService"
 
 const DOWNLOAD_HISTORY_SIZE = 10
 const PAGE_SIZE = 50
