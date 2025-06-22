@@ -1,7 +1,7 @@
 .navigator {
     display: flex;
-    flex: 5;
-    margin: 0 10em;
+    flex: 10;
+    margin: 0 2em;
 }
 
 .navigatorTab {

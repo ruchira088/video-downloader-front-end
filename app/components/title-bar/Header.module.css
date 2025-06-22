@@ -4,6 +4,10 @@
   justify-content: space-between;
 }
 
+.logoText {
+  text-wrap: nowrap;
+}
+
 .smallLogo {
   max-width: 4em;
 }
