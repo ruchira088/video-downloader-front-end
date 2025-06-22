@@ -1,8 +1,18 @@
 .thumbnail {
   width: 100%;
-  max-width: 25em;
-  height: 12em;
   border-radius: 0.2em;
+}
+
+@media (min-width: 45em) {
+  .thumbnail {
+    max-height: 15em;
+  }
+}
+
+@media (max-width: 45em) {
+  .thumbnail {
+    max-height: 25em;
+  }
 }
 
 .imageContainer {
