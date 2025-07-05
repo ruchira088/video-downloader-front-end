@@ -1,35 +1,42 @@
 - name: Fetch git information
   import_tasks: tasks/git-info.yml
 
-- name: Remove existing production bundle
-  file:
-    path: ../build
-    state: absent
-
-- name: Build production bundle
-  shell: |
-    cd ../ && \
-      npm ci && \
-      npm run build
-
 - name: Build Docker image
   when: not publish
   block:
     - name: Build production image
-      shell: |
-        docker build \
-          -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }} \
-          -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
-          -f docker/prod/Dockerfile \
-          ../
+      block:
+        - name: Remove existing production bundle
+          file:
+            path: ../build
+            state: absent
+
+        - name: Build production bundle
+          shell: |
+            cd ../ && \
+              npm ci && \
+              npm run build
+
+        - name: Build Docker image
+          shell: |
+            docker build \
+              -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }} \
+              -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
+              -f docker/prod/Dockerfile \
+              ../
 
     - name: Build development Docker image
-      shell: |
-        docker build \
-          -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }} \
-          -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }}-{{ git_commit }} \
-          -f docker/dev/Dockerfile \
-          ../
+      block:
+        - name: Generate ENV file
+          shell: cd ../ && npm run env-vars
+
+        - name: Build Docker image
+          shell: |
+            docker build \
+              -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }} \
+              -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }}-{{ git_commit }} \
+              -f docker/dev/Dockerfile \
+              ../
 
 - name: Build and publish Docker image
   when: publish
@@ -40,24 +47,42 @@
           access_token: "{{ lookup('aws_ssm', '/github/packages/read-write-token', region='ap-southeast-2') }}"
 
       - name: Publish production Docker image
-        shell: |
-          docker buildx build \
-            --push \
-            --platform linux/arm64,linux/amd64 \
-            -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }} \
-            -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
-            -f docker/prod/Dockerfile \
-            ../
+        block:
+          - name: Remove existing production bundle
+            file:
+              path: ../build
+              state: absent
+
+          - name: Build production bundle
+            shell: |
+              cd ../ && \
+                npm ci && \
+                npm run build
+
+          - name: Publish Docker image
+            shell: |
+              docker buildx build \
+                --push \
+                --platform linux/arm64,linux/amd64 \
+                -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }} \
+                -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
+                -f docker/prod/Dockerfile \
+                ../
 
       - name: Publish development Docker image
-        shell: |
-          docker buildx build \
-            --push \
-            --platform linux/arm64,linux/amd64 \
-            -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }} \
-            -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }}-{{ git_commit }} \
-            -f docker/dev/Dockerfile \
-            ../
+        block:
+          - name: Generate ENV file
+            shell: cd ../ && npm run env-vars
+
+          - name: Publish Docker image
+            shell: |
+              docker buildx build \
+                --push \
+                --platform linux/arm64,linux/amd64 \
+                -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }} \
+                -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }}-{{ git_commit }} \
+                -f docker/dev/Dockerfile \
+                ../
 
 - name: Clean up
   block:

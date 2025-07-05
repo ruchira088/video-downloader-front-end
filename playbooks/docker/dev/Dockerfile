@@ -7,10 +7,10 @@ WORKDIR /opt/front-end
 COPY package.json .
 COPY package-lock.json .
 
-RUN npm ci
+RUN npm i
 
-COPY .. .
+COPY . .
 
 EXPOSE 5173
 
-CMD ["npm", "run", "start:local"]
+CMD ["npm", "run", "start:dev"]
