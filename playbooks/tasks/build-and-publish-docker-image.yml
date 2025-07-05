@@ -18,9 +18,17 @@
     - name: Build production image
       shell: |
         docker build \
-          -f docker/Dockerfile \
           -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }} \
           -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
+          -f docker/prod/Dockerfile \
+          ../
+
+    - name: Build development Docker image
+      shell: |
+        docker build \
+          -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }} \
+          -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }}-{{ git_commit }} \
+          -f docker/dev/Dockerfile \
           ../
 
 - name: Build and publish Docker image
@@ -38,7 +46,17 @@
             --platform linux/arm64,linux/amd64 \
             -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }} \
             -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
-            -f docker/Dockerfile \
+            -f docker/prod/Dockerfile \
+            ../
+
+      - name: Publish development Docker image
+        shell: |
+          docker buildx build \
+            --push \
+            --platform linux/arm64,linux/amd64 \
+            -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }} \
+            -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }}-{{ git_commit }} \
+            -f docker/dev/Dockerfile \
             ../
 
 - name: Clean up

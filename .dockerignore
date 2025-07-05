@@ -25,7 +25,7 @@ yarn-error.log*
 .git
 
 playbooks
-!playbooks/docker/default.conf
+!playbooks/docker/prod/default.conf
 scripts
 
 .react-router
