@@ -1,6 +1,6 @@
 {
   "name": "video-downloader-front-end",
-  "version": "1.4.31-SNAPSHOT",
+  "version": "1.4.31",
   "private": true,
   "type": "module",
   "devDependencies": {
