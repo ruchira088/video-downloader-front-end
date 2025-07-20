@@ -40,6 +40,7 @@ export const ApplicationConfigurationProvider: FC<ApplicationConfigurationContex
 
   useEffect(() => {
     applicationConfiguration.forEach(appConfig => {
+      document.body.setAttribute("data-theme", appConfig.theme)
       localStorageConfigurationService.setApplicationConfiguration(appConfig)
     })
   }, [
