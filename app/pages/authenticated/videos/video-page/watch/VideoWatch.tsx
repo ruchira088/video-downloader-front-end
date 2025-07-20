@@ -1,6 +1,5 @@
-import React, { type FC, useContext, useEffect, useRef, useState } from "react"
+import React, { type FC, useEffect, useRef, useState } from "react"
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material"
-import { ApplicationContext } from "~/context/ApplicationContext"
 import { Video } from "~/models/Video"
 import { imageUrl, videoUrl } from "~/services/asset/AssetService"
 import { Snapshot } from "~/models/Snapshot"
@@ -17,6 +16,7 @@ import styles from "./VideoWatch.module.scss"
 import { Duration } from "luxon"
 import { Option } from "~/types/Option"
 import { translate } from "~/services/sanitize/SanitizationService"
+import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
 
 type VideoDeleteDialogProps = {
   readonly isVisible: boolean
@@ -108,7 +108,7 @@ type VideoWatchProps = {
 const VideoWatch: FC<VideoWatchProps> = props => {
   const videoPlayer = useRef<HTMLVideoElement | null>(null)
   const [isDeleteDialogVisible, setDeleteDialogVisibility] = useState<boolean>(false)
-  const { safeMode } = useContext(ApplicationContext)
+  const { safeMode } = useApplicationConfiguration()
 
   useEffect(() => {
     Option.fromNullable(videoPlayer.current)

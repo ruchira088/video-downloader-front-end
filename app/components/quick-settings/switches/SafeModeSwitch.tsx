@@ -1,20 +1,17 @@
-import React, { type FC, useContext } from "react"
+import React from "react"
 import { FormControlLabel, Switch } from "@mui/material"
-import { ApplicationContext } from "~/context/ApplicationContext"
+import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
 
-type SafeModeSwitchProps = {
-  readonly setApplicationContext: (applicationContext: ApplicationContext) => void
-}
 
-const SafeModeSwitch: FC<SafeModeSwitchProps> = props => {
-  const { safeMode } = useContext(ApplicationContext)
+const SafeModeSwitch = () => {
+  const { safeMode, setSafeMode } = useApplicationConfiguration()
 
   return (
     <FormControlLabel
     control={
       <Switch
         checked={safeMode}
-        onChange={({ target }) => props.setApplicationContext({ safeMode: target.checked })}
+        onChange={({ target }) => setSafeMode(target.checked)}
       />
     }
     label="Safe Mode"

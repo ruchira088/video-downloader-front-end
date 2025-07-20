@@ -7,7 +7,7 @@ import {
 import { BackendServiceInformation } from "~/models/BackendServiceInformation"
 import { LoadableComponent } from "~/components/hoc/loading/LoadableComponent"
 import BackendInformation from "./components/BackendInformation"
-import { configuration } from "~/services/Configuration"
+import { configuration } from "~/services/ApiConfiguration"
 import FrontendInformation from "./components/FrontendInformation"
 import { CircularProgress } from "@mui/material"
 import { None, type Option, Some } from "~/types/Option"
@@ -190,7 +190,7 @@ const ServiceInformation = () => {
       <Helmet title="Service Information"/>
       <div className={styles.serviceDetails}>
         <div className={styles.backend}>
-          <ServiceInformationItem label="API URL" value={Some.of(configuration.apiService)}/>
+          <ServiceInformationItem label="API URL" value={Some.of(configuration.baseUrl)}/>
           <LoadableComponent>
             {backendInformation.map((backendServiceInfo) => <BackendInformation
               backendServiceInformation={backendServiceInfo}/>)}

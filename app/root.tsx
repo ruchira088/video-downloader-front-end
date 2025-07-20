@@ -1,8 +1,9 @@
-import {isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration} from "react-router"
+import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router"
 
-import type {Route} from "./+types/root"
+import type { Route } from "./+types/root"
 import "./index.css"
-import {type ReactNode} from "react"
+import { type ReactNode } from "react"
+import { ApplicationConfigurationProvider } from "~/providers/ApplicationConfigurationProvider"
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -43,7 +44,11 @@ export function Layout({children}: { children: ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <ApplicationConfigurationProvider>
+      <Outlet />
+    </ApplicationConfigurationProvider>
+  )
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

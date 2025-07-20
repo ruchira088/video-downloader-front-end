@@ -1,19 +1,15 @@
-import React, {type FC} from "react"
-import {type ApplicationContext} from "~/context/ApplicationContext"
+import React from "react"
 import QuickSettings from "~/components/quick-settings/QuickSettings"
 import Navigator from "~/components/navigator/Navigator"
 import smallLogo from "~/images/small-logo.svg"
 import styles from "./Header.module.css"
 
-type HeaderProps = {
-  readonly setApplicationContext: (applicationContext: ApplicationContext) => void
-}
 
-const Header: FC<HeaderProps> = props => (
+const Header = () => (
   <div className={styles.header}>
     <HeaderLogo />
     <Navigator />
-    <QuickSettings {...props} />
+    <QuickSettings/>
   </div>
 )
 

@@ -1,17 +1,17 @@
-import React, {type FC, useContext} from "react"
-import {Link} from "react-router"
-import {imageUrl} from "~/services/asset/AssetService"
-import {Snapshot} from "~/models/Snapshot"
-import {ApplicationContext} from "~/context/ApplicationContext"
-import {shortHumanReadableDuration} from "~/utils/Formatter"
+import React, { type FC } from "react"
+import { Link } from "react-router"
+import { imageUrl } from "~/services/asset/AssetService"
+import { Snapshot } from "~/models/Snapshot"
+import { shortHumanReadableDuration } from "~/utils/Formatter"
 import styles from "./VideoSnapshotsGallery.module.css"
+import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
 
 type VideoSnapshotProps = {
   readonly snapshot: Snapshot
 }
 
 const VideoSnapshot: FC<VideoSnapshotProps> = props => {
-  const { safeMode } = useContext(ApplicationContext)
+  const { safeMode } = useApplicationConfiguration()
 
   return (
     <Link

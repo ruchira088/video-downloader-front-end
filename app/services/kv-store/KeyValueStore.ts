@@ -1,22 +1,24 @@
 import { Option } from "~/types/Option"
 
-const localStorage: Storage = window.localStorage
-
-export interface Codec<A, B> {
+export interface Encoder<A, B> {
   encode(value: A): B
-
-  decode(value: B): A
 }
+
+export interface Decoder<A, B> {
+  decode(value: A): B
+}
+
+export interface Codec<A, B> extends Encoder<A, B>, Decoder<B, A> {}
 
 export interface KeySpace<K, V> {
   readonly name: string
 
-  readonly keyCodec: Codec<K, string>
+  readonly keyEncoder: Encoder<K, string>
 
   readonly valueCodec: Codec<V, string>
 }
 
-export default interface KeyValueStore<K, V extends {}> {
+export interface KeyValueStore<K, V extends {}> {
   put(key: K, value: V): void
 
   get(key: K): Option<V>
@@ -47,5 +49,5 @@ export class LocalKeyValueStore<K, V extends {}> implements KeyValueStore<K, V> 
     return existingValue
   }
 
-  stringKey = (key: K): string => `${this.keySpace.name}-${this.keySpace.keyCodec.encode(key)}`
+  stringKey = (key: K): string => `${this.keySpace.name}-${this.keySpace.keyEncoder.encode(key)}`
 }

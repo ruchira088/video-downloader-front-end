@@ -1,11 +1,11 @@
-import { configuration } from "~/services/Configuration"
+import { configuration } from "~/services/ApiConfiguration"
 import { imageMappings } from "~/services/sanitize/SanitizationService"
 import { type FileResource, FileResourceType } from "~/models/FileResource"
 
 export type AssetUrl = string
 
 const assetUrl = (fileResource: FileResource<FileResourceType>): AssetUrl =>
-  `${configuration.apiService}/assets/${fileResource.type}/id/${fileResource.id}`
+  `${configuration.baseUrl}/assets/${fileResource.type}/id/${fileResource.id}`
 
 export const videoUrl = assetUrl
 

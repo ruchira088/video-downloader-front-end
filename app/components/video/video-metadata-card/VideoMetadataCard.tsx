@@ -1,16 +1,16 @@
-import React, {type FC, type ReactNode, useContext, useEffect, useState} from "react"
+import React, { type FC, type ReactNode, useEffect, useState } from "react"
 import classNames from "classnames"
-import {VideoMetadata} from "~/models/VideoMetadata"
-import {ApplicationContext} from "~/context/ApplicationContext"
-import {imageUrl} from "~/services/asset/AssetService"
-import {humanReadableSize, shortHumanReadableDuration} from "~/utils/Formatter"
+import { VideoMetadata } from "~/models/VideoMetadata"
+import { imageUrl } from "~/services/asset/AssetService"
+import { humanReadableSize, shortHumanReadableDuration } from "~/utils/Formatter"
 import styles from "./VideoMetadataCard.module.css"
-import {Snapshot} from "~/models/Snapshot"
-import {fetchVideoSnapshotsByVideoId} from "~/services/video/VideoService"
+import { Snapshot } from "~/models/Snapshot"
+import { fetchVideoSnapshotsByVideoId } from "~/services/video/VideoService"
 import VideoSiteCard from "../video-site-card/VideoSiteCard"
-import {None, Option, Some} from "~/types/Option"
-import {type FileResource, FileResourceType} from "~/models/FileResource"
-import {translate} from "~/services/sanitize/SanitizationService"
+import { None, Option, Some } from "~/types/Option"
+import { type FileResource, FileResourceType } from "~/models/FileResource"
+import { translate } from "~/services/sanitize/SanitizationService"
+import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
 
 type VideoMetadataCardProps = {
   readonly videoMetadata: VideoMetadata
@@ -24,7 +24,7 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
   const [maybeSnapshots, setMaybeSnapshots] = useState<Option<Snapshot[]>>(None.of())
   const [maybeIntervalTimeout, setMaybeIntervalTimeout] = useState<Option<NodeJS.Timeout>>(None.of())
   const [index, setIndex] = useState<number>(0)
-  const {safeMode} = useContext(ApplicationContext)
+  const {safeMode} = useApplicationConfiguration()
 
   const initializeSnapshots = (): Promise<Snapshot[]> =>
     maybeSnapshots
