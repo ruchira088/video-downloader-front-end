@@ -11,6 +11,8 @@ export abstract class Option<T> {
 
   abstract toNullable(): T | null
 
+  abstract toDefined(): T | undefined
+
   abstract toList(): T[]
 
   abstract isEmpty(): boolean
@@ -48,6 +50,10 @@ export class Some<T> extends Option<T> {
   }
 
   toNullable(): T | null {
+    return this.value
+  }
+
+  toDefined(): T | undefined {
     return this.value
   }
 
@@ -91,6 +97,10 @@ export class None<T> extends Option<T> {
 
   toNullable(): T | null {
     return null
+  }
+
+  toDefined(): T | undefined {
+    return undefined
   }
 
   toList(): T[] {

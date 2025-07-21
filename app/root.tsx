@@ -1,7 +1,7 @@
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router"
 
 import type { Route } from "./+types/root"
-import "./index.css"
+import "./index.scss"
 import { type ReactNode } from "react"
 import { ApplicationConfigurationProvider } from "~/providers/ApplicationConfigurationProvider"
 

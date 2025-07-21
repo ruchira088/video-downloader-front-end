@@ -2,6 +2,7 @@ import React, { type FC, useEffect, useState } from "react"
 import { None, Option, Some } from "~/types/Option"
 import { localStorageConfigurationService } from "~/services/config/ConfigurationService"
 import { type ApplicationConfiguration, Theme } from "~/models/ApplicationConfiguration"
+import { createTheme, ThemeProvider } from "@mui/material"
 
 export type ApplicationConfigurationContextProps = {
   readonly children?: React.ReactNode;
@@ -26,6 +27,10 @@ export const ApplicationConfigurationProvider: FC<ApplicationConfigurationContex
   })))
 
   const setTheme = (theme: Theme) => setApplicationConfiguration((prev) => prev.map(config => ({ ...config, theme })))
+
+  const theme = createTheme({
+    colorSchemes: applicationConfiguration.map(({theme}) => ({dark: theme === Theme.Dark})).toDefined()
+  })
 
   useEffect(() => {
     localStorageConfigurationService.getApplicationConfiguration()
@@ -54,7 +59,9 @@ export const ApplicationConfigurationProvider: FC<ApplicationConfigurationContex
     return (
       <ApplicationConfigurationContext.Provider
         value={applicationConfiguration.map(config => ({ ...config, setSafeMode, setTheme }))}>
-        {props.children}
+        <ThemeProvider theme={theme}>
+          {props.children}
+        </ThemeProvider>
       </ApplicationConfigurationContext.Provider>
     )
   }
