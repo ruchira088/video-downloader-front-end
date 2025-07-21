@@ -6,6 +6,10 @@
 
 .logoText {
   text-wrap: nowrap;
+  color: var(--text-color);
+  font-size: 1.2em;
+  font-weight: 600;
+  text-align: center;
 }
 
 .smallLogo {

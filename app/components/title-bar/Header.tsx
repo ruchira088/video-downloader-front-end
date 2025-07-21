@@ -3,6 +3,7 @@ import QuickSettings from "~/components/quick-settings/QuickSettings"
 import Navigator from "~/components/navigator/Navigator"
 import smallLogo from "~/images/small-logo.svg"
 import styles from "./Header.module.css"
+import { Link } from "react-router"
 
 
 const Header = () => (
@@ -14,9 +15,9 @@ const Header = () => (
 )
 
 const HeaderLogo = () =>
-  <div className={styles.headerLogo}>
+  <Link className={styles.headerLogo} to="/">
     <img src={smallLogo} alt="small logo" className={styles.smallLogo}/>
     <div className={styles.logoText}>Video Downloader</div>
-  </div>
+  </Link>
 
 export default Header

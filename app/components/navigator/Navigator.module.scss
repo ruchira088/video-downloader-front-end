@@ -1,0 +1,30 @@
+.navigator {
+    display: flex;
+    flex: 10;
+    margin: 0 2em;
+}
+
+.navigatorTab {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    color: var(--text-color);
+    cursor: pointer;
+    border: 1px solid color-mix(in srgb, var(--text-color) 40%, transparent);
+    border-radius: 0.5em;
+    padding: 0.5em;
+    margin: 0 0.5em;
+
+    &:not(.isActive):hover {
+        font-weight: 600;
+        filter: brightness(0.75);
+        transition: filter 0.2s, font-weight 0.2s;
+    }
+
+    &.isActive {
+        font-weight: 800;
+        background: color-mix(in srgb, var(--text-color) 10%, transparent);
+    }
+}

@@ -13,6 +13,8 @@ export abstract class Option<T> {
 
   abstract toDefined(): T | undefined
 
+  abstract orElse(fn: () => Option<T>): Option<T>
+
   abstract toList(): T[]
 
   abstract isEmpty(): boolean
@@ -55,6 +57,10 @@ export class Some<T> extends Option<T> {
 
   toDefined(): T | undefined {
     return this.value
+  }
+
+  orElse(fn: () => Option<T>): Option<T> {
+    return this
   }
 
   toList(): T[] {
@@ -101,6 +107,10 @@ export class None<T> extends Option<T> {
 
   toDefined(): T | undefined {
     return undefined
+  }
+
+  orElse(fn: () => Option<T>): Option<T> {
+    return fn()
   }
 
   toList(): T[] {

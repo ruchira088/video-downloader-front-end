@@ -2,10 +2,13 @@
   --background-color: #222;
   --text-color: #eee;
   --link-color: #007bff;
+  --active-tab-background-color: #0056b3;
+  --active-tab-text-color: #0056b3;
 }
 
 [data-theme="light"] {
   --background-color: #eee;
   --text-color: #222;
   --link-color: blue;
+  --active-tab-text-color: #0056b3;
 }
