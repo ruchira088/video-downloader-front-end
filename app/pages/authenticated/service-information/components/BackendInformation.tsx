@@ -17,6 +17,7 @@ const BackendInformation: FC<BackendInformationProps> = ({backendServiceInformat
       <ServiceInformationItem label="Java Version" value={Some.of(backendServiceInformation.javaVersion)} />
       <ServiceInformationItem label="Scala Version" value={Some.of(backendServiceInformation.scalaVersion)} />
       <ServiceInformationItem label="sbt Version" value={Some.of(backendServiceInformation.sbtVersion)} />
+      <ServiceInformationItem label="yt-dlp Version" value={Some.of(backendServiceInformation.ytDlpVersion)} />
     <ServiceInformationItem
       label="Server Timestamp"
       value={Some.of(backendServiceInformation.currentTimestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS))}/>
