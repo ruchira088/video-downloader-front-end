@@ -34,7 +34,7 @@
   },
   "scripts": {
     "build": "npm run env-vars && react-router build",
-    "start": "npm run env-vars && VITE_API_URL=https://api.video.home.ruchij.com react-router dev",
+    "start": "npm run env-vars && VITE_API_URL=https://api.video.home.ruchij.com react-router dev --host 0.0.0.0",
     "start:local": "npm run env-vars && VITE_API_URL=https://api.localhost react-router dev",
     "start:dev": "react-router dev --host 0.0.0.0",
     "typecheck": "react-router typegen && tsc",
