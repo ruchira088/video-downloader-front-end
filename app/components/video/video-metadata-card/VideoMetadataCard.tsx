@@ -1,4 +1,4 @@
-import React, { type FC, type ReactNode, useEffect, useState } from "react"
+import React, { type FC, type ReactNode, useEffect, useRef, useState } from "react"
 import classNames from "classnames"
 import { VideoMetadata } from "~/models/VideoMetadata"
 import { imageUrl } from "~/services/asset/AssetService"
@@ -20,10 +20,17 @@ type VideoMetadataCardProps = {
   readonly children?: ReactNode
 }
 
+type ImageDimensions = {
+  readonly width: number
+  readonly height: number
+}
+
 const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
   const [maybeSnapshots, setMaybeSnapshots] = useState<Option<Snapshot[]>>(None.of())
   const [maybeIntervalTimeout, setMaybeIntervalTimeout] = useState<Option<NodeJS.Timeout>>(None.of())
   const [index, setIndex] = useState<number>(0)
+  const imageRef = useRef<HTMLImageElement | null>(null)
+  const [imageDimensions, setImageDimensions] = useState<Option<ImageDimensions>>(None.of<ImageDimensions>())
   const {safeMode} = useApplicationConfiguration()
 
   const initializeSnapshots = (): Promise<Snapshot[]> =>
@@ -74,9 +81,32 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
       safeMode
     )
 
+  const lockImageDimensions = () => {
+    if (imageRef.current != null) {
+      const {height, width} = imageRef.current
+      setImageDimensions(Some.of({ width, height }))
+    }
+  }
+
+  useEffect(() => {
+    const clearImageDimensions = () => {
+      setImageDimensions(None.of())
+      lockImageDimensions()
+    }
+
+    addEventListener("resize", clearImageDimensions)
+
+    return () => {
+      removeEventListener("resize", clearImageDimensions)
+    }
+  }, [])
+
   return (
     <div className={classNames(styles.videoMetadataCard, props.classNames)}>
-      <div className={styles.imageContainer}>
+      <div
+        onMouseOver={onMouseOver}
+        onMouseLeave={onMouseLeave}
+        className={styles.imageContainer}>
         { props.children }
         {
           props.enableSourceLink &&
@@ -86,10 +116,11 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
         }
         {!props.enableSourceLink && <VideoSiteCard videoSite={props.videoMetadata.videoSite}/>}
         <img
-          onMouseOver={onMouseOver}
-          onMouseLeave={onMouseLeave}
+          ref={imageRef}
           src={thumbnail(safeMode)}
+          onLoad={lockImageDimensions}
           alt="video thumbnail"
+          style={imageDimensions.map(({height}) => ({height: `${height}px`})).toDefined()}
           className={styles.thumbnail}
         />
         <div className={styles.size}>{humanReadableSize(props.videoMetadata.size)}</div>

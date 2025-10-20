@@ -1,12 +1,8 @@
 .videosPage {
   .videosList {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
+    gap: 1em;
     justify-content: space-evenly;
-
-    .videoCard {
-      flex: 1 0 20em;
-      margin: 1em 0.5em;
-    }
   }
 }

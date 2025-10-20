@@ -133,15 +133,12 @@ const Videos = () => {
         hasMore={hasMore.current}
         className={styles.videosList}>
         {
-          videos.concat(Array(10).fill(null)).map(
+          videos.map(
               (video, index) =>
                 <div key={index} className={styles.videoCard}>
-                  {
-                    video != null &&
                     <Link to={`/video/${video.videoMetadata.id}`}>
                       <VideoCard video={video}/>
                     </Link>
-                  }
                 </div>
           )
         }

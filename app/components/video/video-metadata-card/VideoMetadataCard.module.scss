@@ -1,22 +1,12 @@
 .thumbnail {
-  width: 100%;
   border-radius: 0.2em;
-}
-
-@media (min-width: 45em) {
-  .thumbnail {
-    max-height: 15em;
-  }
-}
-
-@media (max-width: 45em) {
-  .thumbnail {
-    max-height: 25em;
-  }
+  width: 100%;
+  object-fit: contain;
 }
 
 .imageContainer {
   position: relative;
+  text-align: center;
 }
 
 .duration {

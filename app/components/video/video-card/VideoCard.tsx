@@ -11,7 +11,7 @@ type VideoCardProps = {
 
 const VideoCard: FC<VideoCardProps> =
   props =>
-    <div>
+    <div className={styles.videoCard}>
       <VideoMetadataCard videoMetadata={props.video.videoMetadata} />
       <Timestamp timestamp={props.video.createdAt} className={styles.videoTimestamp}/>
     </div>
