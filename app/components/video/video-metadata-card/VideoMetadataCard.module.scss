@@ -1,7 +1,14 @@
 .thumbnail {
   border-radius: 0.2em;
   width: 100%;
+  max-height: 15em;
   object-fit: contain;
+}
+
+@media (width <= 43.75em) {
+  .thumbnail {
+    max-height: 25em;
+  }
 }
 
 .imageContainer {
