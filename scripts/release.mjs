@@ -1,24 +1,23 @@
-const { readFile, writeFile } = require("fs")
-const readLine = require("readline")
-const { promisify } = require("util")
-const path = require("path")
-const SimpleGit = require("simple-git")
+import { readFile, writeFile } from "node:fs/promises"
+import readLine from "readline"
+import path from "node:path"
+import SimpleGit from "simple-git"
 
 const PROD_BRANCH = "master"
 const DEV_BRANCH = "dev"
 
 const SNAPSHOT = "SNAPSHOT"
 
-const packageJsonPath = path.resolve(__dirname, "../", "package.json")
+const packageJsonPath = path.resolve(import.meta.dirname, "../", "package.json")
 
 const askQuestion = (text, cli) => new Promise((resolve) => cli.question(text, resolve))
 
-const retrievePackageJson = () => promisify(readFile)(packageJsonPath, "utf8").then(JSON.parse)
+const retrievePackageJson = () => readFile(packageJsonPath, "utf8").then(JSON.parse)
 
 const updatePackageJson = (json) =>
   retrievePackageJson()
     .then((packageJson) => ({ ...packageJson, ...json }))
-    .then((packageJson) => promisify(writeFile)(packageJsonPath, JSON.stringify(packageJson, null, 2)))
+    .then((packageJson) => writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2)))
 
 const createProductionVersion = (appVersion) => appVersion.replace(`-${SNAPSHOT}`, "")
 
