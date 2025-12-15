@@ -2,8 +2,9 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration }
 
 import type { Route } from "./+types/root"
 import "./index.scss"
-import { type ReactNode } from "react"
+import React, { type ReactNode } from "react"
 import { ApplicationConfigurationProvider } from "~/providers/ApplicationConfigurationProvider"
+import { CircularProgress } from "@mui/material"
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -49,6 +50,10 @@ export default function App() {
       <Outlet />
     </ApplicationConfigurationProvider>
   )
+}
+
+export function HydrateFallback() {
+  return <CircularProgress size="5em"/>
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
