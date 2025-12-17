@@ -35,6 +35,7 @@ const Navigator = () => {
 
   return (
     <div className={styles.navigator}>
+      <div className={styles.navigatorTabs}>
       {
         navigationTabs.map((navigationTab, index) => (
             <Link
@@ -51,6 +52,7 @@ const Navigator = () => {
           )
         )
       }
+        </div>
     </div>
   )
 }

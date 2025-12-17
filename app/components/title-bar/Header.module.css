@@ -3,12 +3,12 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 1em;
 }
 
-@media (max-width: 40em) {
+@media (max-width: 35em) {
   .header {
     flex-direction: column;
-    gap: 1em;
   }
 }
 
@@ -28,5 +28,4 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
 }

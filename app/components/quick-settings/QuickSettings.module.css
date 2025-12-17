@@ -1,6 +1,4 @@
 .quickSettings {
-  flex: 1;
-
   :global(.MuiFormControlLabel-label) {
     text-wrap: nowrap;
   }
