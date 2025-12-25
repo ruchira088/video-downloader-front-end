@@ -12,7 +12,6 @@ type BackendInformationProps = {
 const BackendInformation: FC<BackendInformationProps> = ({backendServiceInformation}) => (
   <div>
       <ServiceInformationItem label="Service Name" value={Some.of(backendServiceInformation.serviceName)} />
-      <ServiceInformationItem label="Service Version" value={Some.of(backendServiceInformation.serviceVersion)} />
       <ServiceInformationItem label="Organization" value={Some.of(backendServiceInformation.organization)} />
       <ServiceInformationItem label="Java Version" value={Some.of(backendServiceInformation.javaVersion)} />
       <ServiceInformationItem label="Scala Version" value={Some.of(backendServiceInformation.scalaVersion)} />

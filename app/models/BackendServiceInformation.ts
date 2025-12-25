@@ -3,7 +3,6 @@ import { ZodDateTime, ZodOptional } from "~/types/Zod"
 
 export const BackendServiceInformation = z.object({
   serviceName: z.string(),
-  serviceVersion: z.string(),
   organization: z.string(),
   scalaVersion: z.string(),
   sbtVersion: z.string(),
