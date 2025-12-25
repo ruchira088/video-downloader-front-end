@@ -18,14 +18,15 @@ const generateCspConfig = async () => {
   const cspConfigFile = path.join(import.meta.dirname, "..", "build", "csp.conf")
 
   const scriptHashes = await getInlineScriptHashes()
+  const apiHosts = ["https://*.ruchij.com", "localhost", "*.localhost"]
 
   const cspConfig = [
     "default-src 'self'",
     `script-src 'self' ${scriptHashes.join(" ")}`,
-    "connect-src 'self' https://*.ruchij.com",
+    `connect-src 'self' ${apiHosts.join(" ")}`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "img-src 'self' https://*.ruchij.com data: blob:",
-    "media-src 'self' https://*.ruchij.com",
+    `img-src 'self' ${apiHosts.join(" ")} data: blob:`,
+    `media-src 'self' ${apiHosts.join(" ")}`,
     "font-src 'self' https://fonts.gstatic.com",
     "frame-ancestors 'none'"
   ]
