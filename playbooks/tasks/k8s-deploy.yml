@@ -39,21 +39,21 @@
   vars:
     ghcr_credentials: "{{ lookup('aws_ssm', '/github/ghcr/docker-config', region='ap-southeast-2') }}"
 
-#- name: Deploy to K8s
-#  block:
-#    - name: Create Namespace
-#      command: kubectl apply -f {{ k8s_output_dir }}/Namespace.yaml --kubeconfig {{ kube_config }}
-#
-#    - name: Create Docker registry secret
-#      command: kubectl apply -f {{ k8s_output_dir }}/DockerRegistryCredentials.yaml --kubeconfig {{ kube_config }}
-#
-#    - name: Deploy application
-#      command: kubectl apply -f {{ k8s_output_dir }} --kubeconfig {{ kube_config }}
-#
-#    - name: Wait for successful deployment
-#      command: kubectl rollout status deployment front-end-deployment --kubeconfig {{ kube_config }} -n {{ k8s_namespace }}
-#
-#- name: Delete output directory
-#  file:
-#    path: "{{ k8s_output_dir }}"
-#    state: absent
+- name: Deploy to K8s
+  block:
+    - name: Create Namespace
+      command: kubectl apply -f {{ k8s_output_dir }}/Namespace.yaml --kubeconfig {{ kube_config }}
+
+    - name: Create Docker registry secret
+      command: kubectl apply -f {{ k8s_output_dir }}/DockerRegistryCredentials.yaml --kubeconfig {{ kube_config }}
+
+    - name: Deploy application
+      command: kubectl apply -f {{ k8s_output_dir }} --kubeconfig {{ kube_config }}
+
+    - name: Wait for successful deployment
+      command: kubectl rollout status deployment front-end-deployment --kubeconfig {{ kube_config }} -n {{ k8s_namespace }}
+
+- name: Delete output directory
+  file:
+    path: "{{ k8s_output_dir }}"
+    state: absent
