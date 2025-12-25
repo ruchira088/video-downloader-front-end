@@ -7,7 +7,7 @@ WORKDIR /opt/front-end
 COPY package.json .
 COPY package-lock.json .
 
-RUN npm i
+RUN npm ci
 
 COPY . .
 

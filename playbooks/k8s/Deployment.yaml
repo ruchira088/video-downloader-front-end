@@ -2,22 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: front-end-deployment
-  namespace: {{ namespace }}
+  namespace: "{{ k8s_namespace }}"
 spec:
   selector:
     matchLabels:
       app: front-end
-      branch: {{ git_branch }}
+      branch: "{{ git_branch }}"
   replicas: 1
   template:
     metadata:
       labels:
         app: front-end
-        branch: {{ git_branch }}
+        branch: "{{ git_branch }}"
     spec:
       containers:
         - name: front-end-container
-          image: ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }}
+          image: "ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }}"
           ports:
             - name: http-port
               containerPort: 80

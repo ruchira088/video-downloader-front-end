@@ -15,7 +15,8 @@
     "simple-git": "^3.28.0",
     "typescript": "^5.8.3",
     "vite": "^7.0.2",
-    "vite-tsconfig-paths": "^6.0.1"
+    "vite-tsconfig-paths": "^6.0.1",
+    "vitest": "^4.0.16"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -36,6 +37,7 @@
   "scripts": {
     "build": "npm run env-vars && react-router build && npm run csp-hashes",
     "start": "npm run env-vars && VITE_API_URL=https://api.video.home.ruchij.com react-router dev --host 0.0.0.0",
+    "test": "vitest",
     "start:local": "npm run env-vars && VITE_API_URL=https://api.localhost react-router dev",
     "start:dev": "react-router dev --host 0.0.0.0",
     "typecheck": "react-router typegen && tsc",
