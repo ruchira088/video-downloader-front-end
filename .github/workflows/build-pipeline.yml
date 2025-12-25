@@ -29,8 +29,8 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-#      - name: Execute test suite
-#        run: npm test
+      - name: Execute test suite
+        run: npm test
 
   build-and-publish-docker-image:
     runs-on: ubuntu-latest
