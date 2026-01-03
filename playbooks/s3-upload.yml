@@ -24,6 +24,7 @@
           archive:
             path: ../build/client
             dest: ../build/client.zip
+            format: zip
 
     - name: Upload to S3
       block:
