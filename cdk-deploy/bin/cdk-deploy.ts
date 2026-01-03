@@ -30,6 +30,12 @@ const main = async () => {
 
   const prefix: string | null = getPrefix(gitBranch.current)
 
+  if (prefix != null) {
+    console.log(`Deploying with prefix: "${prefix}"`)
+  } else {
+    console.log("Deploying to production")
+  }
+
   new VideoDownloaderFrontEndStack(
     app,
     [STACK_NAME, prefix].filter(value => value != null).join("-"),
