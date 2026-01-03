@@ -22,7 +22,7 @@
 
         - name: Zip production bundle
           archive:
-            path: ../build/client
+            path: ../build/client/*
             dest: ../build/client.zip
             format: zip
 
