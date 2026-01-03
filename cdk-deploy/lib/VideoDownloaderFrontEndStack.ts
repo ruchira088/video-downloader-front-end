@@ -1,4 +1,4 @@
-import { Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib"
+import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib"
 import { Construct } from "constructs"
 import { Bucket, BucketAccessControl, IBucket } from "aws-cdk-lib/aws-s3"
 import { Distribution, OriginAccessIdentity, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront"
@@ -76,10 +76,19 @@ export class VideoDownloaderFrontEndStack extends Stack {
       distributionPaths: ["/*"]
     })
 
-    new ARecord(this, "AliasRecord", {
+    const aliasRecord = new ARecord(this, "AliasRecord", {
       recordName: domain,
       zone: hostedZone,
       target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))
     })
+
+    new CfnOutput(
+      this,
+      "DomainName",
+      {
+        value: aliasRecord.domainName,
+        description: "The domain name for the frontend application",
+      }
+    )
   }
 }
