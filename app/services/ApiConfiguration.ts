@@ -1,5 +1,12 @@
 const API_URL_QUERY_PARAMETER = "API_URL"
 
+const API_URL_MAPPINGS: Record<string, string> = {
+  "staging.videos.ruchij.com": "api.staging.video.dev.ruchij.com",
+  "videos.ruchij.com": "api.video.home.ruchij.com",
+  "staging.video.dev.ruchij.com": "api.staging.video.dev.ruchij.com",
+  "video.home.ruchij.com": "api.video.home.ruchij.com"
+}
+
 const inferBaseApiUrl = (): string => {
   const location = window.location
   const queryParams: URLSearchParams = new URLSearchParams(location.search)
@@ -16,6 +23,8 @@ const inferBaseApiUrl = (): string => {
 
     if (apiUrlViaEnv) {
       return apiUrlViaEnv
+    } else if (location.host in API_URL_MAPPINGS) {
+      return `${location.protocol}//${API_URL_MAPPINGS[location.host]}`
     } else {
       const apiUrl = `${location.protocol}//api.${location.host}`
       return apiUrl
