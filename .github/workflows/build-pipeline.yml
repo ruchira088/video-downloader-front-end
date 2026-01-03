@@ -33,10 +33,34 @@ jobs:
       - name: Execute test suite
         run: npm test
 
+  test-cdk-deployment:
+    name: Test CDK Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up NodeJS
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: cdk-deploy/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: cdk-deploy
+
+      - name: Execute test suite
+        run: npm run test
+        working-directory: cdk-deploy
+
   upload-bundle:
     name: Upload bundle to S3
     runs-on: ubuntu-latest
     needs:
+      - test-cdk-deployment
       - transpile-and-test
 
     permissions:
@@ -68,6 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - transpile-and-test
+      - test-cdk-deployment
 
     permissions:
       contents: read
@@ -205,6 +230,7 @@ jobs:
 
     needs:
       - transpile-and-test
+      - test-cdk-deployment
       - build-and-publish-docker-image
       - deploy-to-dev
       - deploy-to-staging

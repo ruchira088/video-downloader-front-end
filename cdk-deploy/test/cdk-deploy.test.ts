@@ -1,17 +1,28 @@
-// import * as cdk from 'aws-cdk-lib/core';
-// import { Template } from 'aws-cdk-lib/assertions';
-// import * as CdkDeploy from '../lib/cdk-deploy-stack';
+import { Template } from "aws-cdk-lib/assertions"
+import { App } from "aws-cdk-lib/core"
+import { VideoDownloaderFrontEndStack } from "../lib/VideoDownloaderFrontEndStack"
 
-// example test. To run these tests, uncomment this file along with the
-// example resource in lib/VideoDownloaderFrontEndStack.ts
-test('SQS Queue Created', () => {
-//   const app = new cdk.App();
-//     // WHEN
-//   const stack = new CdkDeploy.CdkDeployStack(app, 'MyTestStack');
-//     // THEN
-//   const template = Template.fromStack(stack);
+test("S3 Bucket Created", () => {
+  const app = new App()
 
-//   template.hasResourceProperties('AWS::SQS::Queue', {
-//     VisibilityTimeout: 300
-//   });
+  // WHEN
+  const stack = new VideoDownloaderFrontEndStack(
+    app,
+    "MyTestStack",
+    "test.ruchij.com",
+    {
+      bucketName: "test-bucket",
+      zipObjectKey: "test-key.zip"
+    },
+    {
+      env: { account: "123456789012", region: "us-east-1" }
+    }
+  )
+
+  // THEN
+  const template = Template.fromStack(stack)
+
+  template.hasResourceProperties("AWS::S3::Bucket", {
+    BucketName: "test.ruchij.com"
+  })
 });
