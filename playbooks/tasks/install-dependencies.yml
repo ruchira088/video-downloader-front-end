@@ -4,7 +4,6 @@
         pip_dependencies:
           - boto3
           - botocore
-          - kubernetes
 
     - name: Install pip dependencies locally
       when: lookup('env', 'CI') | lower != 'true'
