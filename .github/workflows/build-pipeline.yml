@@ -31,7 +31,7 @@ jobs:
         run: npm run typecheck
 
       - name: Execute test suite
-        run: npm test
+        run: npm run test:run
 
   test-cdk-deployment:
     name: Test CDK Deployment
