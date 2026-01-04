@@ -4,27 +4,6 @@
 - name: Build Docker image
   when: not publish
   block:
-    - name: Build production image
-      block:
-        - name: Remove existing production bundle
-          file:
-            path: ../build
-            state: absent
-
-        - name: Build production bundle
-          shell: |
-            cd ../ && \
-              npm ci && \
-              npm run build
-
-        - name: Build Docker image
-          shell: |
-            docker build \
-              -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }} \
-              -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
-              -f docker/prod/Dockerfile \
-              ../
-
     - name: Build development Docker image
       block:
         - name: Generate ENV file
@@ -35,7 +14,7 @@
             docker build \
               -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }} \
               -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }}-{{ git_commit }} \
-              -f docker/dev/Dockerfile \
+              -f docker/Dockerfile \
               ../
 
 - name: Build and publish Docker image
@@ -45,29 +24,6 @@
         command: docker login ghcr.io -u USERNAME -p {{ access_token }}
         vars:
           access_token: "{{ lookup('aws_ssm', '/github/packages/read-write-token', region='ap-southeast-2') }}"
-
-      - name: Publish production Docker image
-        block:
-          - name: Remove existing production bundle
-            file:
-              path: ../build
-              state: absent
-
-          - name: Build production bundle
-            shell: |
-              cd ../ && \
-                npm ci && \
-                npm run build
-
-          - name: Publish Docker image
-            shell: |
-              docker buildx build \
-                --push \
-                --platform linux/arm64,linux/amd64 \
-                -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }} \
-                -t ghcr.io/ruchira088/video-downloader-front-end:{{ git_branch }}-{{ git_commit }} \
-                -f docker/prod/Dockerfile \
-                ../
 
       - name: Publish development Docker image
         block:
@@ -81,7 +37,7 @@
                 --platform linux/arm64,linux/amd64 \
                 -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }} \
                 -t ghcr.io/ruchira088/video-downloader-front-end-dev:{{ git_branch }}-{{ git_commit }} \
-                -f docker/dev/Dockerfile \
+                -f docker/Dockerfile \
                 ../
 
 - name: Clean up
