@@ -1,6 +1,10 @@
 - name: Fetch git information
   import_tasks: tasks/git-info.yml
 
+- name: Download npm dependencies
+  shell: |
+    cd ../ && npm ci
+
 - name: Build Docker image
   when: not publish
   block:
