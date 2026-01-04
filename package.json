@@ -26,7 +26,6 @@
     "@react-router/serve": "^7.6.3",
     "axios": "^1.10.0",
     "classnames": "^2.5.1",
-    "isbot": "^5.1.28",
     "luxon": "^3.6.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -40,7 +39,6 @@
     "start:local": "npm run env-vars && VITE_API_URL=https://api.localhost react-router dev",
     "start:dev": "react-router dev --host 0.0.0.0",
     "typecheck": "react-router typegen && tsc",
-    "release": "node scripts/release.mjs",
     "env-vars": "node scripts/env-vars.mjs"
   }
 }

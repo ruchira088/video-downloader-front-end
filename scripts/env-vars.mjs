@@ -1,7 +1,7 @@
 import SimpleGit from "simple-git"
-import {writeFile} from "fs/promises"
-import {resolve} from "path"
-import {DateTime} from "luxon"
+import { writeFile } from "node:fs/promises"
+import { resolve } from "node:path"
+import { DateTime } from "luxon"
 
 const getEnvVariables = async () => {
   const simpleGit = SimpleGit()
