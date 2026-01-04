@@ -221,6 +221,9 @@ jobs:
         run: ENVIRONMENT=production npm run deploy
         working-directory: cdk-deploy
 
+      - name: Create GitHub release
+        run: ansible-playbook playbooks/github-release.yml
+
   send-notification:
     runs-on: ubuntu-latest
     if: always()
