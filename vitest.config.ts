@@ -7,6 +7,10 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts"],
+    reporters: process.env.CI ? ["default", "junit", "github-actions"] : ["default"],
+    outputFile: {
+      junit: "./test-results/junit.xml",
+    },
     exclude: [
       "**/node_modules/**",
       "**/build/**",
@@ -14,7 +18,7 @@ export default defineConfig({
     ],
     coverage: {
       provider: "v8",
-      reporter: ["text", "html", "lcov"],
+      reporter: ["text", "html", "lcov", "json-summary", "json"],
       reportsDirectory: "./coverage",
       include: ["app/**/*.{ts,tsx}"],
       exclude: [

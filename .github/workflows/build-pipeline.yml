@@ -14,6 +14,12 @@ jobs:
     name: Transpile and Test
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      actions: read
+      checks: write
+      pull-requests: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -33,11 +39,21 @@ jobs:
       - name: Execute test suite with coverage
         run: npm run test:coverage
 
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+      - name: Test Report
+        uses: dorny/test-reporter@v2
+        if: success() || failure()
         with:
-          name: coverage-report
-          path: coverage/
+          name: Vitest Tests
+          path: test-results/junit.xml
+          reporter: java-junit
+
+      - name: Coverage Report
+        uses: davelosert/vitest-coverage-report-action@v2
+        if: success() || failure()
+        with:
+          json-summary-path: ./coverage/coverage-summary.json
+          json-final-path: ./coverage/coverage-final.json
+          vite-config-path: ./vitest.config.ts
 
   test-cdk-deployment:
     name: Test CDK Deployment
