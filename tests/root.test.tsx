@@ -35,7 +35,7 @@ describe("root", () => {
       const result = links()
 
       expect(result).toContainEqual({ rel: "preconnect", href: "https://fonts.googleapis.com" })
-      expect(result.some(link => link.rel === "stylesheet")).toBe(true)
+      expect(result.some(link => "rel" in link && link.rel === "stylesheet")).toBe(true)
     })
   })
 
@@ -62,10 +62,12 @@ describe("root", () => {
   })
 
   describe("ErrorBoundary", () => {
+    const defaultParams = { }
+
     test("should render generic error message for unknown errors", () => {
       mockIsRouteErrorResponse.mockReturnValue(false)
 
-      render(<ErrorBoundary error={new Error("Test error")} />)
+      render(<ErrorBoundary error={new Error("Test error")} params={defaultParams} />)
 
       expect(screen.getByText("Oops!")).toBeInTheDocument()
     })
@@ -74,7 +76,7 @@ describe("root", () => {
       const routeError = { status: 404, statusText: "Not Found" }
       mockIsRouteErrorResponse.mockReturnValue(true)
 
-      render(<ErrorBoundary error={routeError as any} />)
+      render(<ErrorBoundary error={routeError as any} params={defaultParams} />)
 
       expect(screen.getByText("404")).toBeInTheDocument()
       expect(screen.getByText("The requested page could not be found.")).toBeInTheDocument()
@@ -84,7 +86,7 @@ describe("root", () => {
       const routeError = { status: 500, statusText: "Internal Server Error" }
       mockIsRouteErrorResponse.mockReturnValue(true)
 
-      render(<ErrorBoundary error={routeError as any} />)
+      render(<ErrorBoundary error={routeError as any} params={defaultParams} />)
 
       expect(screen.getByText("Error")).toBeInTheDocument()
       expect(screen.getByText("Internal Server Error")).toBeInTheDocument()

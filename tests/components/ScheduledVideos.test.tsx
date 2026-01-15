@@ -7,6 +7,7 @@ import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some, None } from "~/types/Option"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
+import { FileResourceType } from "~/models/FileResource"
 import React from "react"
 
 const createMockScheduledVideo = (id: string) => ({
@@ -21,7 +22,7 @@ const createMockScheduledVideo = (id: string) => ({
     size: 1000000000,
     thumbnail: {
       id: `thumb-${id}`,
-      type: "thumbnail" as const,
+      type: FileResourceType.Thumbnail as const,
       createdAt: DateTime.now(),
       path: "/path/to/thumb",
       mediaType: "image/jpeg",

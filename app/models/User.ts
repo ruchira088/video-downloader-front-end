@@ -1,7 +1,7 @@
 import {z} from "zod/v4"
 import { ZodDateTime } from "~/types/Zod"
 
-enum Role {
+export enum Role {
   User ="User",
   Admin = "Admin",
 }

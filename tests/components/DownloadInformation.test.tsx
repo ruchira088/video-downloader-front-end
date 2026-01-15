@@ -3,6 +3,8 @@ import { render, screen } from "@testing-library/react"
 import DownloadInformation from "~/pages/authenticated/downloading/scheduled-video-download-card/DownloadInformation"
 import { DateTime, Duration } from "luxon"
 import { None, Some } from "~/types/Option"
+import { FileResourceType } from "~/models/FileResource"
+import { SchedulingStatus } from "~/models/SchedulingStatus"
 import React from "react"
 
 const createMockDownloadableScheduledVideo = (downloadSpeed: number | null) => ({
@@ -17,14 +19,14 @@ const createMockDownloadableScheduledVideo = (downloadSpeed: number | null) => (
     size: 1000000000, // 1GB
     thumbnail: {
       id: "thumb-123",
-      type: "thumbnail" as const,
+      type: FileResourceType.Thumbnail as const,
       createdAt: DateTime.now(),
       path: "/path/to/thumb",
       mediaType: "image/jpeg",
       size: 1024,
     },
   },
-  status: "Active" as const,
+  status: SchedulingStatus.Active,
   downloadedBytes: 500000000, // 500MB downloaded
   completedAt: None.of<DateTime>(),
   errorInfo: null,

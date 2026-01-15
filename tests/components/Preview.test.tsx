@@ -5,6 +5,7 @@ import { DateTime, Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some } from "~/types/Option"
+import { FileResourceType } from "~/models/FileResource"
 import React from "react"
 
 vi.mock("~/services/video/VideoService", () => ({
@@ -28,7 +29,7 @@ const createMockVideoMetadata = () => ({
   size: 1024000,
   thumbnail: {
     id: "thumb-123",
-    type: "thumbnail" as const,
+    type: FileResourceType.Thumbnail as const,
     createdAt: DateTime.now(),
     path: "/path/to/thumb",
     mediaType: "image/jpeg",

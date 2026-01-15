@@ -6,6 +6,7 @@ import { DateTime, Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some } from "~/types/Option"
+import { FileResourceType } from "~/models/FileResource"
 import React from "react"
 
 vi.mock("~/services/asset/AssetService", () => ({
@@ -15,12 +16,11 @@ vi.mock("~/services/asset/AssetService", () => ({
 }))
 
 const createMockSnapshot = (id: string, seconds: number) => ({
-  id,
   videoId: "video-123",
   videoTimestamp: Duration.fromObject({ seconds }),
   fileResource: {
     id: `file-${id}`,
-    type: "snapshot" as const,
+    type: FileResourceType.Snapshot as const,
     createdAt: DateTime.now(),
     path: `/path/to/${id}`,
     mediaType: "image/jpeg",

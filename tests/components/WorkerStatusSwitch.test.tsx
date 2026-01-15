@@ -32,7 +32,7 @@ describe("WorkerStatusSwitch", () => {
   test("should call updateWorkerStatus when clicked", async () => {
     const user = userEvent.setup()
     mockFetchWorkerStatus.mockResolvedValue(WorkerStatus.Available)
-    mockUpdateWorkerStatus.mockResolvedValue(undefined)
+    mockUpdateWorkerStatus.mockResolvedValue(WorkerStatus.Paused)
 
     render(<WorkerStatusSwitch />)
 
@@ -50,7 +50,7 @@ describe("WorkerStatusSwitch", () => {
   test("should update to Available when currently Paused", async () => {
     const user = userEvent.setup()
     mockFetchWorkerStatus.mockResolvedValue(WorkerStatus.Paused)
-    mockUpdateWorkerStatus.mockResolvedValue(undefined)
+    mockUpdateWorkerStatus.mockResolvedValue(WorkerStatus.Available)
 
     render(<WorkerStatusSwitch />)
 

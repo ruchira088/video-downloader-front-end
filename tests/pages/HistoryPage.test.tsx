@@ -6,6 +6,7 @@ import { DateTime, Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some } from "~/types/Option"
+import { FileResourceType } from "~/models/FileResource"
 import React from "react"
 
 vi.mock("~/services/history/HistoryService", () => ({
@@ -25,6 +26,11 @@ vi.mock("~/components/helmet/Helmet", () => ({
 }))
 
 const createMockVideoWatchHistory = (id: string) => ({
+  id: `history-${id}`,
+  duration: Duration.fromObject({ minutes: 2 }),
+  userId: "user-123",
+  createdAt: DateTime.now(),
+  lastUpdatedAt: DateTime.now(),
   video: {
     videoMetadata: {
       url: `https://example.com/video/${id}`,
@@ -35,7 +41,7 @@ const createMockVideoWatchHistory = (id: string) => ({
       size: 1024000000,
       thumbnail: {
         id: `thumb-${id}`,
-        type: "thumbnail" as const,
+        type: FileResourceType.Thumbnail as const,
         createdAt: DateTime.now(),
         path: "/path/to/thumb",
         mediaType: "image/jpeg",
@@ -44,7 +50,7 @@ const createMockVideoWatchHistory = (id: string) => ({
     },
     fileResource: {
       id: `file-${id}`,
-      type: "video" as const,
+      type: FileResourceType.Video as const,
       createdAt: DateTime.now(),
       path: "/path/to/video",
       mediaType: "video/mp4",
@@ -53,7 +59,6 @@ const createMockVideoWatchHistory = (id: string) => ({
     createdAt: DateTime.now(),
     watchTime: Duration.fromObject({ minutes: 2 }),
   },
-  watchedAt: DateTime.now(),
 })
 
 const renderWithRouter = (component: React.ReactElement) => {

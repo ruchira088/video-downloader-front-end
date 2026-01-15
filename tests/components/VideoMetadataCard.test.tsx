@@ -5,6 +5,7 @@ import { DateTime, Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some } from "~/types/Option"
+import { FileResourceType } from "~/models/FileResource"
 import React from "react"
 
 vi.mock("~/services/asset/AssetService", () => ({
@@ -30,7 +31,7 @@ const createMockVideoMetadata = () => ({
   size: 1024000000,
   thumbnail: {
     id: "thumb-123",
-    type: "thumbnail" as const,
+    type: FileResourceType.Thumbnail as const,
     createdAt: DateTime.now(),
     path: "/path/to/thumb",
     mediaType: "image/jpeg",
@@ -235,12 +236,11 @@ describe("VideoMetadataCard", () => {
     const { fetchVideoSnapshotsByVideoId } = await import("~/services/video/VideoService")
     vi.mocked(fetchVideoSnapshotsByVideoId).mockResolvedValue([
       {
-        id: "snap-1",
         videoId: "video-123",
         videoTimestamp: Duration.fromObject({ seconds: 30 }),
         fileResource: {
           id: "snap-file-1",
-          type: "snapshot" as const,
+          type: FileResourceType.Snapshot as const,
           createdAt: DateTime.now(),
           path: "/path/to/snap",
           mediaType: "image/jpeg",

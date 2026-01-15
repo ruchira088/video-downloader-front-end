@@ -6,6 +6,7 @@ import { None, Some } from "~/types/Option"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
+import { FileResourceType } from "~/models/FileResource"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
 
@@ -33,7 +34,7 @@ const createMockDownloadableScheduledVideo = (status: SchedulingStatus = Schedul
     size: 1000000000,
     thumbnail: {
       id: "thumb-123",
-      type: "thumbnail" as const,
+      type: FileResourceType.Thumbnail as const,
       createdAt: DateTime.now(),
       path: "/path/to/thumb",
       mediaType: "image/jpeg",
@@ -43,7 +44,7 @@ const createMockDownloadableScheduledVideo = (status: SchedulingStatus = Schedul
   status,
   downloadedBytes: 500000000,
   completedAt: None.of<DateTime>(),
-  errorInfo: status === SchedulingStatus.Error ? { message: "Download failed", details: "Connection timeout" } : null,
+  errorInfo: status === SchedulingStatus.Error ? { message: "Download failed", stackTrace: ["Connection timeout"] } : null,
   downloadSpeed: Some.of(1000000),
   downloadHistory: [100000, 200000, 300000],
 })

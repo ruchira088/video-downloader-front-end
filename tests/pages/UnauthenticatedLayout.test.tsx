@@ -4,6 +4,24 @@ import UnauthenticatedLayout from "~/pages/unauthenticated/UnauthenticatedLayout
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
 import { None, Some } from "~/types/Option"
+import { DateTime } from "luxon"
+import { Role } from "~/models/User"
+
+const createMockToken = () => ({
+  secret: "test-token",
+  expiresAt: DateTime.now().plus({ hours: 1 }),
+  issuedAt: DateTime.now(),
+  renewals: 0,
+})
+
+const createMockUser = () => ({
+  id: "user-123",
+  createdAt: DateTime.now(),
+  firstName: "Test",
+  lastName: "User",
+  email: "test@example.com",
+  role: Role.User,
+})
 
 const mockNavigate = vi.fn()
 
@@ -73,8 +91,8 @@ describe("UnauthenticatedLayout", () => {
 
   test("should navigate to home when already authenticated", async () => {
     const { getAuthenticationToken, getAuthenticatedUser } = await import("~/services/authentication/AuthenticationService")
-    vi.mocked(getAuthenticationToken).mockReturnValue(Some.of({ token: "test-token" }))
-    vi.mocked(getAuthenticatedUser).mockResolvedValue({ username: "testuser" })
+    vi.mocked(getAuthenticationToken).mockReturnValue(Some.of(createMockToken()))
+    vi.mocked(getAuthenticatedUser).mockResolvedValue(createMockUser())
 
     const router = createMemoryRouter([
       {
@@ -98,7 +116,7 @@ describe("UnauthenticatedLayout", () => {
 
   test("should stay on page when token exists but getAuthenticatedUser fails", async () => {
     const { getAuthenticationToken, getAuthenticatedUser } = await import("~/services/authentication/AuthenticationService")
-    vi.mocked(getAuthenticationToken).mockReturnValue(Some.of({ token: "test-token" }))
+    vi.mocked(getAuthenticationToken).mockReturnValue(Some.of(createMockToken()))
     vi.mocked(getAuthenticatedUser).mockRejectedValue(new Error("Auth failed"))
 
     const router = createMemoryRouter([

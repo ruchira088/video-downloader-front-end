@@ -5,18 +5,13 @@ import { createMemoryRouter, RouterProvider } from "react-router"
 import { DateTime, Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some } from "~/types/Option"
+import { Some, None } from "~/types/Option"
+import { FileResourceType } from "~/models/FileResource"
 import React from "react"
 
 vi.mock("~/services/video/VideoService", () => ({
-  searchVideos: vi.fn().mockResolvedValue({
-    results: [],
-    totalCount: 0,
-  }),
-  videoServiceSummary: vi.fn().mockResolvedValue({
-    sites: ["youtube", "vimeo"],
-    count: 100,
-  }),
+  searchVideos: vi.fn(),
+  videoServiceSummary: vi.fn(),
 }))
 
 vi.mock("~/services/asset/AssetService", () => ({
@@ -50,8 +45,21 @@ const renderWithRouter = () => {
 }
 
 describe("Videos", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+    const { searchVideos, videoServiceSummary } = await import("~/services/video/VideoService")
+    vi.mocked(searchVideos).mockResolvedValue({
+      results: [],
+      pageNumber: 0,
+      pageSize: 50,
+      searchTerm: None.of(),
+    })
+    vi.mocked(videoServiceSummary).mockResolvedValue({
+      sites: ["youtube", "vimeo"],
+      videoCount: 100,
+      totalSize: 1024000000,
+      totalDuration: Duration.fromObject({ hours: 10 }),
+    })
   })
 
   test("should render videos page", async () => {
@@ -111,7 +119,7 @@ describe("Videos", () => {
             size: 1024000000,
             thumbnail: {
               id: "thumb-123",
-              type: "thumbnail" as const,
+              type: FileResourceType.Thumbnail as const,
               createdAt: DateTime.now(),
               path: "/path/to/thumb",
               mediaType: "image/jpeg",
@@ -120,7 +128,7 @@ describe("Videos", () => {
           },
           fileResource: {
             id: "file-123",
-            type: "video" as const,
+            type: FileResourceType.Video as const,
             createdAt: DateTime.now(),
             path: "/path/to/video",
             mediaType: "video/mp4",
@@ -130,7 +138,9 @@ describe("Videos", () => {
           watchTime: Duration.fromObject({ minutes: 2 }),
         },
       ],
-      totalCount: 1,
+      pageNumber: 0,
+      pageSize: 50,
+      searchTerm: None.of(),
     })
 
     renderWithRouter()
@@ -154,7 +164,7 @@ describe("Videos", () => {
             size: 1024000000,
             thumbnail: {
               id: "thumb-123",
-              type: "thumbnail" as const,
+              type: FileResourceType.Thumbnail as const,
               createdAt: DateTime.now(),
               path: "/path/to/thumb",
               mediaType: "image/jpeg",
@@ -163,7 +173,7 @@ describe("Videos", () => {
           },
           fileResource: {
             id: "file-123",
-            type: "video" as const,
+            type: FileResourceType.Video as const,
             createdAt: DateTime.now(),
             path: "/path/to/video",
             mediaType: "video/mp4",
@@ -173,7 +183,9 @@ describe("Videos", () => {
           watchTime: Duration.fromObject({ minutes: 2 }),
         },
       ],
-      totalCount: 1,
+      pageNumber: 0,
+      pageSize: 50,
+      searchTerm: None.of(),
     })
 
     renderWithRouter()
@@ -190,7 +202,9 @@ describe("Videos", () => {
     const { searchVideos } = await import("~/services/video/VideoService")
     vi.mocked(searchVideos).mockResolvedValue({
       results: [],
-      totalCount: 0,
+      pageNumber: 0,
+      pageSize: 50,
+      searchTerm: None.of(),
     })
 
     renderWithRouter()
@@ -216,7 +230,9 @@ describe("Videos", () => {
     const { searchVideos } = await import("~/services/video/VideoService")
     vi.mocked(searchVideos).mockResolvedValue({
       results: [],
-      totalCount: 0,
+      pageNumber: 0,
+      pageSize: 50,
+      searchTerm: None.of(),
     })
 
     renderWithRouter()
@@ -264,7 +280,7 @@ describe("Videos", () => {
               size: 1024000000,
               thumbnail: {
                 id: "thumb-1",
-                type: "thumbnail" as const,
+                type: FileResourceType.Thumbnail as const,
                 createdAt: DateTime.now(),
                 path: "/path/to/thumb",
                 mediaType: "image/jpeg",
@@ -273,7 +289,7 @@ describe("Videos", () => {
             },
             fileResource: {
               id: "file-1",
-              type: "video" as const,
+              type: FileResourceType.Video as const,
               createdAt: DateTime.now(),
               path: "/path/to/video",
               mediaType: "video/mp4",
@@ -283,11 +299,15 @@ describe("Videos", () => {
             watchTime: Duration.fromObject({ minutes: 2 }),
           },
         ],
-        totalCount: 1,
+        pageNumber: 0,
+        pageSize: 50,
+        searchTerm: None.of(),
       })
       .mockResolvedValueOnce({
         results: [],
-        totalCount: 0,
+        pageNumber: 0,
+        pageSize: 50,
+        searchTerm: None.of(),
       })
 
     renderWithRouter()
@@ -322,7 +342,9 @@ describe("Videos", () => {
     const { searchVideos } = await import("~/services/video/VideoService")
     vi.mocked(searchVideos).mockResolvedValue({
       results: [],
-      totalCount: 0,
+      pageNumber: 0,
+      pageSize: 50,
+      searchTerm: None.of(),
     })
 
     renderWithRouter()

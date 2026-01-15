@@ -1,14 +1,40 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import Schedule from "~/pages/authenticated/schedule/Schedule"
+import { DateTime, Duration } from "luxon"
+import { FileResourceType } from "~/models/FileResource"
+import { SchedulingStatus } from "~/models/SchedulingStatus"
+import { None } from "~/types/Option"
 import React from "react"
 
 vi.mock("~/services/scheduling/SchedulingService", () => ({
-  scheduleVideo: vi.fn().mockResolvedValue({
-    videoMetadata: { id: "video-123", title: "Test Video" },
-    status: "Queued",
-  }),
+  scheduleVideo: vi.fn(),
 }))
+
+const createMockScheduledVideoDownload = () => ({
+  lastUpdatedAt: DateTime.now(),
+  scheduledAt: DateTime.now(),
+  videoMetadata: {
+    url: "https://example.com/video",
+    id: "video-123",
+    videoSite: "youtube",
+    title: "Test Video",
+    duration: Duration.fromObject({ minutes: 5 }),
+    size: 1024000000,
+    thumbnail: {
+      id: "thumb-123",
+      type: FileResourceType.Thumbnail as const,
+      createdAt: DateTime.now(),
+      path: "/path/to/thumb",
+      mediaType: "image/jpeg",
+      size: 1024,
+    },
+  },
+  status: SchedulingStatus.Queued,
+  downloadedBytes: 0,
+  completedAt: None.of<DateTime>(),
+  errorInfo: null,
+})
 
 vi.mock("~/components/helmet/Helmet", () => ({
   default: ({ title }: { title: string }) => <title>{title}</title>,
@@ -19,8 +45,10 @@ vi.mock("~/components/schedule/preview/Preview", () => ({
 }))
 
 describe("Schedule", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+    const { scheduleVideo } = await import("~/services/scheduling/SchedulingService")
+    vi.mocked(scheduleVideo).mockResolvedValue(createMockScheduledVideoDownload())
   })
 
   test("should render schedule page with title", () => {
@@ -72,10 +100,7 @@ describe("Schedule", () => {
     const { scheduleVideo } = await import("~/services/scheduling/SchedulingService")
     let resolveSchedule: () => void
     vi.mocked(scheduleVideo).mockImplementation(() => new Promise(resolve => {
-      resolveSchedule = () => resolve({
-        videoMetadata: { id: "video-123", title: "Test" },
-        status: "Queued",
-      })
+      resolveSchedule = () => resolve(createMockScheduledVideoDownload())
     }))
 
     render(<Schedule />)
