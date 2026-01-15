@@ -3,6 +3,9 @@
   "version": "1.4.46-SNAPSHOT",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "devDependencies": {
     "@react-router/dev": "^7.6.3",
     "@testing-library/jest-dom": "^6.9.1",
