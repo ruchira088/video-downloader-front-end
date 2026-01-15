@@ -16,9 +16,7 @@ jobs:
 
     permissions:
       contents: read
-      actions: read
       checks: write
-      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -47,13 +45,34 @@ jobs:
           path: test-results/junit.xml
           reporter: java-junit
 
-      - name: Coverage Report
-        uses: davelosert/vitest-coverage-report-action@v2
+      - name: Coverage Summary
+        if: success() || failure()
+        run: |
+          echo "## 📊 Code Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          node -e "
+            const coverage = require('./coverage/coverage-summary.json');
+            const total = coverage.total;
+
+            const getEmoji = (pct) => pct >= 80 ? '🟢' : pct >= 60 ? '🟡' : '🔴';
+            const fmt = (pct) => pct.toFixed(2) + '%';
+
+            console.log('| Metric | Coverage | Status |');
+            console.log('|--------|----------|--------|');
+            console.log('| Statements | ' + fmt(total.statements.pct) + ' | ' + getEmoji(total.statements.pct) + ' |');
+            console.log('| Branches | ' + fmt(total.branches.pct) + ' | ' + getEmoji(total.branches.pct) + ' |');
+            console.log('| Functions | ' + fmt(total.functions.pct) + ' | ' + getEmoji(total.functions.pct) + ' |');
+            console.log('| Lines | ' + fmt(total.lines.pct) + ' | ' + getEmoji(total.lines.pct) + ' |');
+            console.log('');
+            console.log('**Total:** ' + total.lines.covered + ' / ' + total.lines.total + ' lines covered');
+          " >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          json-summary-path: ./coverage/coverage-summary.json
-          json-final-path: ./coverage/coverage-final.json
-          vite-config-path: ./vitest.config.ts
+          name: coverage-report
+          path: coverage/
 
   test-cdk-deployment:
     name: Test CDK Deployment
