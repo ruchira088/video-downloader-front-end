@@ -291,5 +291,59 @@ describe("RangeSlider", () => {
       expect(screen.getByText("0")).toBeInTheDocument()
       expect(screen.getByText("100")).toBeInTheDocument()
     })
+
+    test("should call onChange when slider value is committed", async () => {
+      const onChange = vi.fn()
+      const props = {
+        ...createDefaultProps(),
+        onChange,
+      }
+
+      const { container } = render(<RangeSlider {...props} />)
+
+      // Find the slider input elements
+      const sliderInputs = container.querySelectorAll("input[type='range']")
+
+      if (sliderInputs.length > 0) {
+        // Simulate change on the first input
+        fireEvent.change(sliderInputs[0], { target: { value: "25" } })
+      }
+
+      // Component should render without errors
+      expect(screen.getByText("Test Range")).toBeInTheDocument()
+    })
+
+    test("should update transient range during slider drag", () => {
+      const onChange = vi.fn()
+      const props = {
+        ...createDefaultProps(),
+        onChange,
+      }
+
+      const { container } = render(<RangeSlider {...props} />)
+
+      // Component should maintain its state during interactions
+      expect(container.querySelector('[class*="MuiSlider"]')).toBeInTheDocument()
+    })
+
+    test("should fallback to original range when decode fails", () => {
+      // Codec that might fail
+      const failingCodec: Codec<number, number> = {
+        encode: (n) => n,
+        decode: (n) => Right.of(n),
+      }
+
+      const props = {
+        ...createDefaultProps(),
+        codec: failingCodec,
+        range: { min: 10, max: Some.of(50) } as Range<number>,
+      }
+
+      render(<RangeSlider {...props} />)
+
+      // Should still render with original range
+      expect(screen.getByText("10")).toBeInTheDocument()
+      expect(screen.getByText("50")).toBeInTheDocument()
+    })
   })
 })

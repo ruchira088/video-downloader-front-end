@@ -213,5 +213,5 @@ describe("SchedulingService", () => {
   })
 
   // Note: scheduledVideoDownloadStream uses EventSource which is difficult to mock
-  // in jsdom. The function's HTTP-based functionality is tested via integration tests.
+  // in jsdom. The function is tested via integration tests.
 })

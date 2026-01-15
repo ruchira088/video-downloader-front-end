@@ -8,8 +8,10 @@ import {
   rangeDecoder,
 } from "~/models/Range"
 import { simpleStringEncoder, stringToNumberDecoder } from "~/models/Codec"
-import { Some, None } from "~/types/Option"
+import { type Option, Some, None } from "~/types/Option"
 import { Right, Left } from "~/types/Either"
+
+type RangeResult = { min: number; max: Option<number> }
 
 describe("Range schema", () => {
   const NumberRange = Range(z.number())
@@ -84,17 +86,17 @@ describe("fromNumberArray", () => {
     const result = fromNumberArray([10, 100], numberDecoder, (n) => n >= 1000)
 
     expect(result).toBeInstanceOf(Right)
-    const range = (result as Right<Error, { min: number; max: typeof Some<number> }>).value
+    const range = (result as Right<Error, RangeResult>).value
     expect(range.min).toBe(10)
     expect(range.max).toBeInstanceOf(Some)
-    expect((range.max as Some<number>).value).toBe(100)
+    expect(range.max.fold(() => -1, v => v)).toBe(100)
   })
 
   test("should convert number array to range with None max when isMax returns true", () => {
     const result = fromNumberArray([10, 1000], numberDecoder, (n) => n >= 1000)
 
     expect(result).toBeInstanceOf(Right)
-    const range = (result as Right<Error, { min: number; max: typeof None<number> }>).value
+    const range = (result as Right<Error, RangeResult>).value
     expect(range.min).toBe(10)
     expect(range.max).toBeInstanceOf(None)
   })
@@ -163,17 +165,17 @@ describe("rangeDecoder", () => {
     const result = decoder.decode("10-100")
 
     expect(result).toBeInstanceOf(Right)
-    const range = (result as Right<Error, { min: number; max: typeof Some<number> }>).value
+    const range = (result as Right<Error, RangeResult>).value
     expect(range.min).toBe(10)
     expect(range.max).toBeInstanceOf(Some)
-    expect((range.max as Some<number>).value).toBe(100)
+    expect(range.max.fold(() => -1, v => v)).toBe(100)
   })
 
   test("should decode range string without max", () => {
     const result = decoder.decode("10-")
 
     expect(result).toBeInstanceOf(Right)
-    const range = (result as Right<Error, { min: number; max: typeof None<number> }>).value
+    const range = (result as Right<Error, RangeResult>).value
     expect(range.min).toBe(10)
     expect(range.max).toBeInstanceOf(None)
   })
@@ -182,7 +184,7 @@ describe("rangeDecoder", () => {
     const result = decoder.decode("10-   ")
 
     expect(result).toBeInstanceOf(Right)
-    const range = (result as Right<Error, { min: number; max: typeof None<number> }>).value
+    const range = (result as Right<Error, RangeResult>).value
     expect(range.max).toBeInstanceOf(None)
   })
 
@@ -190,9 +192,9 @@ describe("rangeDecoder", () => {
     const result = decoder.decode("0-0")
 
     expect(result).toBeInstanceOf(Right)
-    const range = (result as Right<Error, { min: number; max: typeof Some<number> }>).value
+    const range = (result as Right<Error, RangeResult>).value
     expect(range.min).toBe(0)
-    expect((range.max as Some<number>).value).toBe(0)
+    expect(range.max.fold(() => -1, v => v)).toBe(0)
   })
 })
 
@@ -207,9 +209,9 @@ describe("Range encoder-decoder round trip", () => {
     const decoded = decoder.decode(encoded)
 
     expect(decoded).toBeInstanceOf(Right)
-    const result = (decoded as Right<Error, { min: number; max: typeof Some<number> }>).value
+    const result = (decoded as Right<Error, RangeResult>).value
     expect(result.min).toBe(original.min)
-    expect((result.max as Some<number>).value).toBe((original.max as Some<number>).value)
+    expect(result.max.fold(() => -1, v => v)).toBe(original.max.value)
   })
 
   test("should round trip range without max", () => {
@@ -218,7 +220,7 @@ describe("Range encoder-decoder round trip", () => {
     const decoded = decoder.decode(encoded)
 
     expect(decoded).toBeInstanceOf(Right)
-    const result = (decoded as Right<Error, { min: number; max: typeof None<number> }>).value
+    const result = (decoded as Right<Error, RangeResult>).value
     expect(result.min).toBe(original.min)
     expect(result.max).toBeInstanceOf(None)
   })

@@ -42,6 +42,7 @@
     "start": "npm run env-vars && VITE_API_URL=https://api.video.home.ruchij.com react-router dev --host 0.0.0.0",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "start:local": "npm run env-vars && VITE_API_URL=https://api.localhost react-router dev",
     "start:dev": "react-router dev --host 0.0.0.0",
     "typecheck": "react-router typegen && tsc",

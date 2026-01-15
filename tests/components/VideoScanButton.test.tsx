@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import VideoScanButton from "~/components/scan/VideoScanButton"
 import { ScanStatus } from "~/models/VideoScan"
+import { None } from "~/types/Option"
 
 // Mock the video service
 vi.mock("~/services/video/VideoService", () => ({
@@ -22,7 +23,7 @@ describe("VideoScanButton", () => {
 
   describe("Initial State", () => {
     test("should fetch scan status on mount", async () => {
-      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle })
+      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle, updatedAt: None.of() })
 
       render(<VideoScanButton />)
 
@@ -32,7 +33,7 @@ describe("VideoScanButton", () => {
     })
 
     test("should show 'Scan For Videos' when idle", async () => {
-      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle })
+      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle, updatedAt: None.of() })
 
       render(<VideoScanButton />)
 
@@ -42,7 +43,7 @@ describe("VideoScanButton", () => {
     })
 
     test("should be enabled when idle", async () => {
-      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle })
+      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle, updatedAt: None.of() })
 
       render(<VideoScanButton />)
 
@@ -54,7 +55,7 @@ describe("VideoScanButton", () => {
 
   describe("Scanning State", () => {
     test("should show 'Scanning...' when in progress", async () => {
-      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.InProgress })
+      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.InProgress, updatedAt: None.of() })
 
       render(<VideoScanButton />)
 
@@ -64,7 +65,7 @@ describe("VideoScanButton", () => {
     })
 
     test("should be disabled when scanning", async () => {
-      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.InProgress })
+      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.InProgress, updatedAt: None.of() })
 
       render(<VideoScanButton />)
 
@@ -77,7 +78,7 @@ describe("VideoScanButton", () => {
   describe("Click Handler", () => {
     test("should call scanForVideos when clicked", async () => {
       const user = userEvent.setup()
-      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle })
+      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle, updatedAt: None.of() })
       mockScanForVideos.mockResolvedValue(undefined)
 
       render(<VideoScanButton />)
@@ -95,7 +96,7 @@ describe("VideoScanButton", () => {
 
     test("should show scanning state after click", async () => {
       const user = userEvent.setup()
-      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle })
+      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle, updatedAt: None.of() })
       mockScanForVideos.mockResolvedValue(undefined)
 
       render(<VideoScanButton />)
@@ -114,7 +115,7 @@ describe("VideoScanButton", () => {
 
   describe("className Prop", () => {
     test("should apply className to button", async () => {
-      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle })
+      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle, updatedAt: None.of() })
 
       render(<VideoScanButton className="custom-button" />)
 
@@ -126,7 +127,7 @@ describe("VideoScanButton", () => {
 
   describe("Different Scan Statuses", () => {
     test("should handle Scheduled status", async () => {
-      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Scheduled })
+      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Scheduled, updatedAt: None.of() })
 
       render(<VideoScanButton />)
 
@@ -137,7 +138,7 @@ describe("VideoScanButton", () => {
     })
 
     test("should handle Error status", async () => {
-      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Error })
+      mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Error, updatedAt: None.of() })
 
       render(<VideoScanButton />)
 

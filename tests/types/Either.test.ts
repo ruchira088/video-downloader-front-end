@@ -12,7 +12,7 @@ describe("Either", () => {
 
     test("should return Left for throwing function", () => {
       const error = new Error("test error")
-      const result = Either.fromTry(() => {
+      const result = Either.fromTry<number>(() => {
         throw error
       })
       expect(result).toBeInstanceOf(Left)

@@ -8,7 +8,9 @@ export abstract class ConfigurationService {
   abstract setApplicationConfiguration(configuration: ApplicationConfiguration): Promise<void>;
 
   getDefaultApplicationConfiguration(): Promise<ApplicationConfiguration> {
-    return Promise.resolve(({ theme: Theme.Light, safeMode: false }));
+    const prefersDark = typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
+    const theme = prefersDark ? Theme.Dark : Theme.Light
+    return Promise.resolve({ theme, safeMode: false })
   }
 }
 

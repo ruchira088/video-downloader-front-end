@@ -1,6 +1,16 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { videoUrl, imageUrl } from "~/services/asset/AssetService"
-import { FileResourceType } from "~/models/FileResource"
+import { type FileResource, FileResourceType } from "~/models/FileResource"
+import { DateTime } from "luxon"
+
+const createFileResource = <T extends FileResourceType>(id: string, type: T): FileResource<T> => ({
+  id,
+  type,
+  createdAt: DateTime.now(),
+  path: `/path/to/${id}`,
+  mediaType: type === FileResourceType.Video ? "video/mp4" : "image/jpeg",
+  size: 1024,
+})
 
 // Mock the dependencies
 vi.mock("~/services/ApiConfiguration", () => ({
@@ -16,10 +26,7 @@ vi.mock("~/services/sanitize/SanitizationService", () => ({
 describe("AssetService", () => {
   describe("videoUrl", () => {
     test("should generate correct video URL", () => {
-      const fileResource = {
-        id: "video-123",
-        type: FileResourceType.Video,
-      }
+      const fileResource = createFileResource("video-123", FileResourceType.Video)
 
       const result = videoUrl(fileResource)
 
@@ -27,10 +34,7 @@ describe("AssetService", () => {
     })
 
     test("should handle different video IDs", () => {
-      const fileResource = {
-        id: "abc-def-ghi",
-        type: FileResourceType.Video,
-      }
+      const fileResource = createFileResource("abc-def-ghi", FileResourceType.Video)
 
       const result = videoUrl(fileResource)
 
@@ -40,10 +44,7 @@ describe("AssetService", () => {
 
   describe("imageUrl", () => {
     test("should generate direct asset URL when safeMode is false", () => {
-      const fileResource = {
-        id: "image-456",
-        type: FileResourceType.Thumbnail,
-      }
+      const fileResource = createFileResource("image-456", FileResourceType.Thumbnail)
 
       const result = imageUrl(fileResource, false)
 
@@ -51,10 +52,7 @@ describe("AssetService", () => {
     })
 
     test("should use imageMappings when safeMode is true", () => {
-      const fileResource = {
-        id: "image-789",
-        type: FileResourceType.Thumbnail,
-      }
+      const fileResource = createFileResource("image-789", FileResourceType.Thumbnail)
 
       const result = imageUrl(fileResource, true)
 
@@ -62,10 +60,7 @@ describe("AssetService", () => {
     })
 
     test("should handle Snapshot type", () => {
-      const fileResource = {
-        id: "snapshot-001",
-        type: FileResourceType.Snapshot,
-      }
+      const fileResource = createFileResource("snapshot-001", FileResourceType.Snapshot)
 
       const result = imageUrl(fileResource, false)
 
@@ -73,10 +68,7 @@ describe("AssetService", () => {
     })
 
     test("should handle safeMode toggle", () => {
-      const fileResource = {
-        id: "test-image",
-        type: FileResourceType.Thumbnail,
-      }
+      const fileResource = createFileResource("test-image", FileResourceType.Thumbnail)
 
       const normalUrl = imageUrl(fileResource, false)
       const safeUrl = imageUrl(fileResource, true)

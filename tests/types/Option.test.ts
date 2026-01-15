@@ -217,7 +217,7 @@ describe("None", () => {
   describe("forEach", () => {
     test("should not execute the function", () => {
       let called = false
-      noneValue.forEach(() => {
+      noneValue.forEach(async () => {
         called = true
         return 100
       })

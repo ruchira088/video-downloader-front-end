@@ -2,7 +2,7 @@ import React, { type ChangeEvent, type Dispatch, type FC, type SetStateAction, u
 import { Button, TextField } from "@mui/material"
 import { login } from "~/services/authentication/AuthenticationService"
 import { type AuthenticationToken } from "~/models/AuthenticationToken"
-import styles from "./LoginForm.module.css"
+import styles from "./LoginForm.module.scss"
 import ErrorMessages from "~/components/error-messages/ErrorMessages"
 
 interface Errors {
@@ -53,6 +53,7 @@ const LoginForm: FC<LoginFormProps> = props => {
 
   return (
     <div className={styles.loginForm}>
+      <h1 className={styles.title}>Login</h1>
       <div className={styles.loginFormBody}>
         <div>
           <TextField
