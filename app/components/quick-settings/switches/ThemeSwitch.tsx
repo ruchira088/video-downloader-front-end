@@ -2,6 +2,7 @@ import { useApplicationConfiguration } from "~/providers/ApplicationConfiguratio
 import { IconButton, Tooltip } from "@mui/material"
 import { LightMode, DarkMode } from "@mui/icons-material"
 import { Theme } from "~/models/ApplicationConfiguration"
+import styles from "./QuickSettingsButton.module.scss"
 
 const ThemeSwitch = () => {
   const { theme, setTheme } = useApplicationConfiguration()
@@ -13,6 +14,7 @@ const ThemeSwitch = () => {
         onClick={() => setTheme(isDark ? Theme.Light : Theme.Dark)}
         size="small"
         aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        className={styles.quickSettingsButton}
       >
         {isDark ? <LightMode /> : <DarkMode />}
       </IconButton>

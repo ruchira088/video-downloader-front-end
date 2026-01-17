@@ -199,9 +199,9 @@ describe("LoginForm", () => {
   })
 
   describe("Failed Login", () => {
-    test("should display error messages on login failure", async () => {
+    test("should display error message on 401 failure", async () => {
       const user = userEvent.setup()
-      mockLogin.mockRejectedValue(["Invalid credentials"])
+      mockLogin.mockRejectedValue({ response: { status: 401 } })
       render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
@@ -209,13 +209,13 @@ describe("LoginForm", () => {
       await user.click(screen.getByRole("button", { name: /login/i }))
 
       await waitFor(() => {
-        expect(screen.getByText("Invalid credentials")).toBeInTheDocument()
+        expect(screen.getByText("Invalid email or password. Please try again.")).toBeInTheDocument()
       })
     })
 
     test("should not call onAuthenticate on failure", async () => {
       const user = userEvent.setup()
-      mockLogin.mockRejectedValue(["Invalid credentials"])
+      mockLogin.mockRejectedValue({ response: { status: 401 } })
       render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
@@ -223,14 +223,19 @@ describe("LoginForm", () => {
       await user.click(screen.getByRole("button", { name: /login/i }))
 
       await waitFor(() => {
-        expect(screen.getByText("Invalid credentials")).toBeInTheDocument()
+        expect(screen.getByText("Invalid email or password. Please try again.")).toBeInTheDocument()
       })
       expect(mockOnAuthenticate).not.toHaveBeenCalled()
     })
 
-    test("should handle multiple error messages", async () => {
+    test("should handle multiple error messages from API", async () => {
       const user = userEvent.setup()
-      mockLogin.mockRejectedValue(["Error 1", "Error 2", "Error 3"])
+      mockLogin.mockRejectedValue({
+        response: {
+          status: 400,
+          data: { errors: ["Error 1", "Error 2", "Error 3"] }
+        }
+      })
       render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
@@ -246,7 +251,6 @@ describe("LoginForm", () => {
 
     test("should handle null/undefined error gracefully", async () => {
       const user = userEvent.setup()
-      // Reject with null to cover the || [] branch
       mockLogin.mockRejectedValue(null)
       render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
@@ -254,11 +258,24 @@ describe("LoginForm", () => {
       await user.type(screen.getByLabelText(/password/i), "wrongpassword")
       await user.click(screen.getByRole("button", { name: /login/i }))
 
-      // Should not crash, just not show any error messages
       await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalled()
+        expect(screen.getByText("An unexpected error occurred. Please try again.")).toBeInTheDocument()
       })
       expect(mockOnAuthenticate).not.toHaveBeenCalled()
+    })
+
+    test("should handle Error object", async () => {
+      const user = userEvent.setup()
+      mockLogin.mockRejectedValue(new Error("Network error"))
+      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+
+      await user.type(screen.getByLabelText(/email/i), "test@example.com")
+      await user.type(screen.getByLabelText(/password/i), "wrongpassword")
+      await user.click(screen.getByRole("button", { name: /login/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText("Network error")).toBeInTheDocument()
+      })
     })
   })
 

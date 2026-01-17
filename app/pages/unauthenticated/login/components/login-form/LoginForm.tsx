@@ -4,6 +4,7 @@ import { login } from "~/services/authentication/AuthenticationService"
 import { type AuthenticationToken } from "~/models/AuthenticationToken"
 import styles from "./LoginForm.module.scss"
 import ErrorMessages from "~/components/error-messages/ErrorMessages"
+import smallLogo from "~/images/small-logo.svg"
 
 interface Errors {
   email: string | null
@@ -12,6 +13,26 @@ interface Errors {
 }
 
 const EMPTY_ERRORS: Errors = { email: null, password: null, response: [] }
+
+const extractErrorMessages = (error: unknown): string[] => {
+  if (error && typeof error === "object" && "response" in error) {
+    const axiosError = error as { response?: { status?: number; data?: { errors?: string[] } } }
+
+    if (axiosError.response?.status === 401) {
+      return ["Invalid email or password. Please try again."]
+    }
+
+    if (axiosError.response?.data?.errors && Array.isArray(axiosError.response.data.errors)) {
+      return axiosError.response.data.errors
+    }
+  }
+
+  if (error instanceof Error) {
+    return [error.message]
+  }
+
+  return ["An unexpected error occurred. Please try again."]
+}
 
 type LoginFormProps = {
   onAuthenticate: (token: AuthenticationToken) => void
@@ -35,10 +56,11 @@ const LoginForm: FC<LoginFormProps> = props => {
       try {
         const authenticationToken = await login(email, password)
         props.onAuthenticate(authenticationToken)
-      } catch (error) {
+      } catch (error: unknown) {
+        const errorMessages = extractErrorMessages(error)
         setErrors(errors => ({
           ...errors,
-          response: error as string[] || [],
+          response: errorMessages,
         }))
       }
     }
@@ -53,7 +75,11 @@ const LoginForm: FC<LoginFormProps> = props => {
 
   return (
     <div className={styles.loginForm}>
-      <h1 className={styles.title}>Login</h1>
+      <div className={styles.logoSection}>
+        <img src={smallLogo} alt="Video Downloader" className={styles.logo} />
+        <h1 className={styles.title}>Video Downloader</h1>
+        <p className={styles.subtitle}>Sign in to your account</p>
+      </div>
       <div className={styles.loginFormBody}>
         <div>
           <TextField

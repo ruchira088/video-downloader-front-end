@@ -98,19 +98,20 @@ describe("AuthenticationService", () => {
 
   describe("logout", () => {
     test("should call API to logout", async () => {
-      mockAxiosDelete.mockResolvedValue({ data: mockTokenData })
+      mockAxiosDelete.mockResolvedValue({ data: mockUserData })
 
       await logout()
 
       expect(mockAxiosDelete).toHaveBeenCalledWith("authentication/logout")
     })
 
-    test("should return the logout token", async () => {
-      mockAxiosDelete.mockResolvedValue({ data: mockTokenData })
+    test("should return the logged out user", async () => {
+      mockAxiosDelete.mockResolvedValue({ data: mockUserData })
 
       const result = await logout()
 
-      expect(result.secret).toBe("test-secret-token")
+      expect(result.email).toBe("test@example.com")
+      expect(result.firstName).toBe("Test")
     })
   })
 

@@ -1,0 +1,56 @@
+.errorContainer {
+  margin-top: 1rem;
+  padding: 0.875rem 1rem;
+  background-color: rgba(211, 47, 47, 0.1);
+  border: 1px solid rgba(211, 47, 47, 0.3);
+  border-radius: 0.5rem;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.errorHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.errorIcon {
+  color: #d32f2f;
+  font-size: 1.25rem;
+}
+
+.errorTitle {
+  color: #d32f2f;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.errorList {
+  margin: 0;
+  padding-left: 1.75rem;
+  color: #b71c1c;
+  font-size: 0.85rem;
+}
+
+.errorItem {
+  margin: 0.25rem 0;
+}
+
+.singleError {
+  color: #b71c1c;
+  font-size: 0.85rem;
+  margin: 0;
+  padding-left: 1.75rem;
+}

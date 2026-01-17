@@ -3,12 +3,11 @@ import { render, screen } from "@testing-library/react"
 import ErrorMessages from "~/components/error-messages/ErrorMessages"
 
 describe("ErrorMessages", () => {
-  test("should render empty container when no errors", () => {
+  test("should render nothing when no errors", () => {
     const { container } = render(<ErrorMessages errors={[]} />)
 
-    // Should have a container div but no error messages inside
-    expect(container.firstChild).toBeInTheDocument()
-    expect(container.firstChild?.childNodes.length).toBe(0)
+    // Should return null, so container should be empty
+    expect(container.firstChild).toBeNull()
   })
 
   test("should render single error message", () => {
@@ -26,37 +25,38 @@ describe("ErrorMessages", () => {
     expect(screen.getByText("Error 3")).toBeInTheDocument()
   })
 
-  test("should render correct number of error elements", () => {
-    const errors = ["Error A", "Error B", "Error C", "Error D"]
-    const { container } = render(<ErrorMessages errors={errors} />)
+  test("should render default title", () => {
+    render(<ErrorMessages errors={["Some error"]} />)
 
-    // Get the ErrorMessages container div and check its direct children
-    const errorMessagesContainer = container.firstChild as HTMLElement
-    expect(errorMessagesContainer.children.length).toBe(4)
+    expect(screen.getByText("Authentication failed")).toBeInTheDocument()
+  })
+
+  test("should render custom title", () => {
+    render(<ErrorMessages errors={["Some error"]} title="Custom Error Title" />)
+
+    expect(screen.getByText("Custom Error Title")).toBeInTheDocument()
   })
 
   test("should render errors in correct order", () => {
     const errors = ["First error", "Second error", "Third error"]
-    const { container } = render(<ErrorMessages errors={errors} />)
+    render(<ErrorMessages errors={errors} />)
 
-    // Get the ErrorMessages container div and check its direct children
-    const errorMessagesContainer = container.firstChild as HTMLElement
-    const children = errorMessagesContainer.children
-    expect(children[0]).toHaveTextContent("First error")
-    expect(children[1]).toHaveTextContent("Second error")
-    expect(children[2]).toHaveTextContent("Third error")
+    const listItems = screen.getAllByRole("listitem")
+    expect(listItems[0]).toHaveTextContent("First error")
+    expect(listItems[1]).toHaveTextContent("Second error")
+    expect(listItems[2]).toHaveTextContent("Third error")
   })
 
   test("should handle errors with special characters", () => {
     const errors = [
-      "Error with <html> tags",
+      "Error with <html lang='en'> tags",
       "Error with 'quotes'",
       'Error with "double quotes"',
       "Error with & ampersand",
     ]
     render(<ErrorMessages errors={errors} />)
 
-    expect(screen.getByText("Error with <html> tags")).toBeInTheDocument()
+    expect(screen.getByText("Error with <html lang='en'> tags")).toBeInTheDocument()
     expect(screen.getByText("Error with 'quotes'")).toBeInTheDocument()
     expect(screen.getByText('Error with "double quotes"')).toBeInTheDocument()
     expect(screen.getByText("Error with & ampersand")).toBeInTheDocument()
@@ -69,12 +69,19 @@ describe("ErrorMessages", () => {
     expect(screen.getByText(longError)).toBeInTheDocument()
   })
 
-  test("should handle empty string errors", () => {
-    const { container } = render(<ErrorMessages errors={["", "Valid error", ""]} />)
+  test("should render single error without list", () => {
+    render(<ErrorMessages errors={["Single error"]} />)
 
-    // Get the ErrorMessages container div and check its direct children
-    const errorMessagesContainer = container.firstChild as HTMLElement
-    expect(errorMessagesContainer.children.length).toBe(3)
-    expect(screen.getByText("Valid error")).toBeInTheDocument()
+    // Single error should not be in a list
+    expect(screen.queryByRole("list")).not.toBeInTheDocument()
+    expect(screen.getByText("Single error")).toBeInTheDocument()
+  })
+
+  test("should render multiple errors in a list", () => {
+    render(<ErrorMessages errors={["Error 1", "Error 2"]} />)
+
+    // Multiple errors should be in a list
+    expect(screen.getByRole("list")).toBeInTheDocument()
+    expect(screen.getAllByRole("listitem")).toHaveLength(2)
   })
 })

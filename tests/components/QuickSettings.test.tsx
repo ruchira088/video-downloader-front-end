@@ -6,10 +6,15 @@ import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigur
 import { Some } from "~/types/Option"
 import { WorkerStatus } from "~/models/WorkerStatus"
 import React from "react"
+import { MemoryRouter } from "react-router"
 
 vi.mock("~/services/scheduling/SchedulingService", () => ({
   fetchWorkerStatus: vi.fn(),
   updateWorkerStatus: vi.fn(),
+}))
+
+vi.mock("~/services/authentication/AuthenticationService", () => ({
+  logout: vi.fn(),
 }))
 
 import { fetchWorkerStatus } from "~/services/scheduling/SchedulingService"
@@ -25,9 +30,11 @@ const renderWithContext = () => {
   }
 
   return render(
-    <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-      <QuickSettings />
-    </ApplicationConfigurationContext.Provider>
+    <MemoryRouter>
+      <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
+        <QuickSettings />
+      </ApplicationConfigurationContext.Provider>
+    </MemoryRouter>
   )
 }
 
@@ -61,13 +68,22 @@ describe("QuickSettings", () => {
     })
   })
 
-  test("should render all three icon buttons", async () => {
+  test("should render all four icon buttons", async () => {
     renderWithContext()
 
     await waitFor(() => {
       expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument()
       expect(screen.getByLabelText("Enable safe mode")).toBeInTheDocument()
       expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
+      expect(screen.getByLabelText("Logout")).toBeInTheDocument()
+    })
+  })
+
+  test("should render LogoutButton", async () => {
+    renderWithContext()
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Logout")).toBeInTheDocument()
     })
   })
 })

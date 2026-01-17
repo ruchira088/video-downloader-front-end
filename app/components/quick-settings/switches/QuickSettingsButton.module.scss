@@ -1,0 +1,15 @@
+.quickSettingsButton {
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.85);
+  }
+
+  svg {
+    transition: transform 0.3s ease;
+  }
+
+  &:active svg {
+    transform: rotate(15deg);
+  }
+}

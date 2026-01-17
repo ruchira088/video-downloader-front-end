@@ -49,7 +49,7 @@ describe("HttpClient", () => {
       expect(result).toEqual(mockResponse)
     })
 
-    test("should remove authentication token on 401 error", async () => {
+    test("should remove authentication token on 401 error and reject", async () => {
       const { axiosClient } = await import("~/services/http/HttpClient")
 
       const interceptors = (axiosClient.interceptors.response as any).handlers
@@ -60,11 +60,9 @@ describe("HttpClient", () => {
         message: "Unauthorized",
       }
 
-      // The interceptor should handle 401 without rejecting
-      const result = await interceptor.rejected(error401)
-
+      // The interceptor should remove auth token and reject
+      await expect(interceptor.rejected(error401)).rejects.toEqual(error401)
       expect(mockRemoveAuthenticationToken).toHaveBeenCalledTimes(1)
-      expect(result).toBeUndefined() // Returns undefined, not rejecting
     })
 
     test("should reject non-401 errors", async () => {

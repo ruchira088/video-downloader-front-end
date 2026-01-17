@@ -1,19 +1,46 @@
 .loginForm {
   width: 100%;
-  max-width: 400px;
-  padding: 2rem;
+  max-width: 420px;
+  padding: 2.5rem;
   background-color: var(--card-background-color);
-  border-radius: 0.5em;
-  box-shadow: var(--card-shadow);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   transition: background-color 0.5s ease, box-shadow 0.5s ease;
 }
 
+.logoSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.logo {
+  width: 5rem;
+  height: 5rem;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
 .title {
-  margin: 0 0 1.5rem 0;
-  font-size: 1.5rem;
-  font-weight: 600;
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
   text-align: center;
   color: var(--text-color);
+}
+
+.subtitle {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  opacity: 0.7;
+  text-align: center;
 }
 
 .loginFormBody {
