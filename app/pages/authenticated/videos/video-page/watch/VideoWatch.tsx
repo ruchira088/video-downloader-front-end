@@ -11,6 +11,7 @@ import VideoMetadataCard from "~/components/video/video-metadata-card/VideoMetad
 import Timestamp from "~/components/timestamp/Timestamp"
 import { VideoMetadata } from "~/models/VideoMetadata"
 import { humanReadableSize, shortHumanReadableDuration } from "~/utils/Formatter"
+import { CircularProgress } from "@mui/material"
 
 import styles from "./VideoWatch.module.scss"
 import { Duration } from "luxon"
@@ -75,8 +76,19 @@ const MetadataField: FC<MetadataFieldProps> = props =>
     <span className={props.className}>{props.value}</span>
   </div>
 
+type Resolution = {
+  readonly width: number
+  readonly height: number
+}
+
 type MetadataProps = {
   readonly video: Video
+  readonly resolution: Resolution | null
+}
+
+const formatResolution = (resolution: Resolution | null): React.ReactNode => {
+  if (!resolution) return <CircularProgress size={16} />
+  return `${resolution.width}x${resolution.height}`
 }
 
 const Metadata: FC<MetadataProps> = props => (
@@ -90,11 +102,14 @@ const Metadata: FC<MetadataProps> = props => (
       value={shortHumanReadableDuration(props.video.videoMetadata.duration)}
       className={styles.metadataValue}/>
     <MetadataField
+      label="Resolution"
+      value={formatResolution(props.resolution)}
+      className={styles.metadataValue}/>
+    <MetadataField
       label="Source"
       value={<VideoLink videoMetadata={props.video.videoMetadata}/>}
       className={styles.metadataValue}
     />
-    <Timestamp timestamp={props.video.createdAt}/>
   </div>
 )
 
@@ -108,6 +123,7 @@ type VideoWatchProps = {
 const VideoWatch: FC<VideoWatchProps> = props => {
   const videoPlayer = useRef<HTMLVideoElement | null>(null)
   const [isDeleteDialogVisible, setDeleteDialogVisibility] = useState<boolean>(false)
+  const [resolution, setResolution] = useState<Resolution | null>(null)
   const { safeMode } = useApplicationConfiguration()
 
   useEffect(() => {
@@ -116,6 +132,16 @@ const VideoWatch: FC<VideoWatchProps> = props => {
         videoElement.currentTime = props.timestamp.as("seconds")
     })
   }, [props.timestamp.as("seconds")])
+
+  const handleLoadedMetadata = () => {
+    Option.fromNullable(videoPlayer.current)
+      .forEach((videoElement: HTMLVideoElement) => {
+        setResolution({
+          width: videoElement.videoWidth,
+          height: videoElement.videoHeight
+        })
+      })
+  }
 
   const onUpdateVideoTitle = async (title: string): Promise<void> => {
     const video = await updateVideoTitle(props.video.videoMetadata.id, title)
@@ -139,7 +165,8 @@ const VideoWatch: FC<VideoWatchProps> = props => {
             onUpdateText={onUpdateVideoTitle}
           />
         </div>
-        <Metadata video={props.video}/>
+        <Timestamp timestamp={props.video.createdAt} className={styles.timestamp}/>
+        <Metadata video={props.video} resolution={resolution}/>
       </div>
       <div className={styles.videoContainer}>
         <video
@@ -148,6 +175,7 @@ const VideoWatch: FC<VideoWatchProps> = props => {
           preload="auto"
           poster={imageUrl(props.video.videoMetadata.thumbnail, safeMode)}
           className={styles.video}
+          onLoadedMetadata={handleLoadedMetadata}
         >
           <source src={videoUrl(props.video.fileResource)} />
         </video>
