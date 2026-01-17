@@ -139,7 +139,7 @@ video-downloader-front-end/
 | `/history` | History | Watch history and progress |
 | `/schedule` | Schedule | Schedule new downloads |
 | `/downloading` | Downloading | Monitor active downloads |
-| `/service-information` | Service Info | System status and info |
+| `/information` | Information | System status and info |
 | `/sign-in` | Login | User authentication |
 
 ## Testing

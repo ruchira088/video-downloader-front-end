@@ -1,0 +1,154 @@
+.playlistDetail {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+  padding: 3em;
+  text-align: center;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
+.titleContainer {
+  flex: 1;
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.5em;
+}
+
+.description {
+  opacity: 0.7;
+  margin: 0;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  flex-wrap: wrap;
+}
+
+.controlsSpacer {
+  flex: 1;
+}
+
+.itemCount {
+  opacity: 0.7;
+  font-size: 0.9em;
+}
+
+.content {
+  display: flex;
+  gap: 2em;
+  align-items: flex-start;
+}
+
+.contentWithSearch {
+  display: flex;
+  gap: 2em;
+  align-items: flex-start;
+}
+
+.itemsSection {
+  flex: 1;
+  min-width: 0;
+  background-color: var(--card-background-color);
+  border-radius: 0.5em;
+  padding: 1.5em;
+  box-shadow: var(--card-shadow);
+}
+
+.searchSection {
+  width: 500px;
+  flex-shrink: 0;
+  background-color: var(--card-background-color);
+  border-radius: 0.5em;
+  padding: 1.5em;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.sectionTitle {
+  margin: 0 0 1em 0;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.emptyItems {
+  text-align: center;
+  padding: 2em;
+  opacity: 0.7;
+
+  p {
+    margin: 0.5em 0;
+  }
+}
+
+.itemsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+@media (width <= 1100px) {
+  .content {
+    flex-direction: column;
+  }
+
+  .searchSection {
+    width: 100%;
+    max-height: none;
+    order: 2;
+  }
+
+  .itemsSection {
+    order: 1;
+  }
+}
+
+@media (width <= 43.75em) {
+  .header {
+    flex-wrap: wrap;
+  }
+
+  .titleContainer {
+    font-size: 1.25em;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .searchSection,
+  .itemsSection {
+    padding: 1em;
+  }
+}

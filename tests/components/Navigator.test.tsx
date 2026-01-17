@@ -24,9 +24,10 @@ describe("Navigator", () => {
 
     expect(screen.getByText("Videos")).toBeInTheDocument()
     expect(screen.getByText("Schedule")).toBeInTheDocument()
+    expect(screen.getByText("Playlists")).toBeInTheDocument()
     expect(screen.getByText("History")).toBeInTheDocument()
     expect(screen.getByText("Downloading")).toBeInTheDocument()
-    expect(screen.getByText("Service Information")).toBeInTheDocument()
+    expect(screen.getByText("Information")).toBeInTheDocument()
   })
 
   test("should render navigation links with correct hrefs", () => {
@@ -34,15 +35,16 @@ describe("Navigator", () => {
 
     expect(screen.getByRole("link", { name: "Videos" })).toHaveAttribute("href", "/")
     expect(screen.getByRole("link", { name: "Schedule" })).toHaveAttribute("href", "/schedule")
+    expect(screen.getByRole("link", { name: "Playlists" })).toHaveAttribute("href", "/playlists")
     expect(screen.getByRole("link", { name: "History" })).toHaveAttribute("href", "/history")
     expect(screen.getByRole("link", { name: "Downloading" })).toHaveAttribute("href", "/downloading")
-    expect(screen.getByRole("link", { name: "Service Information" })).toHaveAttribute("href", "/service-information")
+    expect(screen.getByRole("link", { name: "Information" })).toHaveAttribute("href", "/information")
   })
 
-  test("should render five navigation tabs", () => {
+  test("should render six navigation tabs", () => {
     renderWithRouter()
 
     const links = screen.getAllByRole("link")
-    expect(links).toHaveLength(5)
+    expect(links).toHaveLength(6)
   })
 })

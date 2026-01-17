@@ -1,0 +1,154 @@
+.playerOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.95);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2em;
+  overflow-y: auto;
+}
+
+.playerContainer {
+  max-width: 1000px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  color: white;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.position {
+  font-size: 0.9em;
+  opacity: 0.7;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25em;
+  font-weight: 600;
+}
+
+.videoSection {
+  display: flex;
+  justify-content: center;
+}
+
+.video {
+  max-width: 100%;
+  max-height: 60vh;
+  border-radius: 0.5em;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+  color: white;
+}
+
+.shuffleActive {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.upNext {
+  color: white;
+  margin-top: 1em;
+}
+
+.upNextTitle {
+  margin: 0 0 0.75em 0;
+  font-size: 1em;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.upNextList {
+  display: flex;
+  gap: 1em;
+  overflow-x: auto;
+  padding-bottom: 0.5em;
+}
+
+.upNextItem {
+  flex-shrink: 0;
+  width: 12em;
+  cursor: pointer;
+  border-radius: 0.5em;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.upNextThumbnail {
+  position: relative;
+  width: 100%;
+  height: 7em;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.upNextDuration {
+  position: absolute;
+  bottom: 0.25em;
+  right: 0.25em;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 0.7em;
+  padding: 0.1em 0.3em;
+  border-radius: 0.2em;
+}
+
+.upNextInfo {
+  padding: 0.5em;
+}
+
+.upNextItemTitle {
+  font-size: 0.85em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (width <= 43.75em) {
+  .playerOverlay {
+    padding: 1em;
+  }
+
+  .video {
+    max-height: 40vh;
+  }
+
+  .upNextItem {
+    width: 10em;
+  }
+
+  .upNextThumbnail {
+    height: 5.5em;
+  }
+}

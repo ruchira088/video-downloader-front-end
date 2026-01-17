@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 1em;
+  container-type: inline-size;
 
   :global(.MuiInputBase-root) {
     height: 50px;
@@ -43,6 +44,10 @@
 
 .sortBy {
   width: 10em;
+}
+
+.ordering {
+  flex-shrink: 0;
 }
 
 .sliderGroup {
@@ -87,6 +92,47 @@
   }
 
   .sliderGroup {
+    flex-direction: column;
+    gap: 0.5em;
+  }
+
+  .slider {
+    width: 100%;
+  }
+}
+
+// Container queries for narrow containers (like playlist panel)
+@container (width <= 550px) {
+  .filtersRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75em;
+  }
+
+  .filterGroup {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75em;
+    flex-shrink: 1;
+
+    .videoSiteSelector {
+      width: 100%;
+      grid-column: 1;
+    }
+
+    .sortBy {
+      width: 100%;
+      grid-column: 2;
+    }
+
+    .ordering {
+      grid-column: 1 / -1;
+      justify-self: center;
+    }
+  }
+
+  .sliderGroup {
+    width: 100%;
     flex-direction: column;
     gap: 0.5em;
   }

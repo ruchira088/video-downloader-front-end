@@ -1,0 +1,51 @@
+.videoSearchPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  height: 100%;
+
+  // Slightly smaller inputs for compact view
+  :global(.MuiInputBase-root) {
+    height: 42px;
+  }
+
+  // Adjust label position for smaller inputs
+  :global(.MuiFormControl-root .MuiInputLabel-outlined:not(.MuiInputLabel-shrink)) {
+    transform: translate(14px, 10px) scale(1);
+  }
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  padding: 1em;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.25em;
+  min-height: 0;
+}
+
+.resultsHint {
+  font-size: 0.75em;
+  color: var(--text-secondary-color);
+  margin: 0 0 0.25em 0;
+  text-align: center;
+}
+
+.noResults {
+  text-align: center;
+  padding: 1em;
+  color: var(--text-secondary-color);
+}
+
+.loadingMore {
+  display: flex;
+  justify-content: center;
+  padding: 1em;
+}

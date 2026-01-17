@@ -5,6 +5,7 @@ export enum FileResourceType {
   Thumbnail = "thumbnail",
   Snapshot = "snapshot",
   Video = "video",
+  AlbumArt = "album-art",
 }
 
 export const FileResource = <A extends FileResourceType>(fileResourceType: A) => z.object({

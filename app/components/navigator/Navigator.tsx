@@ -12,22 +12,23 @@ type NavigationTab = {
 const navigationTabs: NavigationTab[] = [
   { label: "Videos", path: "/" },
   { label: "Schedule", path: "/schedule" },
+  { label: "Playlists", path: "/playlists" },
   { label: "History", path: "/history" },
   { label: "Downloading", path: "/downloading" },
-  { label: "Service Information", path: "/service-information" }
+  { label: "Information", path: "/information" }
 ]
 
-const getActiveTab = (matches: UIMatch[]): Option<NavigationTab> =>
-  navigationTabs.reduce<Option<[number, NavigationTab]>>((acc, tab) =>
-      matches.reduce<Option<number>>(
-        (acc, match, index) => tab.path === match.pathname ? Some.of(index) : acc,
-        None.of()
-      ).flatMap(value => acc.filter(([num, _]) => num > value).orElse(() => Some.of([value, tab])))
-        .orElse(() => acc)
-    ,
-    None.of()
-  )
-    .map(([_, tab]) => tab)
+const getActiveTab = (matches: UIMatch[]): Option<NavigationTab> => {
+  const currentPath = matches[matches.length - 1]?.pathname ?? "/"
+
+  // Find the tab with the longest matching path prefix (excluding root)
+  const matchingTab = navigationTabs
+    .filter(tab => tab.path !== "/" && currentPath.startsWith(tab.path))
+    .sort((a, b) => b.path.length - a.path.length)[0]
+
+  // If no specific tab matches, default to Videos (root tab)
+  return Some.of(matchingTab ?? navigationTabs[0])
+}
 
 const Navigator = () => {
   const matches = useMatches()

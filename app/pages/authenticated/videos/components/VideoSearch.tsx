@@ -86,7 +86,7 @@ const VideoSearch = ({
       <div className={styles.filterGroup}>
         <VideoSitesSelector videoSites={videoSites} onChange={onVideoSitesChange} className={styles.videoSiteSelector}/>
         <SortBySelection sortBy={sortBy} onChange={onSortByChange} className={styles.sortBy}/>
-        <OrderingComponent ordering={ordering} onOrderingChange={onOrderingChange}/>
+        <OrderingComponent ordering={ordering} onOrderingChange={onOrderingChange} className={styles.ordering}/>
       </div>
 
       <div className={styles.sliderGroup}>
