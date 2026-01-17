@@ -50,12 +50,13 @@ export const getAuthenticatedUser = async (): Promise<User> => {
   return user
 }
 
-export const logout = async (): Promise<AuthenticationToken> => {
+export const logout = async (): Promise<User> => {
   const response = await axiosClient.delete("authentication/logout")
-  const authenticationToken = zodParse(AuthenticationToken, response.data)
   removeAuthenticationToken()
 
-  return authenticationToken
+  const user = zodParse(User, response.data)
+
+  return user
 }
 
 export const removeAuthenticationToken = (): Option<AuthenticationToken> =>
