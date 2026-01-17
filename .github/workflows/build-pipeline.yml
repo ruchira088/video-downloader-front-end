@@ -7,7 +7,6 @@ on:
 
 concurrency:
   group: ${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   transpile-and-test:
@@ -55,6 +54,7 @@ jobs:
           filename: coverage/cobertura-coverage.xml
           badge: true
           format: markdown
+          hide_complexity: true
           output: both
           thresholds: "60 80"
 
