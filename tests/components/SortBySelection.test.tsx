@@ -58,11 +58,11 @@ describe("SortBySelection", () => {
       expect(screen.getByRole("combobox")).toHaveTextContent("Title")
     })
 
-    test("should show WatchTime as selected when sortBy is WatchTime", () => {
+    test("should show Watch Time as selected when sortBy is WatchTime", () => {
       const onChange = vi.fn()
       render(<SortBySelection sortBy={SortBy.WatchTime} onChange={onChange} />)
 
-      expect(screen.getByRole("combobox")).toHaveTextContent("WatchTime")
+      expect(screen.getByRole("combobox")).toHaveTextContent("Watch Time")
     })
 
     test("should show Random as selected when sortBy is Random", () => {
@@ -88,7 +88,7 @@ describe("SortBySelection", () => {
       expect(within(listbox).getByRole("option", { name: "Size" })).toBeInTheDocument()
       expect(within(listbox).getByRole("option", { name: "Duration" })).toBeInTheDocument()
       expect(within(listbox).getByRole("option", { name: "Title" })).toBeInTheDocument()
-      expect(within(listbox).getByRole("option", { name: "WatchTime" })).toBeInTheDocument()
+      expect(within(listbox).getByRole("option", { name: "Watch Time" })).toBeInTheDocument()
       expect(within(listbox).getByRole("option", { name: "Random" })).toBeInTheDocument()
     })
 
