@@ -1,6 +1,6 @@
-.loginForm {
+.signupForm {
   width: 100%;
-  max-width: 420px;
+  max-width: 480px;
   padding: 2.5rem;
   background-color: var(--card-background-color);
   border-radius: 1rem;
@@ -43,28 +43,37 @@
   text-align: center;
 }
 
-.loginFormBody {
+.signupFormBody {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.nameRow {
+  display: flex;
+  gap: 1rem;
+
+  @media (width <= 480px) {
+    flex-direction: column;
+  }
 }
 
 .textField {
   margin-bottom: 0.5rem;
 }
 
-.loginButton {
+.signupButton {
   display: flex;
   justify-content: center;
   margin-top: 0.5rem;
 }
 
-.loginButton button {
+.signupButton button {
   width: 100%;
   padding: 0.75rem;
 }
 
-.signupLink {
+.loginLink {
   margin-top: 1.5rem;
   text-align: center;
   font-size: 0.9rem;

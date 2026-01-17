@@ -13,7 +13,8 @@ export default [
     route("/playlists/:playlistId", "pages/authenticated/playlists/PlaylistDetail.tsx")
   ]),
   layout("pages/unauthenticated/UnauthenticatedLayout.tsx", [
-    route("/sign-in", "pages/unauthenticated/login/LoginPage.tsx")
+    route("/sign-in", "pages/unauthenticated/login/LoginPage.tsx"),
+    route("/sign-up", "pages/unauthenticated/signup/SignupPage.tsx")
   ])
 ] satisfies RouteConfig
 

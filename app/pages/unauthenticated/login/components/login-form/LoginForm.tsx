@@ -5,6 +5,7 @@ import { type AuthenticationToken } from "~/models/AuthenticationToken"
 import styles from "./LoginForm.module.scss"
 import ErrorMessages from "~/components/error-messages/ErrorMessages"
 import smallLogo from "~/images/small-logo.svg"
+import { Link } from "react-router"
 
 interface Errors {
   email: string | null
@@ -110,6 +111,9 @@ const LoginForm: FC<LoginFormProps> = props => {
         </div>
       </div>
       <ErrorMessages errors={errors.response} />
+      <div className={styles.signupLink}>
+        Don't have an account? <Link to="/sign-up">Sign up</Link>
+      </div>
     </div>
   )
 }

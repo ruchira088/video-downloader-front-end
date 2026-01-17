@@ -3,6 +3,8 @@ import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import LoginForm from "~/pages/unauthenticated/login/components/login-form/LoginForm"
 import { DateTime } from "luxon"
+import { MemoryRouter } from "react-router"
+import React from "react"
 
 // Mock the authentication service
 vi.mock("~/services/authentication/AuthenticationService", () => ({
@@ -12,6 +14,10 @@ vi.mock("~/services/authentication/AuthenticationService", () => ({
 import { login } from "~/services/authentication/AuthenticationService"
 
 const mockLogin = vi.mocked(login)
+
+const renderWithRouter = (ui: React.ReactElement) => {
+  return render(<MemoryRouter>{ui}</MemoryRouter>)
+}
 
 describe("LoginForm", () => {
   const mockOnAuthenticate = vi.fn()
@@ -28,38 +34,38 @@ describe("LoginForm", () => {
 
   describe("Initial Render", () => {
     test("should render email input", () => {
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
     })
 
     test("should render password input", () => {
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
     })
 
     test("should render login button", () => {
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument()
     })
 
     test("should have empty inputs initially", () => {
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       expect(screen.getByLabelText(/email/i)).toHaveValue("")
       expect(screen.getByLabelText(/password/i)).toHaveValue("")
     })
 
     test("should have email input with type email", () => {
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       expect(screen.getByLabelText(/email/i)).toHaveAttribute("type", "email")
     })
 
     test("should have password input with type password", () => {
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       expect(screen.getByLabelText(/password/i)).toHaveAttribute("type", "password")
     })
@@ -68,7 +74,7 @@ describe("LoginForm", () => {
   describe("Input Handling", () => {
     test("should update email value on input", async () => {
       const user = userEvent.setup()
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       const emailInput = screen.getByLabelText(/email/i)
       await user.type(emailInput, "test@example.com")
@@ -78,7 +84,7 @@ describe("LoginForm", () => {
 
     test("should update password value on input", async () => {
       const user = userEvent.setup()
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       const passwordInput = screen.getByLabelText(/password/i)
       await user.type(passwordInput, "secretpassword")
@@ -90,7 +96,7 @@ describe("LoginForm", () => {
   describe("Validation", () => {
     test("should show error when email is empty on submit", async () => {
       const user = userEvent.setup()
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       // Fill password but leave email empty
       await user.type(screen.getByLabelText(/password/i), "password123")
@@ -103,7 +109,7 @@ describe("LoginForm", () => {
 
     test("should show error when password is empty on submit", async () => {
       const user = userEvent.setup()
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       // Fill email but leave password empty
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
@@ -116,7 +122,7 @@ describe("LoginForm", () => {
 
     test("should show both errors when both fields empty", async () => {
       const user = userEvent.setup()
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.click(screen.getByRole("button", { name: /login/i }))
 
@@ -128,7 +134,7 @@ describe("LoginForm", () => {
 
     test("should not call login when validation fails", async () => {
       const user = userEvent.setup()
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.click(screen.getByRole("button", { name: /login/i }))
 
@@ -137,7 +143,7 @@ describe("LoginForm", () => {
 
     test("should clear errors when user types", async () => {
       const user = userEvent.setup()
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       // Submit to trigger errors
       await user.click(screen.getByRole("button", { name: /login/i }))
@@ -156,7 +162,7 @@ describe("LoginForm", () => {
 
     test("should treat whitespace-only as empty", async () => {
       const user = userEvent.setup()
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "   ")
       await user.type(screen.getByLabelText(/password/i), "password123")
@@ -172,7 +178,7 @@ describe("LoginForm", () => {
     test("should call login with email and password", async () => {
       const user = userEvent.setup()
       mockLogin.mockResolvedValue(mockToken)
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
       await user.type(screen.getByLabelText(/password/i), "password123")
@@ -186,7 +192,7 @@ describe("LoginForm", () => {
     test("should call onAuthenticate with token on success", async () => {
       const user = userEvent.setup()
       mockLogin.mockResolvedValue(mockToken)
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
       await user.type(screen.getByLabelText(/password/i), "password123")
@@ -202,7 +208,7 @@ describe("LoginForm", () => {
     test("should display error message on 401 failure", async () => {
       const user = userEvent.setup()
       mockLogin.mockRejectedValue({ response: { status: 401 } })
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
       await user.type(screen.getByLabelText(/password/i), "wrongpassword")
@@ -216,7 +222,7 @@ describe("LoginForm", () => {
     test("should not call onAuthenticate on failure", async () => {
       const user = userEvent.setup()
       mockLogin.mockRejectedValue({ response: { status: 401 } })
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
       await user.type(screen.getByLabelText(/password/i), "wrongpassword")
@@ -236,7 +242,7 @@ describe("LoginForm", () => {
           data: { errors: ["Error 1", "Error 2", "Error 3"] }
         }
       })
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
       await user.type(screen.getByLabelText(/password/i), "wrongpassword")
@@ -252,7 +258,7 @@ describe("LoginForm", () => {
     test("should handle null/undefined error gracefully", async () => {
       const user = userEvent.setup()
       mockLogin.mockRejectedValue(null)
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
       await user.type(screen.getByLabelText(/password/i), "wrongpassword")
@@ -267,7 +273,7 @@ describe("LoginForm", () => {
     test("should handle Error object", async () => {
       const user = userEvent.setup()
       mockLogin.mockRejectedValue(new Error("Network error"))
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
       await user.type(screen.getByLabelText(/password/i), "wrongpassword")
@@ -282,7 +288,7 @@ describe("LoginForm", () => {
   describe("Input Error States", () => {
     test("should show TextField in error state when validation fails", async () => {
       const user = userEvent.setup()
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.click(screen.getByRole("button", { name: /login/i }))
 
@@ -295,7 +301,7 @@ describe("LoginForm", () => {
 
     test("should remove error state when user types", async () => {
       const user = userEvent.setup()
-      render(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.click(screen.getByRole("button", { name: /login/i }))
 
