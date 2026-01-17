@@ -48,32 +48,38 @@ type FileRepositoryHealthCheckProps = {
 }
 
 const FileRepositoryHealthCheck: FC<FileRepositoryHealthCheckProps> = props => (
-  <div>
-    <div>File Repository</div>
-    <div>
-      <div>
-        <div>Image Folder</div>
-        <HealthCheckField
-          label={props.fileRepositoryHealthStatusDetails.imageFolder.filePath}
-          healthCheckStatusDetails={props.fileRepositoryHealthStatusDetails.imageFolder.healthStatusDetails}/>
+  <div className={styles.healthCheckSection}>
+    <div className={styles.healthCheckSectionTitle}>File Repository</div>
+    <div className={styles.healthCheckSectionContent}>
+      <div className={styles.healthCheckSection}>
+        <div className={styles.healthCheckSectionTitle}>Image Folder</div>
+        <div className={styles.healthCheckSectionContent}>
+          <HealthCheckField
+            label={props.fileRepositoryHealthStatusDetails.imageFolder.filePath}
+            healthCheckStatusDetails={props.fileRepositoryHealthStatusDetails.imageFolder.healthStatusDetails}/>
+        </div>
       </div>
-      <div>
-        <div>Video Folder</div>
-        <HealthCheckField
-          label={props.fileRepositoryHealthStatusDetails.videoFolder.filePath}
-          healthCheckStatusDetails={props.fileRepositoryHealthStatusDetails.videoFolder.healthStatusDetails}/>
+      <div className={styles.healthCheckSection}>
+        <div className={styles.healthCheckSectionTitle}>Video Folder</div>
+        <div className={styles.healthCheckSectionContent}>
+          <HealthCheckField
+            label={props.fileRepositoryHealthStatusDetails.videoFolder.filePath}
+            healthCheckStatusDetails={props.fileRepositoryHealthStatusDetails.videoFolder.healthStatusDetails}/>
+        </div>
       </div>
-      <div>
-        <div>Other Folders</div>
-        {
-          props.fileRepositoryHealthStatusDetails.otherVideoFolders?.map(healthCheckStatusDetails =>
-            <HealthCheckField
-              key={healthCheckStatusDetails.filePath}
-              label={healthCheckStatusDetails.filePath}
-              healthCheckStatusDetails={healthCheckStatusDetails.healthStatusDetails}/>
-          )
-        }
-      </div>
+      {props.fileRepositoryHealthStatusDetails.otherVideoFolders && props.fileRepositoryHealthStatusDetails.otherVideoFolders.length > 0 && (
+        <div className={styles.healthCheckSection}>
+          <div className={styles.healthCheckSectionTitle}>Other Folders</div>
+          <div className={styles.healthCheckSectionContent}>
+            {props.fileRepositoryHealthStatusDetails.otherVideoFolders.map(healthCheckStatusDetails =>
+              <HealthCheckField
+                key={healthCheckStatusDetails.filePath}
+                label={healthCheckStatusDetails.filePath}
+                healthCheckStatusDetails={healthCheckStatusDetails.healthStatusDetails}/>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   </div>
 )
@@ -121,20 +127,23 @@ const HealthCheckInformation: FC<HealthCheckInformationProps> = props => {
   return (
     <div className={styles.healthChecks}>
       <div className={styles.healthChecksTitle}>Health Checks</div>
-      <div>
-        <div>Last Health Check</div>
+      <div className={styles.lastHealthCheck}>
+        <span className={styles.lastHealthCheckLabel}>Last Health Check:</span>
         <Timestamp timestamp={props.healthCheckDetails.timestamp} currentTimestamp={currentTimestamp}/>
       </div>
-      <div>
-        <HealthCheckField label="Database" healthCheckStatusDetails={props.healthCheckDetails.database}/>
-        <HealthCheckField label="KeyValueStore" healthCheckStatusDetails={props.healthCheckDetails.keyValueStore}/>
-        <HealthCheckField label="PubSub" healthCheckStatusDetails={props.healthCheckDetails.pubSub}/>
-        <HealthCheckField label="SPA Renderer" healthCheckStatusDetails={props.healthCheckDetails.spaRenderer}/>
-        <HealthCheckField
-          label="Internet Connectivity"
-          healthCheckStatusDetails={props.healthCheckDetails.internetConnectivity}/>
-        <FileRepositoryHealthCheck fileRepositoryHealthStatusDetails={props.healthCheckDetails.fileRepository}/>
+      <div className={styles.healthCheckSection}>
+        <div className={styles.healthCheckSectionTitle}>Services</div>
+        <div className={styles.healthCheckSectionContent}>
+          <HealthCheckField label="Database" healthCheckStatusDetails={props.healthCheckDetails.database}/>
+          <HealthCheckField label="Key Value Store" healthCheckStatusDetails={props.healthCheckDetails.keyValueStore}/>
+          <HealthCheckField label="PubSub" healthCheckStatusDetails={props.healthCheckDetails.pubSub}/>
+          <HealthCheckField label="SPA Renderer" healthCheckStatusDetails={props.healthCheckDetails.spaRenderer}/>
+          <HealthCheckField
+            label="Internet Connectivity"
+            healthCheckStatusDetails={props.healthCheckDetails.internetConnectivity}/>
+        </div>
       </div>
+      <FileRepositoryHealthCheck fileRepositoryHealthStatusDetails={props.healthCheckDetails.fileRepository}/>
     </div>
   )
 }
@@ -190,6 +199,7 @@ const ServiceInformation = () => {
       <Helmet title="Service Information"/>
       <div className={styles.serviceDetails}>
         <div className={styles.backend}>
+          <div className={styles.sectionTitle}>Backend</div>
           <ServiceInformationItem label="API URL" value={Some.of(configuration.baseUrl)}/>
           <LoadableComponent>
             {backendInformation.map((backendServiceInfo) => <BackendInformation
@@ -197,10 +207,11 @@ const ServiceInformation = () => {
           </LoadableComponent>
         </div>
         <div className={styles.frontend}>
+          <div className={styles.sectionTitle}>Frontend</div>
           <FrontendInformation frontendServiceInformation={frontendInformation}/>
         </div>
       </div>
-      <LoadableComponent loadingComponent={<div>Performing health checks...<CircularProgress size="2.5em"/></div>}>
+      <LoadableComponent loadingComponent={<div className={styles.loadingContainer}>Performing health checks...<CircularProgress size="2em"/></div>}>
         {
           healthCheckDetails.map((healthCheckDetails) =>
             <HealthCheckInformation healthCheckDetails={healthCheckDetails}/>)

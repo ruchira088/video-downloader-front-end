@@ -1,40 +1,200 @@
 .serviceInformation {
+  max-width: 1400px;
+  margin: 0 auto;
+
   .serviceDetails {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
+    gap: 1.5em;
+    margin-bottom: 2em;
 
     .backend, .frontend {
-      flex: 1;
+      background-color: var(--card-background-color);
+      border-radius: 0.5em;
+      padding: 1.5em;
+      box-shadow: var(--card-shadow);
     }
 
-    .serviceInformationItem {
-      display: flex;
-      .serviceInformationItemLabel {
-        font-weight: bold;
-        margin-right: 0.5em;
-      }
+    .sectionTitle {
+      font-size: 1.25em;
+      font-weight: 600;
+      margin-bottom: 1em;
+      padding-bottom: 0.5em;
+      border-bottom: 2px solid var(--link-color);
+    }
+  }
+
+  .serviceInformationItem {
+    display: flex;
+    padding: 0.5em 0;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .serviceInformationItemLabel {
+      font-weight: 600;
+      min-width: 10em;
+      color: var(--text-color);
+      opacity: 0.8;
+    }
+
+    .serviceInformationItemValue {
+      flex: 1;
+      word-break: break-word;
     }
   }
 
   .healthChecks {
+    background-color: var(--card-background-color);
+    border-radius: 0.5em;
+    padding: 1.5em;
+    box-shadow: var(--card-shadow);
+
     .healthChecksTitle {
-      font-weight: bold;
-      font-size: 1.2em;
+      font-size: 1.25em;
+      font-weight: 600;
+      margin-bottom: 1em;
+      padding-bottom: 0.5em;
+      border-bottom: 2px solid var(--link-color);
+    }
+
+    .lastHealthCheck {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      margin-bottom: 1.5em;
+      padding: 0.75em;
+      background-color: rgba(128, 128, 128, 0.1);
+      border-radius: 0.25em;
+
+      .lastHealthCheckLabel {
+        font-weight: 600;
+        opacity: 0.8;
+      }
+    }
+
+    .healthCheckSection {
+      margin-bottom: 1.5em;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .healthCheckSectionTitle {
+        font-weight: 600;
+        font-size: 1.1em;
+        margin-bottom: 0.75em;
+        color: var(--link-color);
+      }
+
+      .healthCheckSectionContent {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5em;
+      }
+
+      .healthCheckSection {
+        margin-left: 1.5em;
+        margin-bottom: 1em;
+
+        .healthCheckSectionTitle {
+          font-size: 1em;
+          opacity: 0.9;
+        }
+      }
     }
 
     .healthCheckField {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      padding: 0.75em 1em;
+      background-color: rgba(128, 128, 128, 0.05);
+      border-radius: 0.25em;
+      border-left: 3px solid transparent;
+
+      &:hover {
+        background-color: rgba(128, 128, 128, 0.1);
+      }
 
       .healthCheckLabel {
-        font-weight: bold;
-        margin-right: 0.5em;
+        font-weight: 500;
+        flex: 1;
+        word-break: break-all;
       }
 
       .healthCheckValue {
         display: flex;
+        align-items: center;
+        gap: 0.5em;
+        flex-shrink: 0;
 
         .healthCheckStatus {
-          margin-right: 0.1em;
+          padding: 0.25em 0.75em;
+          border-radius: 1em;
+          font-size: 0.85em;
+          font-weight: 600;
+          text-transform: uppercase;
+
+          &.healthy {
+            background-color: rgba(46, 125, 50, 0.15);
+            color: #2e7d32;
+          }
+
+          &.unhealthy {
+            background-color: rgba(211, 47, 47, 0.15);
+            color: #d32f2f;
+          }
+        }
+
+        .healthCheckDuration {
+          font-size: 0.85em;
+          opacity: 0.7;
+          min-width: 5em;
+          text-align: right;
+        }
+      }
+    }
+  }
+
+  .loadingContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+    padding: 2em;
+    background-color: var(--card-background-color);
+    border-radius: 0.5em;
+    box-shadow: var(--card-shadow);
+  }
+}
+
+@media (width <= 43.75em) {
+  .serviceInformation {
+    .serviceDetails {
+      grid-template-columns: 1fr;
+    }
+
+    .serviceInformationItem {
+      flex-direction: column;
+      gap: 0.25em;
+
+      .serviceInformationItemLabel {
+        min-width: auto;
+      }
+    }
+
+    .healthChecks {
+      .healthCheckField {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5em;
+
+        .healthCheckValue {
+          width: 100%;
+          justify-content: space-between;
         }
       }
     }
