@@ -19,8 +19,8 @@ enum ModalDialogType {
 
 type ScheduledVideoDownloadCardProps = {
   readonly downloadableScheduledVideo: DownloadableScheduledVideo
-  readonly onDelete: () => Promise<void>
-  readonly onUpdateStatus: (schedulingStatus: SchedulingStatus) => Promise<void>
+  readonly onDelete: () => Promise<unknown>
+  readonly onUpdateStatus: (schedulingStatus: SchedulingStatus) => Promise<unknown>
 }
 
 const ScheduledVideoDownloadCard: FC<ScheduledVideoDownloadCardProps> = props => {
@@ -76,7 +76,7 @@ type ErrorDetailsDialogProps = {
   readonly scheduleVideoDownload: ScheduledVideoDownload
   readonly isVisible: boolean
   readonly onClose: () => void
-  readonly onUpdateStatus: (schedulingStatus: SchedulingStatus) => Promise<void>
+  readonly onUpdateStatus: (schedulingStatus: SchedulingStatus) => Promise<unknown>
   readonly onDelete: () => void
 }
 
@@ -96,7 +96,7 @@ const ErrorDetailsDialog: FC<ErrorDetailsDialogProps> = props => (
 type ScheduledVideoDeleteDialogProps = {
   readonly isVisible: boolean
   readonly onClose: () => void
-  readonly onDelete: () => Promise<void>
+  readonly onDelete: () => Promise<unknown>
   readonly videoMetadata: VideoMetadata
 }
 
@@ -124,7 +124,7 @@ const ScheduledVideoDeleteDialog: FC<ScheduledVideoDeleteDialogProps> = props =>
 type ActionsProps = {
   readonly scheduleVideoDownload: ScheduledVideoDownload
   readonly onClickErrorDetails: () => void
-  readonly onUpdateStatus: (schedulingStatus: SchedulingStatus) => Promise<void>
+  readonly onUpdateStatus: (schedulingStatus: SchedulingStatus) => Promise<unknown>
 }
 
 const Actions: FC<ActionsProps> = props => {
