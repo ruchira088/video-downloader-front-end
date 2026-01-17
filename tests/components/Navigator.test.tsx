@@ -23,9 +23,9 @@ describe("Navigator", () => {
     renderWithRouter()
 
     expect(screen.getByText("Videos")).toBeInTheDocument()
-    expect(screen.getByText("Schedule")).toBeInTheDocument()
-    expect(screen.getByText("Playlists")).toBeInTheDocument()
     expect(screen.getByText("History")).toBeInTheDocument()
+    expect(screen.getByText("Playlists")).toBeInTheDocument()
+    expect(screen.getByText("Schedule")).toBeInTheDocument()
     expect(screen.getByText("Downloading")).toBeInTheDocument()
     expect(screen.getByText("Information")).toBeInTheDocument()
   })
@@ -34,9 +34,9 @@ describe("Navigator", () => {
     renderWithRouter()
 
     expect(screen.getByRole("link", { name: "Videos" })).toHaveAttribute("href", "/")
-    expect(screen.getByRole("link", { name: "Schedule" })).toHaveAttribute("href", "/schedule")
-    expect(screen.getByRole("link", { name: "Playlists" })).toHaveAttribute("href", "/playlists")
     expect(screen.getByRole("link", { name: "History" })).toHaveAttribute("href", "/history")
+    expect(screen.getByRole("link", { name: "Playlists" })).toHaveAttribute("href", "/playlists")
+    expect(screen.getByRole("link", { name: "Schedule" })).toHaveAttribute("href", "/schedule")
     expect(screen.getByRole("link", { name: "Downloading" })).toHaveAttribute("href", "/downloading")
     expect(screen.getByRole("link", { name: "Information" })).toHaveAttribute("href", "/information")
   })

@@ -2,7 +2,7 @@ import React from "react"
 import { Link, type UIMatch, useMatches } from "react-router"
 import styles from "./Navigator.module.scss"
 import classNames from "classnames"
-import { None, type Option, Some } from "~/types/Option"
+import { type Option, Some } from "~/types/Option"
 
 type NavigationTab = {
   readonly label: string
@@ -11,9 +11,9 @@ type NavigationTab = {
 
 const navigationTabs: NavigationTab[] = [
   { label: "Videos", path: "/" },
-  { label: "Schedule", path: "/schedule" },
-  { label: "Playlists", path: "/playlists" },
   { label: "History", path: "/history" },
+  { label: "Playlists", path: "/playlists" },
+  { label: "Schedule", path: "/schedule" },
   { label: "Downloading", path: "/downloading" },
   { label: "Information", path: "/information" }
 ]
