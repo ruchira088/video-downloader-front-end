@@ -2,6 +2,15 @@
 
 .card {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.downloadSection {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .sourceLink {
@@ -17,7 +26,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.5em;
+  margin-top: auto;
+  padding-top: 0.5em;
 
   .actionButtons {
     .actionButton {

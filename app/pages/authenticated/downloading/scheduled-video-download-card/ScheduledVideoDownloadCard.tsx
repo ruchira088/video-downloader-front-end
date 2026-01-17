@@ -44,7 +44,7 @@ const ScheduledVideoDownloadCard: FC<ScheduledVideoDownloadCardProps> = props =>
         </div>
       </VideoMetadataCard>
       <Timestamp timestamp={props.downloadableScheduledVideo.scheduledAt} className={styles.scheduledTimestamp}/>
-      <div>
+      <div className={styles.downloadSection}>
         <DownloadProgress
           completeValue={props.downloadableScheduledVideo.videoMetadata.size}
           currentValue={props.downloadableScheduledVideo.downloadedBytes}

@@ -21,6 +21,8 @@
   border-radius: 0.5em;
   padding: 1em;
   box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
 }
 
 @media (width <= 43.75em) {
