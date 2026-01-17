@@ -50,15 +50,15 @@ export class Left<L, R> extends Either<L, R> {
     super()
   }
 
-  map<R1>(fn: (value: R) => R1): Either<L, R1> {
+  map<R1>(_fn: (value: R) => R1): Either<L, R1> {
     return Left.of(this.value)
   }
 
-  flatMap<R1>(fn: (value: R) => Either<L, R1>): Either<L, R1> {
+  flatMap<R1>(_fn: (value: R) => Either<L, R1>): Either<L, R1> {
     return Left.of(this.value)
   }
 
-  fold<T>(onLeft: (value: L) => T, onRight: (value: R) => T): T {
+  fold<T>(onLeft: (value: L) => T, _onRight: (value: R) => T): T {
     return onLeft(this.value)
   }
 

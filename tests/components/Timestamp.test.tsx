@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render } from "@testing-library/react"
 import { DateTime } from "luxon"
 import Timestamp from "~/components/timestamp/Timestamp"
 

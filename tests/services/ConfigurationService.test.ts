@@ -1,4 +1,4 @@
-import { describe, expect, test, vi, beforeEach, afterEach } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 import { Theme, ApplicationConfiguration } from "~/models/ApplicationConfiguration"
 import { ConfigurationService, LocalStorageConfigurationService } from "~/services/config/ConfigurationService"
 import { None, Some } from "~/types/Option"

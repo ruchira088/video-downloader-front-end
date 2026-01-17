@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
 import { ScheduledVideoDownload } from "~/models/ScheduledVideoDownload"
-import { DateTime, Duration } from "luxon"
+import { DateTime } from "luxon"
 
 describe("ScheduledVideoDownload", () => {
   const createValidData = () => ({

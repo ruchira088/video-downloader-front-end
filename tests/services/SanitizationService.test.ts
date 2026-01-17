@@ -1,4 +1,4 @@
-import { describe, expect, test, vi, beforeEach } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 // Mock image imports before importing the service
 vi.mock("~/images/safe-images/image-01.jpg", () => ({ default: "/mock/image-01.jpg" }))

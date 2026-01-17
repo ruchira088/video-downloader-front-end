@@ -2,7 +2,6 @@ import { describe, expect, test, beforeEach, vi } from "vitest"
 import {
   LocalKeyValueStore,
   type KeySpace,
-  type Codec,
 } from "~/services/kv-store/KeyValueStore"
 import { Some, None } from "~/types/Option"
 

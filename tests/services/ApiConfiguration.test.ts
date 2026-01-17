@@ -1,9 +1,6 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from "vitest"
 
 describe("ApiConfiguration", () => {
-  const originalWindow = global.window
-  const originalImportMeta = import.meta
-
   beforeEach(() => {
     vi.resetModules()
   })

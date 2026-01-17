@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from "vitest"
+import { describe, expect, test } from "vitest"
 import { render, screen } from "@testing-library/react"
 import DownloadInformation from "~/pages/authenticated/downloading/scheduled-video-download-card/DownloadInformation"
 import { DateTime, Duration } from "luxon"

@@ -1,4 +1,4 @@
-import { describe, expect, test, vi, beforeEach, afterEach } from "vitest"
+import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, waitFor, fireEvent } from "@testing-library/react"
 import ScheduledVideos from "~/pages/authenticated/downloading/ScheduledVideos"
 import { createMemoryRouter, RouterProvider } from "react-router"

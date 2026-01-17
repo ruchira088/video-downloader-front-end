@@ -16,9 +16,10 @@ const UnauthenticatedLayout = () => {
 
     token.forEach(async () => {
       try {
-        const user = await getAuthenticatedUser()
+        await getAuthenticatedUser()
         navigate("/")
-      } catch (e) {
+      } catch {
+        // User not authenticated, stay on login page
       }
     })
   }

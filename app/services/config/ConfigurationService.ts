@@ -14,7 +14,7 @@ export abstract class ConfigurationService {
   }
 }
 
-const AppConfigKey: "AppConfigKey" = "AppConfigKey"
+const AppConfigKey = "AppConfigKey" as const
 
 const ApplicationConfigurationKeySpace: KeySpace<typeof AppConfigKey, ApplicationConfiguration> = {
   name: "application-configuration",

@@ -1,5 +1,4 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from "vitest"
-import axios from "axios"
 
 // Mock the ApiConfiguration before importing HttpClient
 vi.mock("~/services/ApiConfiguration", () => ({

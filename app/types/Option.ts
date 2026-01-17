@@ -47,7 +47,7 @@ export class Some<T> extends Option<T> {
     return onSome(this.value)
   }
 
-  getOrElse(fn: () => T): T {
+  getOrElse(_fn: () => T): T {
     return this.value
   }
 
@@ -59,7 +59,7 @@ export class Some<T> extends Option<T> {
     return this.value
   }
 
-  orElse(fn: () => Option<T>): Option<T> {
+  orElse(_fn: () => Option<T>): Option<T> {
     return this
   }
 
@@ -81,19 +81,19 @@ export class Some<T> extends Option<T> {
 }
 
 export class None<T> extends Option<T> {
-  map<R>(fn: (value: any) => R): Option<R> {
+  map<R>(_fn: (value: T) => R): Option<R> {
     return None.of()
   }
 
-  flatMap<R>(fn: (value: any) => Option<R>): Option<R> {
+  flatMap<R>(_fn: (value: T) => Option<R>): Option<R> {
     return None.of()
   }
 
-  filter(fn: (value: T) => boolean): Option<T> {
+  filter(_fn: (value: T) => boolean): Option<T> {
     return this
   }
 
-  fold<R>(onNone: () => R, onSome: (value: any) => R): R {
+  fold<R>(onNone: () => R, _onSome: (value: T) => R): R {
     return onNone()
   }
 
@@ -121,7 +121,7 @@ export class None<T> extends Option<T> {
     return true
   }
 
-  forEach<A>(fn: (value: T) => Promise<A>): Promise<A | void> | A  {
+  forEach<A>(_fn: (value: T) => Promise<A>): Promise<A | void> | A  {
     return Promise.resolve()
   }
 

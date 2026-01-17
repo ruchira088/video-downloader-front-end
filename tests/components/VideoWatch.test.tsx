@@ -277,7 +277,6 @@ describe("VideoWatch", () => {
   })
 
   test("should update video title when edited", async () => {
-    const { updateVideoTitle } = await import("~/services/video/VideoService")
     const updateVideo = vi.fn()
 
     renderWithContext(createMockVideo(), Duration.fromObject({ seconds: 0 }), updateVideo)

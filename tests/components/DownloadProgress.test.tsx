@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from "vitest"
+import { describe, expect, test } from "vitest"
 import { render, screen } from "@testing-library/react"
 import DownloadProgress from "~/pages/authenticated/downloading/download-progress-bar/DownloadProgress"
 import { SchedulingStatus } from "~/models/SchedulingStatus"

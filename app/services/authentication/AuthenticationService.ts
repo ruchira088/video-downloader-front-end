@@ -5,7 +5,7 @@ import { User } from "~/models/User"
 import type { Option } from "~/types/Option"
 import { zodParse } from "~/types/Zod"
 
-const AuthenticationKey: "Token" = "Token"
+const AuthenticationKey = "Token" as const
 
 const AuthenticationKeySpace: KeySpace<typeof AuthenticationKey, AuthenticationToken> = {
   name: "Authentication",

@@ -8,7 +8,6 @@ import {getActionName, SchedulingStatus, TRANSITION_STATES} from "~/models/Sched
 import VideoMetadataCard from "~/components/video/video-metadata-card/VideoMetadataCard"
 import {VideoMetadata} from "~/models/VideoMetadata"
 import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVideo"
-import {DateTime} from "luxon"
 import styles from "./ScheduledVideoDownloadCard.module.scss"
 import classNames from "classnames"
 import Timestamp from "~/components/timestamp/Timestamp"
@@ -20,8 +19,8 @@ enum ModalDialogType {
 
 type ScheduledVideoDownloadCardProps = {
   readonly downloadableScheduledVideo: DownloadableScheduledVideo
-  readonly onDelete: () => Promise<any>
-  readonly onUpdateStatus: (schedulingStatus: SchedulingStatus) => Promise<any>
+  readonly onDelete: () => Promise<void>
+  readonly onUpdateStatus: (schedulingStatus: SchedulingStatus) => Promise<void>
 }
 
 const ScheduledVideoDownloadCard: FC<ScheduledVideoDownloadCardProps> = props => {

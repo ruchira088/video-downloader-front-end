@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from "vitest"
-import { render, screen, waitFor, act } from "@testing-library/react"
+import { render, screen, act } from "@testing-library/react"
 import Preview from "~/components/schedule/preview/Preview"
 import { DateTime, Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"

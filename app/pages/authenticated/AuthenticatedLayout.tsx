@@ -30,7 +30,7 @@ const AuthenticatedLayout = () => {
       async _ => {
         try {
           await getAuthenticatedUser()
-        } catch (e) {
+        } catch {
           removeAuthenticationToken()
           console.debug("Removing authentication token and redirecting to sign-in page.")
           navigate(redirectUrl)

@@ -1,4 +1,4 @@
-import { describe, expect, test, vi, beforeEach, afterEach } from "vitest"
+import { describe, expect, test, vi, beforeEach } from "vitest"
 import { Some, None } from "~/types/Option"
 import { SortBy } from "~/models/SortBy"
 import { Ordering } from "~/models/Ordering"
@@ -31,7 +31,6 @@ import {
   updateWorkerStatus,
   deleteScheduledVideoById,
   fetchScheduledVideos,
-  scheduledVideoDownloadStream,
 } from "~/services/scheduling/SchedulingService"
 
 const mockAxiosGet = vi.mocked(axiosClient.get)

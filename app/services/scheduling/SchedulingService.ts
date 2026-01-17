@@ -44,7 +44,7 @@ export const scheduleVideo = async (videoSiteUrl: string): Promise<ScheduledVide
   return scheduledVideoDownload
 }
 
-const fetchScheduledVideoById = async (videoId: string): Promise<ScheduledVideoDownload> => {
+const _fetchScheduledVideoById = async (videoId: string): Promise<ScheduledVideoDownload> => {
   const response = await axiosClient.get(`/schedule/id/${videoId}`)
   const scheduledVideoDownload = zodParse(ScheduledVideoDownload, response.data)
 

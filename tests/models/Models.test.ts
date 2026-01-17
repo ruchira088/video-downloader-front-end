@@ -4,7 +4,6 @@ import { AuthenticationToken } from "~/models/AuthenticationToken"
 import { User } from "~/models/User"
 import { ApplicationConfiguration, Theme } from "~/models/ApplicationConfiguration"
 import { FileResource, FileResourceType } from "~/models/FileResource"
-import { Some, None } from "~/types/Option"
 
 describe("AuthenticationToken", () => {
   const validToken = {

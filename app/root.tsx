@@ -6,7 +6,7 @@ import React, { type ReactNode } from "react"
 import { ApplicationConfigurationProvider } from "~/providers/ApplicationConfigurationProvider"
 import { CircularProgress } from "@mui/material"
 
-export function meta({}: Route.MetaArgs) {
+export function meta(_args: Route.MetaArgs) {
   return [
     {title: "Video Downloader"},
     {name: "description", content: "Download & play videos from various platforms"},

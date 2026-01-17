@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
-import { render, screen, waitFor, act } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import {
   ApplicationConfigurationProvider,
@@ -67,7 +67,7 @@ describe("ApplicationConfigurationProvider", () => {
   test("should not render children while loading", () => {
     mockGetApplicationConfiguration.mockImplementation(() => new Promise(() => {}))
 
-    const { container } = render(
+    render(
       <ApplicationConfigurationProvider>
         <div data-testid="child">Child Content</div>
       </ApplicationConfigurationProvider>
