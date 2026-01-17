@@ -1,8 +1,31 @@
 .videosPage {
   .videosList {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
-    gap: 1em;
-    justify-content: space-evenly;
+    grid-template-columns: repeat(auto-fill, minmax(20em, 1fr));
+    gap: 1.5em;
+    margin-top: 1.5em;
+  }
+
+  .videoCard {
+    border-radius: 0.5em;
+    padding: 1em;
+    background-color: color-mix(in srgb, var(--card-background-color) 65%, transparent);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      background-color: var(--card-background-color);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+@media (width <= 43.75em) {
+  .videosPage {
+    .videosList {
+      grid-template-columns: 1fr;
+      gap: 1em;
+    }
   }
 }

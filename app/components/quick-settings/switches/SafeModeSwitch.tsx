@@ -1,22 +1,22 @@
 import React from "react"
-import { FormControlLabel, Switch } from "@mui/material"
+import { IconButton, Tooltip } from "@mui/material"
+import { VisibilityOff, Visibility } from "@mui/icons-material"
 import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
-
 
 const SafeModeSwitch = () => {
   const { safeMode, setSafeMode } = useApplicationConfiguration()
 
   return (
-    <FormControlLabel
-    control={
-      <Switch
-        checked={safeMode}
-        onChange={({ target }) => setSafeMode(target.checked)}
-      />
-    }
-    label="Safe Mode"
-  />
-)
+    <Tooltip title={safeMode ? "Disable Safe Mode" : "Enable Safe Mode"}>
+      <IconButton
+        onClick={() => setSafeMode(!safeMode)}
+        size="small"
+        aria-label={safeMode ? "Disable safe mode" : "Enable safe mode"}
+      >
+        {safeMode ? <VisibilityOff /> : <Visibility />}
+      </IconButton>
+    </Tooltip>
+  )
 }
 
 export default SafeModeSwitch

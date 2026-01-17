@@ -1,20 +1,22 @@
 import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
-import { FormControlLabel, Switch } from "@mui/material"
+import { IconButton, Tooltip } from "@mui/material"
+import { LightMode, DarkMode } from "@mui/icons-material"
 import { Theme } from "~/models/ApplicationConfiguration"
 
 const ThemeSwitch = () => {
   const { theme, setTheme } = useApplicationConfiguration()
+  const isDark = theme === Theme.Dark
 
   return (
-    <FormControlLabel
-      control={
-        <Switch
-          checked={theme === Theme.Dark}
-          onChange={({ target }) => setTheme(target.checked ? Theme.Dark : Theme.Light)}
-        />
-      }
-      label="Dark Mode"
-    />
+    <Tooltip title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+      <IconButton
+        onClick={() => setTheme(isDark ? Theme.Light : Theme.Dark)}
+        size="small"
+        aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      >
+        {isDark ? <LightMode /> : <DarkMode />}
+      </IconButton>
+    </Tooltip>
   )
 }
 

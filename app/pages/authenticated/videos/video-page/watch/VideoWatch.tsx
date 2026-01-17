@@ -80,7 +80,7 @@ type MetadataProps = {
 }
 
 const Metadata: FC<MetadataProps> = props => (
-  <div className={styles.videoMetadata}>
+  <div className={styles.metadataRow}>
     <MetadataField
       label="Size"
       value={humanReadableSize(props.video.videoMetadata.size)}
@@ -131,27 +131,33 @@ const VideoWatch: FC<VideoWatchProps> = props => {
 
   return (
     <div className={styles.videoWatch}>
-      <div className={styles.title}>
-        <Helmet title={title}/>
-        <EditableLabel
-          textValue={title}
-          onUpdateText={onUpdateVideoTitle}
-        />
+      <Helmet title={title}/>
+      <div className={styles.infoSection}>
+        <div className={styles.title}>
+          <EditableLabel
+            textValue={title}
+            onUpdateText={onUpdateVideoTitle}
+          />
+        </div>
+        <Metadata video={props.video}/>
       </div>
-      <Metadata video={props.video}/>
-      <video
-        ref={videoPlayer}
-        controls
-        preload="auto"
-        poster={imageUrl(props.video.videoMetadata.thumbnail, safeMode)}
-        className={styles.video}
-      >
-        <source src={videoUrl(props.video.fileResource)} />
-      </video>
+      <div className={styles.videoContainer}>
+        <video
+          ref={videoPlayer}
+          controls
+          preload="auto"
+          poster={imageUrl(props.video.videoMetadata.thumbnail, safeMode)}
+          className={styles.video}
+        >
+          <source src={videoUrl(props.video.fileResource)} />
+        </video>
+      </div>
       <VideoSnapshotsGallery snapshots={props.snapshots} />
-      <Button color="secondary" variant="contained" onClick={() => setDeleteDialogVisibility(true)}>
-        Delete
-      </Button>
+      <div className={styles.actionsSection}>
+        <Button color="error" variant="contained" onClick={() => setDeleteDialogVisibility(true)}>
+          Delete
+        </Button>
+      </div>
       <VideoDeleteDialog
         isVisible={isDeleteDialogVisible}
         onClose={() => setDeleteDialogVisibility(false)}

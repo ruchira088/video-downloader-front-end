@@ -26,27 +26,27 @@ const renderWithContext = (safeMode: boolean, setSafeMode = vi.fn()) => {
 }
 
 describe("SafeModeSwitch", () => {
-  test("should render with 'Safe Mode' label", () => {
+  test("should render with safe mode toggle button", () => {
     renderWithContext(false)
-    expect(screen.getByText("Safe Mode")).toBeInTheDocument()
+    expect(screen.getByLabelText("Enable safe mode")).toBeInTheDocument()
   })
 
-  test("should call setSafeMode with true when toggled on", async () => {
+  test("should call setSafeMode with true when clicked while disabled", async () => {
     const user = userEvent.setup()
     const { setSafeMode } = renderWithContext(false)
 
-    const switchControl = screen.getByLabelText("Safe Mode")
-    await user.click(switchControl)
+    const button = screen.getByLabelText("Enable safe mode")
+    await user.click(button)
 
     expect(setSafeMode).toHaveBeenCalledWith(true)
   })
 
-  test("should call setSafeMode with false when toggled off", async () => {
+  test("should call setSafeMode with false when clicked while enabled", async () => {
     const user = userEvent.setup()
     const { setSafeMode } = renderWithContext(true)
 
-    const switchControl = screen.getByLabelText("Safe Mode")
-    await user.click(switchControl)
+    const button = screen.getByLabelText("Disable safe mode")
+    await user.click(button)
 
     expect(setSafeMode).toHaveBeenCalledWith(false)
   })

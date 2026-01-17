@@ -2,7 +2,8 @@ import React from "react"
 import {SortBy} from "~/models/SortBy"
 import {type DurationRange, durationRangeNumberDecoder, durationRangeNumberEncoder} from "~/models/DurationRange"
 import SortBySelection from "~/components/sort-by-selection/SortBySelection"
-import {Autocomplete, TextField} from "@mui/material"
+import {Autocomplete, InputAdornment, TextField} from "@mui/material"
+import SearchIcon from "@mui/icons-material/Search"
 import {type Range} from "~/models/Range"
 import {maybeString} from "~/utils/StringUtils"
 import RangeSlider from "./RangeSlider"
@@ -53,44 +54,61 @@ const VideoSearch = ({
   isLoading,
 }: VideoSearchProps) => (
   <div className={styles.videoSearch}>
-    <div className={styles.left}>
-      <Autocomplete
-        freeSolo
-        inputValue={searchTerm.getOrElse(() => "")}
-        onInputChange={(changeEvent, value) =>
-          Option.fromNullable(changeEvent).forEach(() => onSearchTermChange(maybeString(value)))
-        }
-        options={videoTitles}
-        renderInput={(params) => <TextField {...params} label="Search" />}
-        loading={isLoading}
-        className={styles.search}
-      />
-      <div className={styles.selectors}>
+    <Autocomplete
+      freeSolo
+      inputValue={searchTerm.getOrElse(() => "")}
+      onInputChange={(changeEvent, value) =>
+        Option.fromNullable(changeEvent).forEach(() => onSearchTermChange(maybeString(value)))
+      }
+      options={videoTitles}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label="Search videos"
+          size="small"
+          slotProps={{
+            input: {
+              ...params.InputProps,
+              startAdornment: (
+                <InputAdornment position="start" sx={{ pl: 1 }}>
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+      )}
+      loading={isLoading}
+      className={styles.search}
+    />
+
+    <div className={styles.filtersRow}>
+      <div className={styles.filterGroup}>
         <VideoSitesSelector videoSites={videoSites} onChange={onVideoSitesChange} className={styles.videoSiteSelector}/>
         <SortBySelection sortBy={sortBy} onChange={onSortByChange} className={styles.sortBy}/>
-        <OrderingComponent ordering={ordering} onOrderingChange={onOrderingChange} className={styles.ordering}/>
+        <OrderingComponent ordering={ordering} onOrderingChange={onOrderingChange}/>
       </div>
-    </div>
 
-    <div className={styles.right}>
-      <RangeSlider
-        title="Duration"
-        range={durationRange}
-        onChange={onDurationRangeChange}
-        maxValue={MAX_RANGE}
-        codec={codec(durationRangeNumberEncoder, durationRangeNumberDecoder)}
-        printer={durationPrettyPrint}
-        className={styles.slider}
-      />
-      <RangeSlider
-        title="Size"
-        range={sizeRange}
-        onChange={onSizeRangeChange}
-        maxValue={MAX_DATA_SIZE}
-        codec={identityCodec()}
-        printer={dataSizePrettyPrint}
-        className={styles.slider}
-      />
+      <div className={styles.sliderGroup}>
+        <RangeSlider
+          title="Duration"
+          range={durationRange}
+          onChange={onDurationRangeChange}
+          maxValue={MAX_RANGE}
+          codec={codec(durationRangeNumberEncoder, durationRangeNumberDecoder)}
+          printer={durationPrettyPrint}
+          className={styles.slider}
+        />
+        <RangeSlider
+          title="Size"
+          range={sizeRange}
+          onChange={onSizeRangeChange}
+          maxValue={MAX_DATA_SIZE}
+          codec={identityCodec()}
+          printer={dataSizePrettyPrint}
+          className={styles.slider}
+        />
+      </div>
     </div>
   </div>
 )

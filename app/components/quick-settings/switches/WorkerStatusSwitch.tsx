@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react"
 import { WorkerStatus } from "~/models/WorkerStatus"
 import { fetchWorkerStatus, updateWorkerStatus } from "~/services/scheduling/SchedulingService"
-import { FormControlLabel, Switch } from "@mui/material"
+import { IconButton, Tooltip } from "@mui/material"
+import { PlayCircle, PauseCircle } from "@mui/icons-material"
 
 const WorkerStatusSwitch = () => {
   const [workerStatus, setWorkerStatus] = useState<WorkerStatus | null>(null)
@@ -10,8 +11,12 @@ const WorkerStatusSwitch = () => {
     fetchWorkerStatus().then((status) => setWorkerStatus(status))
   }, [])
 
-  const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const updated: WorkerStatus = event.target.checked ? WorkerStatus.Available : WorkerStatus.Paused
+  const onClick = async () => {
+    if (workerStatus === null) return
+
+    const updated: WorkerStatus = workerStatus === WorkerStatus.Available
+      ? WorkerStatus.Paused
+      : WorkerStatus.Available
     const existingValue = workerStatus
     setWorkerStatus(updated)
 
@@ -23,16 +28,21 @@ const WorkerStatusSwitch = () => {
     }
   }
 
+  const isAvailable = workerStatus === WorkerStatus.Available
+
   return (
-    <FormControlLabel
-      control={
-        <Switch
-          checked={workerStatus === WorkerStatus.Available}
-          onChange={onChange}
-          disabled={workerStatus === null}/>
-    }
-      label="Workers"
-    />
+    <Tooltip title={isAvailable ? "Pause Workers" : "Start Workers"}>
+      <span>
+        <IconButton
+          onClick={onClick}
+          size="small"
+          disabled={workerStatus === null}
+          aria-label={isAvailable ? "Pause workers" : "Start workers"}
+        >
+          {isAvailable ? <PauseCircle /> : <PlayCircle />}
+        </IconButton>
+      </span>
+    </Tooltip>
   )
 }
 

@@ -3,7 +3,7 @@ import { Link } from "react-router"
 import { imageUrl } from "~/services/asset/AssetService"
 import { Snapshot } from "~/models/Snapshot"
 import { shortHumanReadableDuration } from "~/utils/Formatter"
-import styles from "./VideoSnapshotsGallery.module.css"
+import styles from "./VideoSnapshotsGallery.module.scss"
 import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
 
 type VideoSnapshotProps = {

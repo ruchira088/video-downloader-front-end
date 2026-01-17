@@ -6,6 +6,7 @@ type TimestampProps = {
   readonly currentTimestamp?: DateTime
   readonly format?: DateTimeFormatOptions
   readonly className?: string
+  readonly prefix?: string
 }
 
 const Timestamp: FC<TimestampProps> = props => {
@@ -14,6 +15,7 @@ const Timestamp: FC<TimestampProps> = props => {
 
   return (
     <div className={props.className}>
+      {props.prefix && <span>{props.prefix} </span>}
       {props.timestamp.toLocaleString(format)} ({props.timestamp.toRelative({ base: currentDateTime })})
     </div>
   )

@@ -1,9 +1,30 @@
-.videoHistoryGallery {
-  display: flex;
-  flex-wrap: wrap;
+.historyPage {
+}
 
-  .videoHistoryCard {
-    flex: 1 0 20em;
-    margin: 1em 0.5em;
+.videoHistoryGallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
+  gap: 1.5em;
+}
+
+.videoHistoryCard {
+  background-color: var(--card-background-color);
+  border-radius: 0.5em;
+  padding: 1em;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@media (width <= 43.75em) {
+  .historyPage {
+    .videoHistoryGallery {
+      grid-template-columns: 1fr;
+      gap: 1em;
+    }
   }
 }

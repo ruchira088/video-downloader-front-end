@@ -1,40 +1,97 @@
 .videoSearch {
-    display: flex;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+
+  :global(.MuiInputBase-root) {
+    height: 50px;
+  }
+
+  :global(.MuiFormControl-root .MuiOutlinedInput-input.MuiOutlinedInput-input) {
+    padding: 13.5px 14px;
+  }
+
+  :global(.MuiFormControl-root .MuiSelect-select.MuiSelect-select.MuiOutlinedInput-input) {
+    padding: 13.5px 32px 13.5px 14px;
+  }
+
+  :global(.MuiFormControl-root .MuiInputLabel-outlined:not(.MuiInputLabel-shrink)) {
+    transform: translate(14px, 14px) scale(1);
+  }
 }
 
-.right {
-    flex: 1;
-    padding: 1em 2em 0 2em;
-
-    .slider {
-        padding: 0 0 1em 0;
-    }
+.search {
+  width: 100%;
 }
 
-.left {
-    flex: 1;
-    padding: 1em 2em 0 2em;
-    margin-right: 2em;
+.filtersRow {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
 
-    .selectors {
-        display: flex;
-        align-items: center;
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  flex-shrink: 0;
+}
 
-        .videoSiteSelector {
-            flex: 4;
-            margin: 1em 1em 1em 0;
-        }
+.videoSiteSelector {
+  width: 12em;
+}
 
-        .sortBy {
-            flex: 1;
-            min-width: 8em;
-            margin: 1em;
-        }
+.sortBy {
+  width: 8em;
+}
 
-        .ordering {
-            flex: 1;
-            margin: 1em;
-        }
+.sliderGroup {
+  display: flex;
+  align-items: center;
+  gap: 2.5em;
+  flex: 1;
+  min-width: 0;
+}
+
+.slider {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (width <= 60em) {
+  .filtersRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1em;
+  }
+
+  .filterGroup {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .sliderGroup {
+    width: 100%;
+  }
+}
+
+@media (width <= 40em) {
+  .filterGroup {
+    flex-direction: column;
+    align-items: stretch;
+
+    .videoSiteSelector,
+    .sortBy {
+      width: 100%;
     }
+  }
+
+  .sliderGroup {
+    flex-direction: column;
+    gap: 0.5em;
+  }
+
+  .slider {
+    width: 100%;
+  }
 }

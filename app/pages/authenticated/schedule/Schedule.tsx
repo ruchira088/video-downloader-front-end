@@ -3,7 +3,7 @@ import {Button, LinearProgress, TextField} from "@mui/material"
 import {scheduleVideo} from "~/services/scheduling/SchedulingService"
 import Helmet from "~/components/helmet/Helmet"
 import Preview from "~/components/schedule/preview/Preview"
-import styles from "./Schedule.module.css"
+import styles from "./Schedule.module.scss"
 
 const Schedule = () => {
   const [videoUrl, setVideoUrl] = useState("")
@@ -19,7 +19,7 @@ const Schedule = () => {
   }
 
   return (
-    <>
+    <div className={styles.schedulePage}>
       <Helmet title="Schedule"/>
       <div className={styles.schedule}>
         <TextField onChange={handleTextChange} value={videoUrl} label="Website URL" className={styles.inputUrl} />
@@ -29,7 +29,7 @@ const Schedule = () => {
         {isScheduling && <LinearProgress className={styles.schedulingProgress} />}
         <Preview url={videoUrl} />
       </div>
-    </>
+    </div>
   )
 }
 

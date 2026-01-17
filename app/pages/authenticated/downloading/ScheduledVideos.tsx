@@ -10,7 +10,7 @@ import {
 import ScheduledVideoDownloadCard from "./scheduled-video-download-card/ScheduledVideoDownloadCard"
 import {DownloadProgress} from "~/models/DownloadProgress"
 import {SortBy} from "~/models/SortBy"
-import styles from "./ScheduledVideos.module.css"
+import styles from "./ScheduledVideos.module.scss"
 import {Ordering} from "~/models/Ordering"
 import {None, Option, Some} from "~/types/Option"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
@@ -178,15 +178,13 @@ const ScheduledVideos = () => {
           downloadableScheduledVideos
             .sortBy((value) => value.scheduledAt.toMillis())
             .toList()
-            .toArray().concat(Array(10).fill(null))
-            .map((downloadableScheduledVideos, index) => (
-                <div key={index} className={styles.scheduledVideoCard}>
-                  {downloadableScheduledVideos != null &&
-                    <ScheduledVideoDownloadCard
-                      downloadableScheduledVideo={downloadableScheduledVideos}
-                      onDelete={onDelete(downloadableScheduledVideos.videoMetadata.id)}
-                      onUpdateStatus={onUpdateStatus(downloadableScheduledVideos.videoMetadata.id)}/>
-                  }
+            .toArray()
+            .map((downloadableScheduledVideo) => (
+                <div key={downloadableScheduledVideo.videoMetadata.id} className={styles.scheduledVideoCard}>
+                  <ScheduledVideoDownloadCard
+                    downloadableScheduledVideo={downloadableScheduledVideo}
+                    onDelete={onDelete(downloadableScheduledVideo.videoMetadata.id)}
+                    onUpdateStatus={onUpdateStatus(downloadableScheduledVideo.videoMetadata.id)}/>
                 </div>
               )
             )

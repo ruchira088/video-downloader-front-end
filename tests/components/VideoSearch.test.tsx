@@ -50,7 +50,7 @@ describe("VideoSearch", () => {
   test("should render search input", () => {
     render(<VideoSearch {...defaultProps} />)
 
-    expect(screen.getByLabelText("Search")).toBeInTheDocument()
+    expect(screen.getByLabelText("Search videos")).toBeInTheDocument()
   })
 
   test("should render sort by selector", () => {
@@ -80,7 +80,7 @@ describe("VideoSearch", () => {
   test("should display search term value", () => {
     render(<VideoSearch {...defaultProps} searchTerm={Some.of("test query")} />)
 
-    const searchInput = screen.getByLabelText("Search")
+    const searchInput = screen.getByLabelText("Search videos")
     expect(searchInput).toHaveValue("test query")
   })
 
@@ -88,7 +88,7 @@ describe("VideoSearch", () => {
     const onSearchTermChange = vi.fn()
     render(<VideoSearch {...defaultProps} onSearchTermChange={onSearchTermChange} />)
 
-    const input = screen.getByLabelText("Search")
+    const input = screen.getByLabelText("Search videos")
     fireEvent.change(input, { target: { value: "new search" } })
 
     expect(onSearchTermChange).toHaveBeenCalled()
@@ -97,13 +97,13 @@ describe("VideoSearch", () => {
   test("should show autocomplete component", () => {
     render(<VideoSearch {...defaultProps} />)
 
-    expect(screen.getByLabelText("Search")).toBeInTheDocument()
+    expect(screen.getByLabelText("Search videos")).toBeInTheDocument()
   })
 
   test("should render with provided video titles for autocomplete", () => {
     render(<VideoSearch {...defaultProps} />)
 
     // Verify component renders properly
-    expect(screen.getByLabelText("Search")).toBeInTheDocument()
+    expect(screen.getByLabelText("Search videos")).toBeInTheDocument()
   })
 })

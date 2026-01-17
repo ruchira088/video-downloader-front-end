@@ -129,7 +129,7 @@ const HealthCheckInformation: FC<HealthCheckInformationProps> = props => {
       <div className={styles.healthChecksTitle}>Health Checks</div>
       <div className={styles.lastHealthCheck}>
         <span className={styles.lastHealthCheckLabel}>Last Health Check:</span>
-        <Timestamp timestamp={props.healthCheckDetails.timestamp} currentTimestamp={currentTimestamp}/>
+        <Timestamp timestamp={props.healthCheckDetails.timestamp} currentTimestamp={currentTimestamp} format={DateTime.DATETIME_MED_WITH_SECONDS}/>
       </div>
       <div className={styles.healthCheckSection}>
         <div className={styles.healthCheckSectionTitle}>Services</div>

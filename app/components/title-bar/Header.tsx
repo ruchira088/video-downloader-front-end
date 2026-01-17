@@ -2,7 +2,7 @@ import React from "react"
 import QuickSettings from "~/components/quick-settings/QuickSettings"
 import Navigator from "~/components/navigator/Navigator"
 import smallLogo from "~/images/small-logo.svg"
-import styles from "./Header.module.css"
+import styles from "./Header.module.scss"
 import { Link } from "react-router"
 
 

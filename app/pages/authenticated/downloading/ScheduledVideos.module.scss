@@ -1,0 +1,42 @@
+.scheduledVideos {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1em;
+  margin-bottom: 1.5em;
+}
+
+.scheduledVideoGallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20em, 1fr));
+  gap: 1.5em;
+}
+
+.scheduledVideoCard {
+  background-color: var(--card-background-color);
+  border-radius: 0.5em;
+  padding: 1em;
+  box-shadow: var(--card-shadow);
+}
+
+@media (width <= 43.75em) {
+  .scheduledVideos {
+    .buttonContainer {
+      flex-direction: column;
+      align-items: stretch;
+
+      button {
+        width: 100%;
+      }
+    }
+
+    .scheduledVideoGallery {
+      grid-template-columns: 1fr;
+      gap: 1em;
+    }
+  }
+}

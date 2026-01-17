@@ -86,7 +86,7 @@ describe("Header", () => {
     renderWithProviders()
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Dark Mode")).toBeInTheDocument()
+      expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument()
     })
   })
 })

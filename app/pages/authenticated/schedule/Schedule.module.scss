@@ -1,0 +1,44 @@
+.schedulePage {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.schedule {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--card-background-color);
+  border-radius: 0.5em;
+  padding: 2em;
+  box-shadow: var(--card-shadow);
+
+  .inputUrl {
+    width: 100%;
+    max-width: 30em;
+  }
+
+  .scheduleButton {
+    margin: 2em 0;
+  }
+
+  .schedulingProgress {
+    width: 100%;
+    max-width: 30em;
+    margin-bottom: 2em;
+  }
+}
+
+@media (width <= 43.75em) {
+  .schedule {
+    padding: 1.5em;
+
+    .inputUrl {
+      min-width: auto;
+      width: 100%;
+    }
+
+    .schedulingProgress {
+      width: 100%;
+    }
+  }
+}

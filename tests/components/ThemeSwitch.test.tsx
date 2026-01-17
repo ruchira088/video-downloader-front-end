@@ -26,27 +26,27 @@ const renderWithContext = (theme: Theme, setTheme = vi.fn()) => {
 }
 
 describe("ThemeSwitch", () => {
-  test("should render with 'Dark Mode' label", () => {
+  test("should render with theme toggle button", () => {
     renderWithContext(Theme.Light)
-    expect(screen.getByText("Dark Mode")).toBeInTheDocument()
+    expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument()
   })
 
-  test("should call setTheme with Dark when toggled", async () => {
+  test("should call setTheme with Dark when clicked in light mode", async () => {
     const user = userEvent.setup()
     const { setTheme } = renderWithContext(Theme.Light)
 
-    const switchControl = screen.getByLabelText("Dark Mode")
-    await user.click(switchControl)
+    const button = screen.getByLabelText("Switch to dark mode")
+    await user.click(button)
 
     expect(setTheme).toHaveBeenCalledWith(Theme.Dark)
   })
 
-  test("should call setTheme with Light when already Dark", async () => {
+  test("should call setTheme with Light when clicked in dark mode", async () => {
     const user = userEvent.setup()
     const { setTheme } = renderWithContext(Theme.Dark)
 
-    const switchControl = screen.getByLabelText("Dark Mode")
-    await user.click(switchControl)
+    const button = screen.getByLabelText("Switch to light mode")
+    await user.click(button)
 
     expect(setTheme).toHaveBeenCalledWith(Theme.Light)
   })

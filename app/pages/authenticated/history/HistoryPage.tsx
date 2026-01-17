@@ -57,7 +57,7 @@ const HistoryPage = () => {
   }
 
   return (
-    <>
+    <div className={styles.historyPage}>
       <Helmet title="History"/>
       <InfiniteScroll
         loadMore={loadMore}
@@ -70,14 +70,14 @@ const HistoryPage = () => {
               <div key={index} className={styles.videoHistoryCard}>
                 { videoWatchHistory !== null &&
                   <Link to={`/video/${videoWatchHistory.video.videoMetadata.id}`}>
-                    <VideoCard video={videoWatchHistory.video}/>
+                    <VideoCard video={videoWatchHistory.video} lastWatched={videoWatchHistory.lastUpdatedAt}/>
                   </Link>
                 }
               </div>
           )
         }
       </InfiniteScroll>
-    </>
+    </div>
   )
 
 }

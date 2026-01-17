@@ -19,17 +19,17 @@ describe("WorkerStatusSwitch", () => {
     vi.clearAllMocks()
   })
 
-  test("should render with 'Workers' label", async () => {
+  test("should render with workers toggle button", async () => {
     mockFetchWorkerStatus.mockResolvedValue(WorkerStatus.Available)
 
     render(<WorkerStatusSwitch />)
 
     await waitFor(() => {
-      expect(screen.getByText("Workers")).toBeInTheDocument()
+      expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
     })
   })
 
-  test("should call updateWorkerStatus when clicked", async () => {
+  test("should call updateWorkerStatus to pause when currently available", async () => {
     const user = userEvent.setup()
     mockFetchWorkerStatus.mockResolvedValue(WorkerStatus.Available)
     mockUpdateWorkerStatus.mockResolvedValue(WorkerStatus.Paused)
@@ -37,17 +37,17 @@ describe("WorkerStatusSwitch", () => {
     render(<WorkerStatusSwitch />)
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Workers")).toBeInTheDocument()
+      expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
     })
 
-    await user.click(screen.getByLabelText("Workers"))
+    await user.click(screen.getByLabelText("Pause workers"))
 
     await waitFor(() => {
       expect(mockUpdateWorkerStatus).toHaveBeenCalledWith(WorkerStatus.Paused)
     })
   })
 
-  test("should update to Available when currently Paused", async () => {
+  test("should call updateWorkerStatus to start when currently paused", async () => {
     const user = userEvent.setup()
     mockFetchWorkerStatus.mockResolvedValue(WorkerStatus.Paused)
     mockUpdateWorkerStatus.mockResolvedValue(WorkerStatus.Available)
@@ -55,10 +55,10 @@ describe("WorkerStatusSwitch", () => {
     render(<WorkerStatusSwitch />)
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Workers")).toBeInTheDocument()
+      expect(screen.getByLabelText("Start workers")).toBeInTheDocument()
     })
 
-    await user.click(screen.getByLabelText("Workers"))
+    await user.click(screen.getByLabelText("Start workers"))
 
     await waitFor(() => {
       expect(mockUpdateWorkerStatus).toHaveBeenCalledWith(WorkerStatus.Available)
@@ -74,10 +74,10 @@ describe("WorkerStatusSwitch", () => {
     render(<WorkerStatusSwitch />)
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Workers")).toBeInTheDocument()
+      expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
     })
 
-    await user.click(screen.getByLabelText("Workers"))
+    await user.click(screen.getByLabelText("Pause workers"))
 
     await waitFor(() => {
       expect(consoleError).toHaveBeenCalled()

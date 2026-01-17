@@ -41,7 +41,7 @@ describe("QuickSettings", () => {
     renderWithContext()
 
     await waitFor(() => {
-      expect(screen.getByText("Dark Mode")).toBeInTheDocument()
+      expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument()
     })
   })
 
@@ -49,7 +49,7 @@ describe("QuickSettings", () => {
     renderWithContext()
 
     await waitFor(() => {
-      expect(screen.getByText("Safe Mode")).toBeInTheDocument()
+      expect(screen.getByLabelText("Enable safe mode")).toBeInTheDocument()
     })
   })
 
@@ -57,17 +57,17 @@ describe("QuickSettings", () => {
     renderWithContext()
 
     await waitFor(() => {
-      expect(screen.getByText("Workers")).toBeInTheDocument()
+      expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
     })
   })
 
-  test("should render all three switches", async () => {
+  test("should render all three icon buttons", async () => {
     renderWithContext()
 
     await waitFor(() => {
-      expect(screen.getByText("Dark Mode")).toBeInTheDocument()
-      expect(screen.getByText("Safe Mode")).toBeInTheDocument()
-      expect(screen.getByText("Workers")).toBeInTheDocument()
+      expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument()
+      expect(screen.getByLabelText("Enable safe mode")).toBeInTheDocument()
+      expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
     })
   })
 })

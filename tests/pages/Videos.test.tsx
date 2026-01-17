@@ -66,7 +66,7 @@ describe("Videos", () => {
     renderWithRouter()
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Search")).toBeInTheDocument()
+      expect(screen.getByLabelText("Search videos")).toBeInTheDocument()
     })
   })
 
@@ -210,11 +210,11 @@ describe("Videos", () => {
     renderWithRouter()
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Search")).toBeInTheDocument()
+      expect(screen.getByLabelText("Search videos")).toBeInTheDocument()
     })
 
     // Find and update the search input
-    const searchInput = screen.getByLabelText("Search")
+    const searchInput = screen.getByLabelText("Search videos")
 
     await act(async () => {
       fireEvent.change(searchInput, { target: { value: "new search term" } })

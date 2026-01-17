@@ -27,9 +27,10 @@ const VideoSitesSelector: FC<VideoSitesSelectorProps> = props => {
   }, [])
 
   return (
-    <FormControl fullWidth className={props.className}>
+    <FormControl fullWidth size="small" className={props.className}>
       <InputLabel id="video-sites-selector-label">Sites</InputLabel>
       <Select<string[]>
+        size="small"
         multiple={true}
         id="video-sites-selector"
         labelId="video-sites-selector-label"

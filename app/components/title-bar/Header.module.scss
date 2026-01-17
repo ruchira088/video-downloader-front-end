@@ -1,0 +1,48 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5em;
+  margin-bottom: 1em;
+
+  > :first-child {
+    flex: 1;
+  }
+
+  > :last-child {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+@media (width <= 35em) {
+  .header {
+    flex-direction: column;
+  }
+}
+
+.headerLogo {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  text-decoration: none;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.smallLogo {
+  width: 3.5em;
+  height: 3.5em;
+  flex-shrink: 0;
+}
+
+.logoText {
+  text-wrap: nowrap;
+  color: var(--text-color);
+  font-size: 1.1em;
+  font-weight: 600;
+}
