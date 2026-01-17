@@ -42,7 +42,7 @@ describe("LoginForm", () => {
     test("should render password input", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+      expect(screen.getByLabelText("Password")).toBeInTheDocument()
     })
 
     test("should render login button", () => {
@@ -55,7 +55,7 @@ describe("LoginForm", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       expect(screen.getByLabelText(/email/i)).toHaveValue("")
-      expect(screen.getByLabelText(/password/i)).toHaveValue("")
+      expect(screen.getByLabelText("Password")).toHaveValue("")
     })
 
     test("should have email input with type email", () => {
@@ -67,7 +67,7 @@ describe("LoginForm", () => {
     test("should have password input with type password", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
-      expect(screen.getByLabelText(/password/i)).toHaveAttribute("type", "password")
+      expect(screen.getByLabelText("Password")).toHaveAttribute("type", "password")
     })
   })
 
@@ -86,7 +86,7 @@ describe("LoginForm", () => {
       const user = userEvent.setup()
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
-      const passwordInput = screen.getByLabelText(/password/i)
+      const passwordInput = screen.getByLabelText("Password")
       await user.type(passwordInput, "secretpassword")
 
       expect(passwordInput).toHaveValue("secretpassword")
@@ -99,7 +99,7 @@ describe("LoginForm", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       // Fill password but leave email empty
-      await user.type(screen.getByLabelText(/password/i), "password123")
+      await user.type(screen.getByLabelText("Password"), "password123")
       await user.click(screen.getByRole("button", { name: /login/i }))
 
       await waitFor(() => {
@@ -165,7 +165,7 @@ describe("LoginForm", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "   ")
-      await user.type(screen.getByLabelText(/password/i), "password123")
+      await user.type(screen.getByLabelText("Password"), "password123")
       await user.click(screen.getByRole("button", { name: /login/i }))
 
       await waitFor(() => {
@@ -181,7 +181,7 @@ describe("LoginForm", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
-      await user.type(screen.getByLabelText(/password/i), "password123")
+      await user.type(screen.getByLabelText("Password"), "password123")
       await user.click(screen.getByRole("button", { name: /login/i }))
 
       await waitFor(() => {
@@ -195,7 +195,7 @@ describe("LoginForm", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
-      await user.type(screen.getByLabelText(/password/i), "password123")
+      await user.type(screen.getByLabelText("Password"), "password123")
       await user.click(screen.getByRole("button", { name: /login/i }))
 
       await waitFor(() => {
@@ -211,7 +211,7 @@ describe("LoginForm", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
-      await user.type(screen.getByLabelText(/password/i), "wrongpassword")
+      await user.type(screen.getByLabelText("Password"), "wrongpassword")
       await user.click(screen.getByRole("button", { name: /login/i }))
 
       await waitFor(() => {
@@ -225,7 +225,7 @@ describe("LoginForm", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
-      await user.type(screen.getByLabelText(/password/i), "wrongpassword")
+      await user.type(screen.getByLabelText("Password"), "wrongpassword")
       await user.click(screen.getByRole("button", { name: /login/i }))
 
       await waitFor(() => {
@@ -245,7 +245,7 @@ describe("LoginForm", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
-      await user.type(screen.getByLabelText(/password/i), "wrongpassword")
+      await user.type(screen.getByLabelText("Password"), "wrongpassword")
       await user.click(screen.getByRole("button", { name: /login/i }))
 
       await waitFor(() => {
@@ -261,7 +261,7 @@ describe("LoginForm", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
-      await user.type(screen.getByLabelText(/password/i), "wrongpassword")
+      await user.type(screen.getByLabelText("Password"), "wrongpassword")
       await user.click(screen.getByRole("button", { name: /login/i }))
 
       await waitFor(() => {
@@ -276,7 +276,7 @@ describe("LoginForm", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       await user.type(screen.getByLabelText(/email/i), "test@example.com")
-      await user.type(screen.getByLabelText(/password/i), "wrongpassword")
+      await user.type(screen.getByLabelText("Password"), "wrongpassword")
       await user.click(screen.getByRole("button", { name: /login/i }))
 
       await waitFor(() => {
@@ -295,7 +295,7 @@ describe("LoginForm", () => {
       // MUI TextField with error shows aria-invalid
       await waitFor(() => {
         expect(screen.getByLabelText(/email/i)).toHaveAttribute("aria-invalid", "true")
-        expect(screen.getByLabelText(/password/i)).toHaveAttribute("aria-invalid", "true")
+        expect(screen.getByLabelText("Password")).toHaveAttribute("aria-invalid", "true")
       })
     })
 

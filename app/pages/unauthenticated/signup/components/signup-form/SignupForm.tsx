@@ -1,5 +1,7 @@
 import React, { type ChangeEvent, type Dispatch, type FC, type SetStateAction, useState } from "react"
-import { Button, TextField } from "@mui/material"
+import { Button, TextField, InputAdornment, IconButton } from "@mui/material"
+import Visibility from "@mui/icons-material/Visibility"
+import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import { login } from "~/services/authentication/AuthenticationService"
 import { createUser, type CreateUserRequest } from "~/services/user/UserService"
 import styles from "./SignupForm.module.scss"
@@ -55,6 +57,8 @@ const SignupForm: FC<SignupFormProps> = props => {
   const [email, setEmail] = useState<string>("")
   const [password, setPassword] = useState<string>("")
   const [confirmPassword, setConfirmPassword] = useState<string>("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [errors, setErrors] = useState<Errors>(EMPTY_ERRORS)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -160,9 +164,24 @@ const SignupForm: FC<SignupFormProps> = props => {
           onChange={onChange(setPassword)}
           helperText={errors.password}
           label="Password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           className={styles.textField}
           fullWidth
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }
+          }}
         />
         <TextField
           error={errors.confirmPassword != null}
@@ -170,9 +189,24 @@ const SignupForm: FC<SignupFormProps> = props => {
           onChange={onChange(setConfirmPassword)}
           helperText={errors.confirmPassword}
           label="Confirm Password"
-          type="password"
+          type={showConfirmPassword ? "text" : "password"}
           className={styles.textField}
           fullWidth
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    edge="end"
+                  >
+                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }
+          }}
         />
         <div className={styles.signupButton}>
           <Button

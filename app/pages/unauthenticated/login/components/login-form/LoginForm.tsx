@@ -1,5 +1,7 @@
 import React, { type ChangeEvent, type Dispatch, type FC, type SetStateAction, useState } from "react"
-import { Button, TextField } from "@mui/material"
+import { Button, TextField, InputAdornment, IconButton } from "@mui/material"
+import Visibility from "@mui/icons-material/Visibility"
+import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import { login } from "~/services/authentication/AuthenticationService"
 import { type AuthenticationToken } from "~/models/AuthenticationToken"
 import styles from "./LoginForm.module.scss"
@@ -42,6 +44,7 @@ type LoginFormProps = {
 const LoginForm: FC<LoginFormProps> = props => {
   const [email, setEmail] = useState<string>("")
   const [password, setPassword] = useState<string>("")
+  const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Errors>(EMPTY_ERRORS)
 
   const onChange = (callback: Dispatch<SetStateAction<string>>) => (event: ChangeEvent<HTMLInputElement>) => {
@@ -99,9 +102,24 @@ const LoginForm: FC<LoginFormProps> = props => {
             onChange={onChange(setPassword)}
             helperText={errors.password}
             label="Password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             className={styles.textField}
             fullWidth
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }
+            }}
           />
         </div>
         <div className={styles.loginButton}>
