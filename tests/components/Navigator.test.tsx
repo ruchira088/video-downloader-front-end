@@ -47,4 +47,27 @@ describe("Navigator", () => {
     const links = screen.getAllByRole("link")
     expect(links).toHaveLength(6)
   })
+
+  test("should mark the correct tab as active for nested paths", () => {
+    renderWithRouter("/playlists/123")
+
+    // The Playlists tab should be active when on a nested playlist path
+    const playlistsLink = screen.getByRole("link", { name: "Playlists" })
+    // CSS module class names contain "isActive"
+    expect(playlistsLink.className).toContain("isActive")
+  })
+
+  test("should mark the correct tab as active for history path", () => {
+    renderWithRouter("/history")
+
+    const historyLink = screen.getByRole("link", { name: "History" })
+    expect(historyLink.className).toContain("isActive")
+  })
+
+  test("should default to Videos tab when on root path", () => {
+    renderWithRouter("/")
+
+    const videosLink = screen.getByRole("link", { name: "Videos" })
+    expect(videosLink.className).toContain("isActive")
+  })
 })

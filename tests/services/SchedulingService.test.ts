@@ -1,9 +1,10 @@
-import { describe, expect, test, vi, beforeEach } from "vitest"
+import { describe, expect, test, vi, beforeEach, afterEach } from "vitest"
 import { Some, None } from "~/types/Option"
 import { SortBy } from "~/models/SortBy"
 import { Ordering } from "~/models/Ordering"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
 import { WorkerStatus } from "~/models/WorkerStatus"
+import { EventStreamEventType } from "~/pages/authenticated/downloading/EventStreamEventType"
 
 // Mock ApiConfiguration
 vi.mock("~/services/ApiConfiguration", () => ({
@@ -22,6 +23,66 @@ vi.mock("~/services/http/HttpClient", () => ({
   },
 }))
 
+// Mock EventSource
+let mockEventSourceInstance: {
+  url: string
+  withCredentials: boolean
+  listeners: Map<string, ((event: MessageEvent) => void)[]>
+  close: ReturnType<typeof vi.fn>
+  addEventListener: (type: string, listener: (event: MessageEvent) => void) => void
+  removeEventListener: (type: string, listener: (event: MessageEvent) => void) => void
+  simulateMessage: (type: string, data: unknown) => void
+} | null = null
+
+const createMockEventSource = () => {
+  const listeners = new Map<string, ((event: MessageEvent) => void)[]>()
+  return {
+    url: "",
+    withCredentials: false,
+    listeners,
+    close: vi.fn(),
+    addEventListener(type: string, listener: (event: MessageEvent) => void) {
+      if (!listeners.has(type)) {
+        listeners.set(type, [])
+      }
+      listeners.get(type)!.push(listener)
+    },
+    removeEventListener(type: string, listener: (event: MessageEvent) => void) {
+      const typeListeners = listeners.get(type)
+      if (typeListeners) {
+        const index = typeListeners.indexOf(listener)
+        if (index > -1) {
+          typeListeners.splice(index, 1)
+        }
+      }
+    },
+    simulateMessage(type: string, data: unknown) {
+      const typeListeners = listeners.get(type) || []
+      const event = { data: JSON.stringify(data) } as MessageEvent
+      typeListeners.forEach(l => l(event))
+    }
+  }
+}
+
+const originalEventSource = globalThis.EventSource
+
+beforeEach(() => {
+  mockEventSourceInstance = null
+  // Create a constructor function that returns our mock
+  const MockEventSourceConstructor = function(this: unknown, url: string, options?: { withCredentials?: boolean }) {
+    mockEventSourceInstance = createMockEventSource()
+    mockEventSourceInstance.url = url
+    mockEventSourceInstance.withCredentials = options?.withCredentials ?? false
+    return mockEventSourceInstance
+  } as unknown as typeof EventSource
+
+  globalThis.EventSource = MockEventSourceConstructor
+})
+
+afterEach(() => {
+  globalThis.EventSource = originalEventSource
+})
+
 import { axiosClient } from "~/services/http/HttpClient"
 import {
   scheduleVideo,
@@ -31,6 +92,7 @@ import {
   updateWorkerStatus,
   deleteScheduledVideoById,
   fetchScheduledVideos,
+  scheduledVideoDownloadStream,
 } from "~/services/scheduling/SchedulingService"
 
 const mockAxiosGet = vi.mocked(axiosClient.get)
@@ -211,6 +273,96 @@ describe("SchedulingService", () => {
     })
   })
 
-  // Note: scheduledVideoDownloadStream uses EventSource which is difficult to mock
-  // in jsdom. The function is tested via integration tests.
+  describe("scheduledVideoDownloadStream", () => {
+    test("should create EventSource with correct URL and credentials", () => {
+      const onProgress = vi.fn()
+      const onUpdate = vi.fn()
+
+      scheduledVideoDownloadStream(onProgress, onUpdate)
+
+      expect(mockEventSourceInstance).not.toBeNull()
+      expect(mockEventSourceInstance!.url).toBe("http://test-api.example.com/schedule/updates")
+      expect(mockEventSourceInstance!.withCredentials).toBe(true)
+    })
+
+    test("should call onDownloadProgress when receiving ACTIVE_DOWNLOAD event", () => {
+      const onProgress = vi.fn()
+      const onUpdate = vi.fn()
+
+      scheduledVideoDownloadStream(onProgress, onUpdate)
+
+      const mockProgressData = {
+        videoId: "video-123",
+        updatedAt: "2024-01-15T10:00:00+00:00",
+        bytes: 1000,
+      }
+
+      mockEventSourceInstance!.simulateMessage(EventStreamEventType.ACTIVE_DOWNLOAD, mockProgressData)
+
+      expect(onProgress).toHaveBeenCalledWith(expect.objectContaining({
+        videoId: "video-123",
+        bytes: 1000,
+      }))
+    })
+
+    test("should call onScheduledVideoDownloadUpdate when receiving SCHEDULED_VIDEO_DOWNLOAD_UPDATE event", () => {
+      const onProgress = vi.fn()
+      const onUpdate = vi.fn()
+
+      scheduledVideoDownloadStream(onProgress, onUpdate)
+
+      const mockUpdateData = createMockScheduledDownload("video-456", "Queued")
+
+      mockEventSourceInstance!.simulateMessage(EventStreamEventType.SCHEDULED_VIDEO_DOWNLOAD_UPDATE, mockUpdateData)
+
+      expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({
+        videoMetadata: expect.objectContaining({
+          id: "video-456"
+        })
+      }))
+    })
+
+    test("should return cleanup function that removes listeners and closes connection", () => {
+      const onProgress = vi.fn()
+      const onUpdate = vi.fn()
+
+      const cleanup = scheduledVideoDownloadStream(onProgress, onUpdate)
+
+      // Store initial listener counts
+      const initialActiveDownloadListeners = mockEventSourceInstance!.listeners.get(EventStreamEventType.ACTIVE_DOWNLOAD)?.length ?? 0
+      const initialUpdateListeners = mockEventSourceInstance!.listeners.get(EventStreamEventType.SCHEDULED_VIDEO_DOWNLOAD_UPDATE)?.length ?? 0
+
+      expect(initialActiveDownloadListeners).toBe(1)
+      expect(initialUpdateListeners).toBe(1)
+
+      // Call cleanup
+      cleanup()
+
+      // Verify close was called
+      expect(mockEventSourceInstance!.close).toHaveBeenCalled()
+
+      // Verify listeners were removed
+      expect(mockEventSourceInstance!.listeners.get(EventStreamEventType.ACTIVE_DOWNLOAD)?.length ?? 0).toBe(0)
+      expect(mockEventSourceInstance!.listeners.get(EventStreamEventType.SCHEDULED_VIDEO_DOWNLOAD_UPDATE)?.length ?? 0).toBe(0)
+    })
+
+    test("should not call handlers after cleanup", () => {
+      const onProgress = vi.fn()
+      const onUpdate = vi.fn()
+
+      const cleanup = scheduledVideoDownloadStream(onProgress, onUpdate)
+      cleanup()
+
+      // Simulate messages after cleanup - handlers should not be called since listeners were removed
+      const mockProgressData = {
+        videoId: "video-123",
+        updatedAt: "2024-01-15T10:00:00+00:00",
+        bytes: 1000,
+      }
+
+      mockEventSourceInstance!.simulateMessage(EventStreamEventType.ACTIVE_DOWNLOAD, mockProgressData)
+
+      expect(onProgress).not.toHaveBeenCalled()
+    })
+  })
 })

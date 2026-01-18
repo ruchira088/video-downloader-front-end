@@ -238,5 +238,6 @@ describe("VideoSearchPanel", () => {
 
       consoleSpy.mockRestore()
     })
+
   })
 })

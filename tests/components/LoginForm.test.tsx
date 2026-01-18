@@ -69,6 +69,28 @@ describe("LoginForm", () => {
 
       expect(screen.getByLabelText("Password")).toHaveAttribute("type", "password")
     })
+
+    test("should toggle password visibility when clicking visibility button", async () => {
+      const user = userEvent.setup()
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+
+      const passwordInput = screen.getByLabelText("Password")
+      expect(passwordInput).toHaveAttribute("type", "password")
+
+      // Click the visibility toggle button
+      const toggleButton = screen.getByRole("button", { name: /show password/i })
+      await user.click(toggleButton)
+
+      // Password should now be visible (type text)
+      expect(passwordInput).toHaveAttribute("type", "text")
+
+      // Button should now say "Hide password"
+      const hideButton = screen.getByRole("button", { name: /hide password/i })
+      await user.click(hideButton)
+
+      // Password should be hidden again
+      expect(passwordInput).toHaveAttribute("type", "password")
+    })
   })
 
   describe("Input Handling", () => {

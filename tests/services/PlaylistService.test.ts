@@ -194,4 +194,97 @@ describe("PlaylistService", () => {
       })
     })
   })
+
+  describe("addVideoToPlaylist", () => {
+    test("should add video to existing playlist videos", async () => {
+      const existingPlaylist = {
+        ...createMockPlaylist("playlist-123", "My Playlist", [
+          createMockVideo("video-1", "Video 1")
+        ]),
+        videos: [createMockVideo("video-1", "Video 1")]
+      }
+      const updatedPlaylist = createMockPlaylist("playlist-123", "My Playlist", [
+        createMockVideo("video-1", "Video 1"),
+        createMockVideo("video-2", "Video 2")
+      ])
+      mockAxiosPut.mockResolvedValue({ data: updatedPlaylist })
+
+      const { addVideoToPlaylist } = await import("~/services/playlist/PlaylistService")
+      await addVideoToPlaylist(existingPlaylist as any, "video-2")
+
+      expect(mockAxiosPut).toHaveBeenCalledWith("/playlists/id/playlist-123", {
+        title: undefined,
+        description: undefined,
+        videoIds: ["video-1", "video-2"]
+      })
+    })
+
+    test("should add video to empty playlist", async () => {
+      const existingPlaylist = {
+        ...createMockPlaylist("playlist-123", "My Playlist", []),
+        videos: []
+      }
+      const updatedPlaylist = createMockPlaylist("playlist-123", "My Playlist", [
+        createMockVideo("video-1", "Video 1")
+      ])
+      mockAxiosPut.mockResolvedValue({ data: updatedPlaylist })
+
+      const { addVideoToPlaylist } = await import("~/services/playlist/PlaylistService")
+      await addVideoToPlaylist(existingPlaylist as any, "video-1")
+
+      expect(mockAxiosPut).toHaveBeenCalledWith("/playlists/id/playlist-123", {
+        title: undefined,
+        description: undefined,
+        videoIds: ["video-1"]
+      })
+    })
+  })
+
+  describe("removeVideoFromPlaylist", () => {
+    test("should remove video from playlist", async () => {
+      const existingPlaylist = {
+        ...createMockPlaylist("playlist-123", "My Playlist", [
+          createMockVideo("video-1", "Video 1"),
+          createMockVideo("video-2", "Video 2")
+        ]),
+        videos: [
+          createMockVideo("video-1", "Video 1"),
+          createMockVideo("video-2", "Video 2")
+        ]
+      }
+      const updatedPlaylist = createMockPlaylist("playlist-123", "My Playlist", [
+        createMockVideo("video-2", "Video 2")
+      ])
+      mockAxiosPut.mockResolvedValue({ data: updatedPlaylist })
+
+      const { removeVideoFromPlaylist } = await import("~/services/playlist/PlaylistService")
+      await removeVideoFromPlaylist(existingPlaylist as any, "video-1")
+
+      expect(mockAxiosPut).toHaveBeenCalledWith("/playlists/id/playlist-123", {
+        title: undefined,
+        description: undefined,
+        videoIds: ["video-2"]
+      })
+    })
+
+    test("should result in empty playlist when removing last video", async () => {
+      const existingPlaylist = {
+        ...createMockPlaylist("playlist-123", "My Playlist", [
+          createMockVideo("video-1", "Video 1")
+        ]),
+        videos: [createMockVideo("video-1", "Video 1")]
+      }
+      const updatedPlaylist = createMockPlaylist("playlist-123", "My Playlist", [])
+      mockAxiosPut.mockResolvedValue({ data: updatedPlaylist })
+
+      const { removeVideoFromPlaylist } = await import("~/services/playlist/PlaylistService")
+      await removeVideoFromPlaylist(existingPlaylist as any, "video-1")
+
+      expect(mockAxiosPut).toHaveBeenCalledWith("/playlists/id/playlist-123", {
+        title: undefined,
+        description: undefined,
+        videoIds: []
+      })
+    })
+  })
 })

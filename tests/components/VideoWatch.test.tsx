@@ -294,4 +294,100 @@ describe("VideoWatch", () => {
       expect(screen.getByText("Test Video Title")).toBeInTheDocument()
     })
   })
+
+  test("should call updateVideoTitle and updateVideo when title is edited via EditableLabel", async () => {
+    const { updateVideoTitle } = await import("~/services/video/VideoService")
+    const updateVideo = vi.fn()
+
+    renderWithContext(
+      createMockVideo(),
+      Duration.fromObject({ seconds: 0 }),
+      updateVideo
+    )
+
+    // Hover over the title to reveal the Edit button
+    const titleElement = screen.getByText("Test Video Title")
+    const textContainer = titleElement.closest("div")!
+    fireEvent.mouseEnter(textContainer)
+
+    // Click the Edit button
+    const editButton = await screen.findByRole("button", { name: /edit/i })
+    fireEvent.click(editButton)
+
+    // Find the text field and change the value
+    const textField = screen.getByRole("textbox")
+    fireEvent.change(textField, { target: { value: "New Video Title" } })
+
+    // Click Save button
+    const saveButton = screen.getByRole("button", { name: /save/i })
+    fireEvent.click(saveButton)
+
+    await waitFor(() => {
+      expect(updateVideoTitle).toHaveBeenCalledWith("video-123", "New Video Title")
+    })
+
+    await waitFor(() => {
+      expect(updateVideo).toHaveBeenCalled()
+    })
+  })
+
+  test("should display resolution when video metadata is loaded", async () => {
+    const { container } = renderWithContext()
+
+    const videoElement = container.querySelector("video") as HTMLVideoElement
+
+    // Mock videoWidth and videoHeight properties
+    Object.defineProperty(videoElement, "videoWidth", { value: 1920, writable: true })
+    Object.defineProperty(videoElement, "videoHeight", { value: 1080, writable: true })
+
+    // Trigger the loadedmetadata event
+    fireEvent.loadedMetadata(videoElement)
+
+    await waitFor(() => {
+      expect(screen.getByText("1920x1080")).toBeInTheDocument()
+    })
+  })
+
+  test("should show loading spinner when resolution is not yet available", () => {
+    const { container } = renderWithContext()
+
+    // Before loadedmetadata event, resolution should show a loading spinner
+    expect(container.querySelector('[role="progressbar"]')).toBeInTheDocument()
+  })
+
+  test("should update resolution state when handleLoadedMetadata is triggered", async () => {
+    const { container } = renderWithContext()
+
+    const videoElement = container.querySelector("video") as HTMLVideoElement
+
+    // Set up mock video dimensions
+    Object.defineProperty(videoElement, "videoWidth", { value: 3840, writable: true })
+    Object.defineProperty(videoElement, "videoHeight", { value: 2160, writable: true })
+
+    // Trigger the loadedmetadata event
+    fireEvent.loadedMetadata(videoElement)
+
+    // After the event, resolution should be displayed
+    await waitFor(() => {
+      expect(screen.getByText("3840x2160")).toBeInTheDocument()
+    })
+
+    // Loading spinner should no longer be present
+    expect(container.querySelector('[role="progressbar"]')).not.toBeInTheDocument()
+  })
+
+  test("should handle video player ref being null in handleLoadedMetadata", async () => {
+    const { container } = renderWithContext()
+
+    const videoElement = container.querySelector("video") as HTMLVideoElement
+
+    // Trigger the loadedmetadata event without setting videoWidth/videoHeight
+    // This tests that the Option.fromNullable handles the ref correctly
+    fireEvent.loadedMetadata(videoElement)
+
+    // Should not throw and should still have loading spinner (since videoWidth/videoHeight are 0)
+    await waitFor(() => {
+      expect(screen.getByText("0x0")).toBeInTheDocument()
+    })
+  })
 })

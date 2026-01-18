@@ -103,4 +103,145 @@ describe("Playlists", () => {
       expect(screen.getByText("Create New Playlist")).toBeInTheDocument()
     })
   })
+
+  test("should close dialog when cancel button is clicked", async () => {
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /New Playlist/i })).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole("button", { name: /New Playlist/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Create New Playlist")).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole("button", { name: /Cancel/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByText("Create New Playlist")).not.toBeInTheDocument()
+    })
+  })
+
+  test("should add new playlist to list when created and close dialog", async () => {
+    const { createPlaylist } = await import("~/services/playlist/PlaylistService")
+    const newPlaylist = createMockPlaylist("3", "My New Playlist")
+    vi.mocked(createPlaylist).mockResolvedValue(newPlaylist)
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByText("Favorites")).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole("button", { name: /New Playlist/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Create New Playlist")).toBeInTheDocument()
+    })
+
+    const nameInput = screen.getByLabelText(/Name/i)
+    fireEvent.change(nameInput, { target: { value: "My New Playlist" } })
+
+    fireEvent.click(screen.getByRole("button", { name: /^Create$/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText("My New Playlist")).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      expect(screen.queryByText("Create New Playlist")).not.toBeInTheDocument()
+    })
+  })
+
+  test("should show Load More button when there are more playlists", async () => {
+    const { fetchPlaylists } = await import("~/services/playlist/PlaylistService")
+    const manyPlaylists = Array.from({ length: 50 }, (_, i) =>
+      createMockPlaylist(`${i + 1}`, `Playlist ${i + 1}`)
+    )
+    vi.mocked(fetchPlaylists).mockResolvedValue(manyPlaylists)
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByText("Playlist 1")).toBeInTheDocument()
+    })
+
+    expect(screen.getByRole("button", { name: /Load More/i })).toBeInTheDocument()
+  })
+
+  test("should load more playlists when Load More button is clicked", async () => {
+    const { fetchPlaylists } = await import("~/services/playlist/PlaylistService")
+    const firstPagePlaylists = Array.from({ length: 50 }, (_, i) =>
+      createMockPlaylist(`${i + 1}`, `Playlist ${i + 1}`)
+    )
+    const secondPagePlaylists = Array.from({ length: 10 }, (_, i) =>
+      createMockPlaylist(`${i + 51}`, `Playlist ${i + 51}`)
+    )
+
+    vi.mocked(fetchPlaylists)
+      .mockResolvedValueOnce(firstPagePlaylists)
+      .mockResolvedValueOnce(secondPagePlaylists)
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByText("Playlist 1")).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole("button", { name: /Load More/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Playlist 51")).toBeInTheDocument()
+    })
+  })
+
+  test("should hide Load More button when all playlists are loaded", async () => {
+    const { fetchPlaylists } = await import("~/services/playlist/PlaylistService")
+    const firstPagePlaylists = Array.from({ length: 50 }, (_, i) =>
+      createMockPlaylist(`${i + 1}`, `Playlist ${i + 1}`)
+    )
+    const lastPagePlaylists = Array.from({ length: 10 }, (_, i) =>
+      createMockPlaylist(`${i + 51}`, `Playlist ${i + 51}`)
+    )
+
+    vi.mocked(fetchPlaylists)
+      .mockResolvedValueOnce(firstPagePlaylists)
+      .mockResolvedValueOnce(lastPagePlaylists)
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByText("Playlist 1")).toBeInTheDocument()
+    })
+
+    expect(screen.getByRole("button", { name: /Load More/i })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: /Load More/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Playlist 51")).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: /Load More/i })).not.toBeInTheDocument()
+    })
+  })
+
+  test("should not show Load More button when fewer than page size playlists returned", async () => {
+    const { fetchPlaylists } = await import("~/services/playlist/PlaylistService")
+    const fewPlaylists = Array.from({ length: 10 }, (_, i) =>
+      createMockPlaylist(`${i + 1}`, `Playlist ${i + 1}`)
+    )
+    vi.mocked(fetchPlaylists).mockResolvedValue(fewPlaylists)
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByText("Playlist 1")).toBeInTheDocument()
+    })
+
+    expect(screen.queryByRole("button", { name: /Load More/i })).not.toBeInTheDocument()
+  })
 })

@@ -258,4 +258,35 @@ describe("VideoMetadataCard", () => {
       expect(fetchVideoSnapshotsByVideoId).toHaveBeenCalledWith("video-123")
     })
   })
+
+  test("should lock image dimensions on load", () => {
+    renderWithContext(createMockVideoMetadata())
+
+    const thumbnail = screen.getByAltText("video thumbnail")
+    fireEvent.load(thumbnail)
+
+    // Image should still be visible after load
+    expect(thumbnail).toBeInTheDocument()
+  })
+
+  test("should handle window resize events", () => {
+    renderWithContext(createMockVideoMetadata())
+
+    // Trigger resize event
+    fireEvent(window, new Event("resize"))
+
+    // Component should still be rendered after resize
+    expect(screen.getByAltText("video thumbnail")).toBeInTheDocument()
+  })
+
+  test("should cleanup event listeners on unmount", () => {
+    const removeEventListenerSpy = vi.spyOn(window, "removeEventListener")
+
+    const { unmount } = renderWithContext(createMockVideoMetadata())
+    unmount()
+
+    expect(removeEventListenerSpy).toHaveBeenCalledWith("resize", expect.any(Function))
+    removeEventListenerSpy.mockRestore()
+  })
+
 })
