@@ -1,16 +1,10 @@
-.rangeSlider {
-}
-
 .description {
-  text-align: left;
+  display: flex;
+  justify-content: space-between;
 }
 
 .title {
   font-weight: bold;
-}
-
-.rangeDisplay {
-  text-align: left;
 }
 
 .slider {

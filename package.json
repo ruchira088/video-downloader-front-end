@@ -58,6 +58,7 @@
     "typecheck": "react-router typegen && tsc",
     "env-vars": "node scripts/env-vars.mjs",
     "lint": "eslint app tests --ext .ts,.tsx",
+    "ci:checks": "npm run typecheck && npm run lint && npm run test:coverage",
     "lint:fix": "eslint app tests --ext .ts,.tsx --fix"
   }
 }
