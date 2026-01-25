@@ -38,6 +38,7 @@
     "@mui/icons-material": "^7.2.0",
     "@mui/material": "^7.2.0",
     "@react-router/node": "^7.11.0",
+    "@sentry/react": "^10.36.0",
     "axios": "^1.10.0",
     "classnames": "^2.5.1",
     "isbot": "^5",

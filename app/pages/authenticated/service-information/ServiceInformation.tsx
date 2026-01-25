@@ -7,7 +7,7 @@ import {
 import { BackendServiceInformation } from "~/models/BackendServiceInformation"
 import { LoadableComponent } from "~/components/hoc/loading/LoadableComponent"
 import BackendInformation from "./components/BackendInformation"
-import { configuration } from "~/services/ApiConfiguration"
+import { apiConfiguration } from "~/services/ApiConfiguration"
 import FrontendInformation from "./components/FrontendInformation"
 import { CircularProgress, IconButton, Tooltip } from "@mui/material"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
@@ -232,7 +232,7 @@ const ServiceInformation = () => {
       <div className={styles.serviceDetails}>
         <div className={styles.backend}>
           <div className={styles.sectionTitle}>Backend</div>
-          <ServiceInformationItem label="API URL" value={Some.of(<CopyableText text={configuration.baseUrl} />)}/>
+          <ServiceInformationItem label="API URL" value={Some.of(<CopyableText text={apiConfiguration.baseUrl} />)}/>
           <LoadableComponent>
             {backendInformation.map((backendServiceInfo) => <BackendInformation
               backendServiceInformation={backendServiceInfo}/>)}

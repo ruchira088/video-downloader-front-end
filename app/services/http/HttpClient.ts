@@ -1,9 +1,9 @@
 import axios, { type AxiosInstance } from "axios"
-import { configuration } from "~/services/ApiConfiguration"
+import { apiConfiguration } from "~/services/ApiConfiguration"
 import { removeAuthenticationToken } from "../authentication/AuthenticationService"
 
 export const axiosClient: AxiosInstance = axios.create({
-  baseURL: configuration.baseUrl,
+  baseURL: apiConfiguration.baseUrl,
   withCredentials: true,
 })
 

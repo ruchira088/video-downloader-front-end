@@ -28,9 +28,9 @@ describe("ApiConfiguration", () => {
 
       // Reset module cache and re-import
       vi.resetModules()
-      const { configuration } = await import("~/services/ApiConfiguration")
+      const { apiConfiguration } = await import("~/services/ApiConfiguration")
 
-      expect(configuration.baseUrl).toBe("https://custom-api.example.com")
+      expect(apiConfiguration.baseUrl).toBe("https://custom-api.example.com")
       expect(mockHistory.replaceState).toHaveBeenCalled()
     })
 
@@ -76,9 +76,9 @@ describe("ApiConfiguration", () => {
       })
 
       vi.resetModules()
-      const { configuration } = await import("~/services/ApiConfiguration")
+      const { apiConfiguration } = await import("~/services/ApiConfiguration")
 
-      expect(configuration.baseUrl).toBe("https://api.staging.video.dev.ruchij.com")
+      expect(apiConfiguration.baseUrl).toBe("https://api.staging.video.dev.ruchij.com")
     })
 
     test("should use API_URL_MAPPINGS for videos.ruchij.com", async () => {
@@ -95,9 +95,9 @@ describe("ApiConfiguration", () => {
       })
 
       vi.resetModules()
-      const { configuration } = await import("~/services/ApiConfiguration")
+      const { apiConfiguration } = await import("~/services/ApiConfiguration")
 
-      expect(configuration.baseUrl).toBe("https://api.video.home.ruchij.com")
+      expect(apiConfiguration.baseUrl).toBe("https://api.video.home.ruchij.com")
     })
 
     test("should fallback to api.{host} for unknown hosts", async () => {
@@ -114,9 +114,9 @@ describe("ApiConfiguration", () => {
       })
 
       vi.resetModules()
-      const { configuration } = await import("~/services/ApiConfiguration")
+      const { apiConfiguration } = await import("~/services/ApiConfiguration")
 
-      expect(configuration.baseUrl).toBe("https://api.unknown-host.example.com")
+      expect(apiConfiguration.baseUrl).toBe("https://api.unknown-host.example.com")
     })
 
     test("should handle http protocol", async () => {
@@ -133,9 +133,9 @@ describe("ApiConfiguration", () => {
       })
 
       vi.resetModules()
-      const { configuration } = await import("~/services/ApiConfiguration")
+      const { apiConfiguration } = await import("~/services/ApiConfiguration")
 
-      expect(configuration.baseUrl).toBe("http://api.localhost:3000")
+      expect(apiConfiguration.baseUrl).toBe("http://api.localhost:3000")
     })
   })
 })

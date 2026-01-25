@@ -1,4 +1,4 @@
-import {configuration} from "~/services/ApiConfiguration"
+import {apiConfiguration} from "~/services/ApiConfiguration"
 import {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
 import {axiosClient} from "~/services/http/HttpClient"
 import {SortBy} from "~/models/SortBy"
@@ -15,7 +15,7 @@ export const scheduledVideoDownloadStream = (
   onDownloadProgress: (downloadProgress: DownloadProgress) => void,
   onScheduledVideoDownloadUpdate: (scheduledVideoDownload: ScheduledVideoDownload) => void
 ): (() => void) => {
-  const eventSource = new EventSource(`${configuration.baseUrl}/schedule/updates`, {withCredentials: true})
+  const eventSource = new EventSource(`${apiConfiguration.baseUrl}/schedule/updates`, {withCredentials: true})
 
   const onActionDownloadMessage = (messageEvent: MessageEvent) => {
     const downloadProgress = zodParse(DownloadProgress, JSON.parse(messageEvent.data))

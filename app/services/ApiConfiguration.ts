@@ -1,10 +1,10 @@
+import { Environment, getEnvironment } from "~/services/Config"
+
 const API_URL_QUERY_PARAMETER = "API_URL"
 
-const API_URL_MAPPINGS: Record<string, string> = {
-  "staging.videos.ruchij.com": "api.staging.video.dev.ruchij.com",
-  "videos.ruchij.com": "api.video.home.ruchij.com",
-  "staging.video.dev.ruchij.com": "api.staging.video.dev.ruchij.com",
-  "video.home.ruchij.com": "api.video.home.ruchij.com"
+const API_URL_MAPPINGS: Record<Environment.Staging | Environment.Production, string> = {
+  [Environment.Staging]: "api.staging.video.dev.ruchij.com",
+  [Environment.Production]: "api.video.home.ruchij.com"
 }
 
 const inferBaseApiUrl = (): string => {
@@ -23,11 +23,15 @@ const inferBaseApiUrl = (): string => {
 
     if (apiUrlViaEnv) {
       return apiUrlViaEnv
-    } else if (location.host in API_URL_MAPPINGS) {
-      return `${location.protocol}//${API_URL_MAPPINGS[location.host]}`
     } else {
-      const apiUrl = `${location.protocol}//api.${location.host}`
-      return apiUrl
+      const environment = getEnvironment()
+
+      if (environment in API_URL_MAPPINGS) {
+        return `${location.protocol}//${API_URL_MAPPINGS[environment as Environment.Staging | Environment.Production]}`
+      } else {
+        const apiUrl = `${location.protocol}//api.${location.host}`
+        return apiUrl
+      }
     }
   }
 }
@@ -36,6 +40,6 @@ export interface ApiConfiguration {
   readonly baseUrl: string
 }
 
-export const configuration: ApiConfiguration = {
+export const apiConfiguration: ApiConfiguration = {
   baseUrl: inferBaseApiUrl(),
 }

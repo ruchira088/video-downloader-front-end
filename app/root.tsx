@@ -1,10 +1,10 @@
+import React, { type ReactNode, useEffect } from "react"
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router"
-
 import type { Route } from "./+types/root"
 import "./index.scss"
-import React, { type ReactNode } from "react"
 import { ApplicationConfigurationProvider } from "~/providers/ApplicationConfigurationProvider"
 import smallLogo from "~/images/small-logo.svg"
+import { initSentry } from "~/services/Sentry"
 
 export function meta(_args: Route.MetaArgs) {
   return [
@@ -45,6 +45,10 @@ export function Layout({children}: { children: ReactNode }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    initSentry()
+  }, [])
+
   return (
     <ApplicationConfigurationProvider>
       <Outlet />

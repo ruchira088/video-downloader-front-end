@@ -1,6 +1,6 @@
 import React from "react"
-import { configuration } from "~/services/ApiConfiguration"
+import { apiConfiguration } from "~/services/ApiConfiguration"
 
-const ServerErrorPage = () => <div>Unable to connect to {configuration.baseUrl}</div>
+const ServerErrorPage = () => <div>Unable to connect to {apiConfiguration.baseUrl}</div>
 
 export default ServerErrorPage
