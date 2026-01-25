@@ -27,7 +27,7 @@ const VideoSitesSelector: FC<VideoSitesSelectorProps> = props => {
   }, [])
 
   return (
-    <FormControl fullWidth size="small" className={props.className}>
+    <FormControl size="small" className={props.className} sx={{ minWidth: "7em" }}>
       <InputLabel id="video-sites-selector-label">Sites</InputLabel>
       <Select<string[]>
         size="small"
@@ -35,6 +35,7 @@ const VideoSitesSelector: FC<VideoSitesSelectorProps> = props => {
         id="video-sites-selector"
         labelId="video-sites-selector-label"
         label="Sites"
+        autoWidth
         onChange={(changeEvent) => props.onChange(changeEvent.target.value as string[])}
         renderValue={(selected) => <SelectedSites sites={selected}/>}
         value={props.videoSites}

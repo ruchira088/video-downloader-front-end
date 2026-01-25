@@ -3,22 +3,6 @@
   flex-direction: column;
   gap: 1em;
   container-type: inline-size;
-
-  :global(.MuiInputBase-root) {
-    height: 50px;
-  }
-
-  :global(.MuiFormControl-root .MuiOutlinedInput-input.MuiOutlinedInput-input) {
-    padding: 13.5px 14px;
-  }
-
-  :global(.MuiFormControl-root .MuiSelect-select.MuiSelect-select.MuiOutlinedInput-input) {
-    padding: 13.5px 32px 13.5px 14px;
-  }
-
-  :global(.MuiFormControl-root .MuiInputLabel-outlined:not(.MuiInputLabel-shrink)) {
-    transform: translate(14px, 14px) scale(1);
-  }
 }
 
 .search {
@@ -36,14 +20,6 @@
   align-items: center;
   gap: 0.75em;
   flex-shrink: 0;
-}
-
-.videoSiteSelector {
-  width: 12em;
-}
-
-.sortBy {
-  width: 10em;
 }
 
 .ordering {

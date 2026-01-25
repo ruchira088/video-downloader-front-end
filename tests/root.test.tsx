@@ -57,7 +57,8 @@ describe("root", () => {
     test("should render loading indicator", () => {
       render(<HydrateFallback />)
 
-      expect(screen.getByRole("progressbar")).toBeInTheDocument()
+      expect(screen.getByRole("heading", { name: "Video Downloader" })).toBeInTheDocument()
+      expect(screen.getByRole("img", { name: "Video Downloader" })).toBeInTheDocument()
     })
   })
 

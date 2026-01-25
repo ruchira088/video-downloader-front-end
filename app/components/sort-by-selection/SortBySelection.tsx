@@ -35,7 +35,7 @@ const prettySortByLabel = (value: SortBy): string =>
   value.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")
 
 const SortBySelection: FC<SortBySelectionProps> = props => (
-  <FormControl fullWidth size="small" className={props.className}>
+  <FormControl size="small" className={props.className} sx={{ minWidth: "6em" }}>
     <InputLabel id="sort-by-selector-label">Sort by</InputLabel>
     <Select
       size="small"
@@ -43,6 +43,7 @@ const SortBySelection: FC<SortBySelectionProps> = props => (
       labelId="sort-by-selector-label"
       value={props.sortBy}
       label="Sort by"
+      autoWidth
       onChange={(changeEvent: SelectChangeEvent<SortBy>) => props.onChange(changeEvent.target.value as SortBy)}
       renderValue={(value) =>
         <span style={{ display: "flex", alignItems: "center", gap: 8, overflow: "hidden" }}>
