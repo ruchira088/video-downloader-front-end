@@ -4,7 +4,7 @@ import ServerErrorPage from "~/pages/authenticated/server-error/ServerErrorPage"
 import React from "react"
 
 vi.mock("~/services/ApiConfiguration", () => ({
-  configuration: {
+  apiConfiguration: {
     baseUrl: "https://api.example.com",
   },
 }))

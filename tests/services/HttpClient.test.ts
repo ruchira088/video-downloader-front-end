@@ -2,7 +2,7 @@ import { describe, expect, test, vi, beforeEach, afterEach } from "vitest"
 
 // Mock the ApiConfiguration before importing HttpClient
 vi.mock("~/services/ApiConfiguration", () => ({
-  configuration: {
+  apiConfiguration: {
     baseUrl: "http://test-api.example.com",
   },
 }))

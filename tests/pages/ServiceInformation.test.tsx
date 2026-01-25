@@ -14,7 +14,7 @@ vi.mock("~/services/health/HealthCheckService", () => ({
 }))
 
 vi.mock("~/services/ApiConfiguration", () => ({
-  configuration: {
+  apiConfiguration: {
     baseUrl: "https://api.example.com",
   },
 }))

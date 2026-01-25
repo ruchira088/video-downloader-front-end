@@ -8,7 +8,7 @@ import { EventStreamEventType } from "~/pages/authenticated/downloading/EventStr
 
 // Mock ApiConfiguration
 vi.mock("~/services/ApiConfiguration", () => ({
-  configuration: {
+  apiConfiguration: {
     baseUrl: "http://test-api.example.com",
   },
 }))

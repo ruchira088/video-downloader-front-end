@@ -14,7 +14,7 @@ const createFileResource = <T extends FileResourceType>(id: string, type: T): Fi
 
 // Mock the dependencies
 vi.mock("~/services/ApiConfiguration", () => ({
-  configuration: {
+  apiConfiguration: {
     baseUrl: "https://api.example.com",
   },
 }))
