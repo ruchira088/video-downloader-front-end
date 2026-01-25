@@ -41,6 +41,7 @@ const Navigator = () => {
         navigationTabs.map((navigationTab, index) => (
             <Link
               to={navigationTab.path}
+              prefetch="intent"
               className={
                 classNames(
                   styles.navigatorTab,
