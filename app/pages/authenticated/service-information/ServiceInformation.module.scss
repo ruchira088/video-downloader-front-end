@@ -46,6 +46,24 @@
     }
   }
 
+  .copyableText {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+
+    .copyButton {
+      padding: 0.25em;
+      color: var(--text-color);
+      opacity: 0.6;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+        opacity: 1;
+        background-color: rgba(128, 128, 128, 0.1);
+      }
+    }
+  }
+
   .healthChecks {
     background-color: var(--card-background-color);
     border-radius: 0.5em;

@@ -9,7 +9,9 @@ import { LoadableComponent } from "~/components/hoc/loading/LoadableComponent"
 import BackendInformation from "./components/BackendInformation"
 import { configuration } from "~/services/ApiConfiguration"
 import FrontendInformation from "./components/FrontendInformation"
-import { CircularProgress } from "@mui/material"
+import { CircularProgress, IconButton, Tooltip } from "@mui/material"
+import ContentCopyIcon from "@mui/icons-material/ContentCopy"
+import CheckIcon from "@mui/icons-material/Check"
 import { None, type Option, Some } from "~/types/Option"
 import Helmet from "~/components/helmet/Helmet"
 import { DateTime } from "luxon"
@@ -40,6 +42,36 @@ export const ServiceInformationItem = (serviceInformationItem: ServiceInformatio
         </div>
       )
     )
+
+type CopyableTextProps = {
+  readonly text: string
+}
+
+const CopyableText: FC<CopyableTextProps> = ({ text }) => {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <span className={styles.copyableText}>
+      <span>{text}</span>
+      <Tooltip title={copied ? "Copied!" : "Copy to clipboard"}>
+        <IconButton
+          size="small"
+          onClick={handleCopy}
+          className={styles.copyButton}
+          aria-label="Copy to clipboard"
+        >
+          {copied ? <CheckIcon fontSize="small" /> : <ContentCopyIcon fontSize="small" />}
+        </IconButton>
+      </Tooltip>
+    </span>
+  )
+}
 
 type HealthCheckDetails = { readonly timestamp: DateTime } & HealthCheck
 
@@ -200,7 +232,7 @@ const ServiceInformation = () => {
       <div className={styles.serviceDetails}>
         <div className={styles.backend}>
           <div className={styles.sectionTitle}>Backend</div>
-          <ServiceInformationItem label="API URL" value={Some.of(configuration.baseUrl)}/>
+          <ServiceInformationItem label="API URL" value={Some.of(<CopyableText text={configuration.baseUrl} />)}/>
           <LoadableComponent>
             {backendInformation.map((backendServiceInfo) => <BackendInformation
               backendServiceInformation={backendServiceInfo}/>)}
