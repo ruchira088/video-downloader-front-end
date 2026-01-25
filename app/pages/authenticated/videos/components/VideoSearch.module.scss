@@ -60,10 +60,11 @@
 
 .slider {
   flex: 1;
-  min-width: 0;
+  min-width: 12em;
+  padding: 0 0.5em;
 }
 
-@media (width <= 60em) {
+@media (width <= 70em) {
   .filtersRow {
     flex-direction: column;
     align-items: stretch;

@@ -1,12 +1,23 @@
+.rangeSlider {
+  min-width: 12em;
+}
+
 .description {
   display: flex;
   justify-content: space-between;
+  gap: 1em;
 }
 
 .title {
   font-weight: bold;
+  white-space: nowrap;
+}
+
+.rangeDisplay {
+  white-space: nowrap;
+  text-align: right;
 }
 
 .slider {
-  display: inline-block;
+  display: block;
 }

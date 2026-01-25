@@ -7,10 +7,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: var(--card-background-color);
-  border-radius: 0.5em;
-  padding: 2em;
-  box-shadow: var(--card-shadow);
 
   .inputUrl {
     width: 100%;
@@ -30,8 +26,6 @@
 
 @media (width <= 43.75em) {
   .schedule {
-    padding: 1.5em;
-
     .inputUrl {
       min-width: auto;
       width: 100%;

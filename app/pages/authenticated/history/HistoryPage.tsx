@@ -1,7 +1,7 @@
-import React, {useEffect, useRef, useState} from "react"
-import {Link} from "react-router"
-import {getVideoHistory} from "~/services/history/HistoryService"
-import {VideoWatchHistory} from "~/models/VideoWatchHistory"
+import React, { useEffect, useRef, useState } from "react"
+import { Link } from "react-router"
+import { getVideoHistory } from "~/services/history/HistoryService"
+import { VideoWatchHistory } from "~/models/VideoWatchHistory"
 import VideoCard from "~/components/video/video-card/VideoCard"
 import Helmet from "~/components/helmet/Helmet"
 
@@ -65,14 +65,12 @@ const HistoryPage = () => {
         className={styles.videoHistoryGallery}
       >
         {
-          videoWatchHistories.concat(Array(10).fill(null)).map(
+          videoWatchHistories.map(
             (videoWatchHistory, index) =>
               <div key={index} className={styles.videoHistoryCard}>
-                { videoWatchHistory !== null &&
                   <Link to={`/video/${videoWatchHistory.video.videoMetadata.id}`}>
                     <VideoCard video={videoWatchHistory.video} lastWatched={videoWatchHistory.lastUpdatedAt}/>
                   </Link>
-                }
               </div>
           )
         }

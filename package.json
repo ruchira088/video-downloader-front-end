@@ -49,16 +49,17 @@
   },
   "scripts": {
     "build": "npm run env-vars && react-router build",
-    "start": "npm run env-vars && VITE_API_URL=https://api.video.home.ruchij.com react-router dev --host 0.0.0.0",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "start:local": "npm run env-vars && VITE_API_URL=https://api.localhost react-router dev",
-    "start:dev": "react-router dev --host 0.0.0.0",
-    "typecheck": "react-router typegen && tsc",
+    "ci:checks": "npm run typecheck && npm run lint && npm run test:coverage",
     "env-vars": "node scripts/env-vars.mjs",
     "lint": "eslint app tests --ext .ts,.tsx",
-    "ci:checks": "npm run typecheck && npm run lint && npm run test:coverage",
-    "lint:fix": "eslint app tests --ext .ts,.tsx --fix"
+    "lint:fix": "eslint app tests --ext .ts,.tsx --fix",
+    "start": "npm run env-vars && VITE_API_URL=https://api.video.home.ruchij.com react-router dev --host 0.0.0.0",
+    "start:dev": "react-router dev --host 0.0.0.0",
+    "start:local": "npm run env-vars && VITE_API_URL=https://api.localhost react-router dev",
+    "start:staging": "npm run env-vars && VITE_API_URL=https://api.staging.video.dev.ruchij.com react-router dev --host 0.0.0.0",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:run": "vitest run",
+    "typecheck": "react-router typegen && tsc"
   }
 }
