@@ -4,7 +4,7 @@ import type { Route } from "./+types/root"
 import "./index.scss"
 import React, { type ReactNode } from "react"
 import { ApplicationConfigurationProvider } from "~/providers/ApplicationConfigurationProvider"
-import { CircularProgress } from "@mui/material"
+import smallLogo from "~/images/small-logo.svg"
 
 export function meta(_args: Route.MetaArgs) {
   return [
@@ -53,7 +53,20 @@ export default function App() {
 }
 
 export function HydrateFallback() {
-  return <CircularProgress size="5em"/>
+  return (
+    <div className="loading-screen">
+      <div className="loading-content">
+        <div className="loading-logo-container">
+          <img src={smallLogo} alt="Video Downloader" className="loading-logo" />
+          <div className="loading-ring"></div>
+        </div>
+        <h1 className="loading-title">Video Downloader</h1>
+        <div className="loading-bar-container">
+          <div className="loading-bar"></div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
