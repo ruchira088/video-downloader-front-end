@@ -1,4 +1,4 @@
-import React, { type JSX, useState } from "react"
+import React, { type JSX, useEffect, useState } from "react"
 import { Slider } from "@mui/material"
 import classNames from "classnames"
 import { fromNumberArray, type Range, toNumberArray } from "~/models/Range"
@@ -18,6 +18,10 @@ type RangeSliderProps<A> = {
 
 function RangeSlider<A>(props: RangeSliderProps<A>): JSX.Element {
   const [transientRange, setTransientRange] = useState(props.range)
+
+  useEffect(() => {
+    setTransientRange(props.range)
+  }, [props.range])
 
   const toRange = (values: number | number[]): Range<A> =>
     fromNumberArray(

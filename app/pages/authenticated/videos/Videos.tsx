@@ -1,11 +1,12 @@
-import React, {useEffect, useRef, useState} from "react"
-import {searchVideos} from "~/services/video/VideoService"
-import {Video} from "~/models/Video"
-import {type SortBy} from "~/models/SortBy"
-import {type DurationRange} from "~/models/DurationRange"
+import React, { useEffect, useMemo, useRef, useState } from "react"
+import { searchVideos } from "~/services/video/VideoService"
+import { Video } from "~/models/Video"
+import { type SortBy } from "~/models/SortBy"
+import { type DurationRange } from "~/models/DurationRange"
 import VideoSearch from "./components/VideoSearch"
 import {
-  DurationRangeSearchParam, OrderingSearchParam,
+  DurationRangeSearchParam,
+  OrderingSearchParam,
   parseSearchParam,
   SearchTermSearchParam,
   SizeRangeSearchParam,
@@ -14,36 +15,35 @@ import {
   VideoSearchParamName,
   VideoSitesSearchParam
 } from "./components/VideoSearchParams"
-import {Range} from "~/models/Range"
-import {Link, useNavigate, useSearchParams} from "react-router"
-import type {Option} from "~/types/Option"
+import { Range } from "~/models/Range"
+import { Link, useSearchParams } from "react-router"
+import type { Option } from "~/types/Option"
 import VideoCard from "~/components/video/video-card/VideoCard"
 
 import styles from "./Videos.module.scss"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
-import type {Ordering} from "~/models/Ordering"
+import type { Ordering } from "~/models/Ordering"
 import Helmet from "~/components/helmet/Helmet"
 
 const PAGE_SIZE = 50
 
 const Videos = () => {
-  const [queryParams] = useSearchParams()
-  const navigate = useNavigate()
+  const [queryParams, setQueryParams] = useSearchParams()
 
   const [videos, setVideos] = useState<Video[]>([])
-  const [videoSites, setVideoSites] = useState<string[]>(parseSearchParam(queryParams, VideoSitesSearchParam))
-  const [sortBy, setSortBy] = useState<SortBy>(parseSearchParam(queryParams, SortBySearchParam))
-  const [searchTerm, setSearchTerm] = useState<Option<string>>(parseSearchParam(queryParams, SearchTermSearchParam))
-  const [durationRange, setDurationRange] = useState<DurationRange>(parseSearchParam(queryParams, DurationRangeSearchParam))
-  const [sizeRange, setSizeRange] = useState<Range<number>>(parseSearchParam(queryParams, SizeRangeSearchParam))
-  const [ordering, setOrdering] = useState<Ordering>(parseSearchParam(queryParams, OrderingSearchParam))
+  const videoSites: string[] = parseSearchParamsMemo(queryParams, VideoSitesSearchParam)
+  const sortBy: SortBy = parseSearchParamsMemo(queryParams, SortBySearchParam)
+  const searchTerm: Option<string> = parseSearchParamsMemo(queryParams, SearchTermSearchParam)
+  const durationRange: DurationRange = parseSearchParamsMemo(queryParams, DurationRangeSearchParam)
+  const sizeRange: Range<number> = parseSearchParamsMemo(queryParams, SizeRangeSearchParam)
+  const ordering: Ordering = parseSearchParamsMemo(queryParams, OrderingSearchParam)
   const abortController = useRef(new AbortController())
   const [pageNumber, setPageNumber] = useState(0)
   const isLoading = useRef(false)
   const hasMore = useRef(true)
   const fetchedPages = useRef(new Set<number>())
 
-  const loadVideos = async (): Promise<void> => {
+  const loadVideos = async (pageNumber: number): Promise<void> => {
     if (!fetchedPages.current.has(pageNumber)) {
       isLoading.current = true
       fetchedPages.current.add(pageNumber)
@@ -73,32 +73,35 @@ const Videos = () => {
   }
 
   useEffect(() => {
-    loadVideos()
-  }, [videoSites, sortBy, searchTerm, durationRange, sizeRange, pageNumber, ordering])
+    fetchedPages.current = new Set<number>()
+    hasMore.current = true
+    isLoading.current = false
+    setVideos([])
+    setPageNumber(0)
+    loadVideos(0)
+  }, [videoSites, sortBy, searchTerm, durationRange, sizeRange, ordering])
+
+  useEffect(() => {
+    loadVideos(pageNumber)
+  }, [pageNumber])
+
 
   function onChangeSearchParams<A, B extends VideoSearchParamName>(
     videoSearchParameter: VideoSearchParameter<A, B>,
-    f: (value: A) => void
   ): (value: A) => void {
-    return onChange(videoSearchParameter.name, videoSearchParameter.encoder.encode, f)
+    return onChange(videoSearchParameter.name, videoSearchParameter.encoder.encode)
   }
 
-  function onChange<A>(name: string, encoder: (value: A) => string, f: (value: A) => void): (value: A) => void {
+  function onChange<A>(name: string, encoder: (value: A) => string): (value: A) => void {
     return (value: A) => {
       abortController.current = new AbortController()
-      f(value)
       updateQueryParameter(name, encoder, value)
-      setPageNumber(0)
-      setVideos([])
-      fetchedPages.current = new Set<number>()
-      hasMore.current =true
-      isLoading.current = false
     }
   }
 
   function updateQueryParameter<A>(name: string, encoder: (value: A) => string, value: A) {
     queryParams.set(name, encoder(value))
-    navigate({ search: queryParams.toString() })
+    setQueryParams(queryParams)
   }
 
   const loadMore = () => {
@@ -114,17 +117,17 @@ const Videos = () => {
       <VideoSearch
         videoTitles={videos.map((video) => video.videoMetadata.title).slice(0, 10)}
         searchTerm={searchTerm}
-        onSearchTermChange={onChangeSearchParams(SearchTermSearchParam, setSearchTerm)}
+        onSearchTermChange={onChangeSearchParams(SearchTermSearchParam)}
         sortBy={sortBy}
-        onSortByChange={onChangeSearchParams(SortBySearchParam, setSortBy)}
+        onSortByChange={onChangeSearchParams(SortBySearchParam)}
         durationRange={durationRange}
-        onDurationRangeChange={onChangeSearchParams(DurationRangeSearchParam, setDurationRange)}
+        onDurationRangeChange={onChangeSearchParams(DurationRangeSearchParam)}
         sizeRange={sizeRange}
-        onSizeRangeChange={onChangeSearchParams(SizeRangeSearchParam, setSizeRange)}
+        onSizeRangeChange={onChangeSearchParams(SizeRangeSearchParam)}
         videoSites={videoSites}
-        onVideoSitesChange={onChangeSearchParams(VideoSitesSearchParam, setVideoSites)}
+        onVideoSitesChange={onChangeSearchParams(VideoSitesSearchParam)}
         ordering={ordering}
-        onOrderingChange={onChangeSearchParams(OrderingSearchParam, setOrdering)}
+        onOrderingChange={onChangeSearchParams(OrderingSearchParam)}
         isLoading={isLoading.current}
       />
 
@@ -146,6 +149,13 @@ const Videos = () => {
 
     </div>
   )
+}
+
+function parseSearchParamsMemo<A, B extends VideoSearchParamName>(
+  urlSearchParams: URLSearchParams,
+  videoSearchParameter: VideoSearchParameter<A, B>
+): A {
+  return useMemo(() => parseSearchParam(urlSearchParams, videoSearchParameter), [urlSearchParams, videoSearchParameter])
 }
 
 export default Videos

@@ -1,4 +1,5 @@
 import React, { type ReactNode, useEffect } from "react"
+import { captureException } from "@sentry/react"
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router"
 import type { Route } from "./+types/root"
 import "./index.scss"
@@ -88,6 +89,8 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     details = error.message;
     stack = error.stack;
   }
+
+  captureException(error)
 
   return (
     <main className="pt-16 p-4 container mx-auto">

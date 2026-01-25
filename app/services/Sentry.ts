@@ -1,15 +1,15 @@
 import * as Sentry from "@sentry/react"
 import { Environment, getEnvironment } from "~/services/Config"
 
-const SENTRY_CLIENT_ID_MAPPINGS: Record<Environment, string> = {
-  [Environment.Development]: "55a77840c28080dfe418bf850b9c8f27e30c57eda550281edede2e627c82ec14",
-  [Environment.Staging]: "55a77840c28080dfe418bf850b9c8f27e30c57eda550281edede2e627c82ec14",
-  [Environment.Production]: "55a77840c28080dfe418bf850b9c8f27e30c57eda550281edede2e627c82ec14"
+const DSN_MAPPINGS: Record<Environment, string> = {
+  [Environment.Development]: "https://294ffe65738b62400211626678d54021@o4510770741837824.ingest.us.sentry.io/4510771405455360",
+  [Environment.Staging]: "https://294ffe65738b62400211626678d54021@o4510770741837824.ingest.us.sentry.io/4510771405455360",
+  [Environment.Production]: "https://294ffe65738b62400211626678d54021@o4510770741837824.ingest.us.sentry.io/4510771405455360"
 }
 
-const getSentryClientId = () => {
+const getDsn = () => {
   const environment: Environment = getEnvironment()
-  return SENTRY_CLIENT_ID_MAPPINGS[environment]
+  return DSN_MAPPINGS[environment]
 }
 
 let sentryInitialized = false
@@ -21,7 +21,7 @@ export const initSentry = () => {
   sentryInitialized = true
 
   Sentry.init({
-    dsn: getSentryClientId(),
+    dsn: getDsn(),
     integrations: [
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration()
