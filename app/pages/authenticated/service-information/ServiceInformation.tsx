@@ -9,7 +9,7 @@ import { LoadableComponent } from "~/components/hoc/loading/LoadableComponent"
 import BackendInformation from "./components/BackendInformation"
 import { apiConfiguration } from "~/services/ApiConfiguration"
 import FrontendInformation from "./components/FrontendInformation"
-import { CircularProgress, IconButton, Tooltip } from "@mui/material"
+import { Button, CircularProgress, IconButton, Tooltip } from "@mui/material"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import CheckIcon from "@mui/icons-material/Check"
 import { None, type Option, Some } from "~/types/Option"
@@ -25,6 +25,7 @@ import {
 } from "~/models/HealthCheck"
 import classNames from "classnames"
 import Timestamp from "~/components/timestamp/Timestamp"
+import { Replay } from "@mui/icons-material"
 
 interface ServiceInformationItem {
   readonly label: string
@@ -146,22 +147,38 @@ const HealthCheckField: FC<HealthCheckFieldProps> = props => (
 
 type HealthCheckInformationProps = {
   readonly healthCheckDetails: HealthCheckDetails
+  readonly performHealthCheck: () => Promise<void>
 }
 
 const HealthCheckInformation: FC<HealthCheckInformationProps> = props => {
   const [currentTimestamp, setCurrentTimestamp] = useState<DateTime>(DateTime.now())
+  const [isPerformingHealthCheck, setPerformingHealthCheck] = useState<boolean>(false)
 
   useEffect(() => {
     const intervalId = setInterval(() => setCurrentTimestamp(DateTime.now()), 1000)
     return () => clearInterval(intervalId)
   }, [])
 
+  const handlePerformHealthCheck = async () => {
+    setPerformingHealthCheck(true)
+    await props.performHealthCheck()
+    setPerformingHealthCheck(false)
+  }
+
   return (
     <div className={styles.healthChecks}>
       <div className={styles.healthChecksTitle}>Health Checks</div>
       <div className={styles.lastHealthCheck}>
-        <span className={styles.lastHealthCheckLabel}>Last Health Check:</span>
-        <Timestamp timestamp={props.healthCheckDetails.timestamp} currentTimestamp={currentTimestamp} format={DateTime.DATETIME_MED_WITH_SECONDS}/>
+        <div className={styles.lastHealthCheckTimestamp}>
+          <span className={styles.lastHealthCheckLabel}>Last Health Check:</span>
+          <Timestamp
+            timestamp={props.healthCheckDetails.timestamp}
+            currentTimestamp={currentTimestamp}
+            format={DateTime.DATETIME_MED_WITH_SECONDS} />
+        </div>
+        <Button onClick={handlePerformHealthCheck} disabled={isPerformingHealthCheck} loading={isPerformingHealthCheck}>
+          <Replay fontSize="small" />
+        </Button>
       </div>
       <div className={styles.healthCheckSection}>
         <div className={styles.healthCheckSectionTitle}>Services</div>
@@ -246,7 +263,9 @@ const ServiceInformation = () => {
       <LoadableComponent loadingComponent={<div className={styles.loadingContainer}>Performing health checks...<CircularProgress size="2em"/></div>}>
         {
           healthCheckDetails.map((healthCheckDetails) =>
-            <HealthCheckInformation healthCheckDetails={healthCheckDetails}/>)
+            <HealthCheckInformation
+              healthCheckDetails={healthCheckDetails}
+              performHealthCheck={fetchHealthCheckDetails} />)
         }
       </LoadableComponent>
     </div>

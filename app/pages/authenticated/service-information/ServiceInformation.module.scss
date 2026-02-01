@@ -86,10 +86,15 @@
       padding: 0.75em;
       background-color: rgba(128, 128, 128, 0.1);
       border-radius: 0.25em;
+      justify-content: space-between;
 
-      .lastHealthCheckLabel {
-        font-weight: 600;
-        opacity: 0.8;
+      .lastHealthCheckTimestamp {
+        display: flex;
+
+        .lastHealthCheckLabel {
+          font-weight: 600;
+          opacity: 0.8;
+        }
       }
     }
 
