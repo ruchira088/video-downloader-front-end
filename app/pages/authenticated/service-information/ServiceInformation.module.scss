@@ -143,9 +143,19 @@
       }
 
       .healthCheckLabel {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
         font-weight: 500;
         flex: 1;
         word-break: break-all;
+      }
+
+      .healthCheckIcon {
+        display: flex;
+        align-items: center;
+        opacity: 0.7;
+        color: var(--link-color);
       }
 
       .healthCheckValue {

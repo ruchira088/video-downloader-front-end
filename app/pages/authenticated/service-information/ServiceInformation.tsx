@@ -12,6 +12,11 @@ import FrontendInformation from "./components/FrontendInformation"
 import { Button, CircularProgress, IconButton, Tooltip } from "@mui/material"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import CheckIcon from "@mui/icons-material/Check"
+import StorageIcon from "@mui/icons-material/Storage"
+import VpnKeyIcon from "@mui/icons-material/VpnKey"
+import CloudQueueIcon from "@mui/icons-material/CloudQueue"
+import WebIcon from "@mui/icons-material/Web"
+import PublicIcon from "@mui/icons-material/Public"
 import { None, type Option, Some } from "~/types/Option"
 import Helmet from "~/components/helmet/Helmet"
 import { DateTime } from "luxon"
@@ -120,11 +125,15 @@ const FileRepositoryHealthCheck: FC<FileRepositoryHealthCheckProps> = props => (
 type HealthCheckFieldProps = {
   readonly label: string
   readonly healthCheckStatusDetails: HealthCheckStatusDetails
+  readonly icon?: ReactNode
 }
 
 const HealthCheckField: FC<HealthCheckFieldProps> = props => (
   <div className={styles.healthCheckField}>
-    <div className={styles.healthCheckLabel}>{props.label}</div>
+    <div className={styles.healthCheckLabel}>
+      {props.icon && <span className={styles.healthCheckIcon}>{props.icon}</span>}
+      {props.label}
+    </div>
     <div className={styles.healthCheckValue}>
       <div
         className={
@@ -183,12 +192,13 @@ const HealthCheckInformation: FC<HealthCheckInformationProps> = props => {
       <div className={styles.healthCheckSection}>
         <div className={styles.healthCheckSectionTitle}>Services</div>
         <div className={styles.healthCheckSectionContent}>
-          <HealthCheckField label="Database" healthCheckStatusDetails={props.healthCheckDetails.database}/>
-          <HealthCheckField label="Key Value Store" healthCheckStatusDetails={props.healthCheckDetails.keyValueStore}/>
-          <HealthCheckField label="PubSub" healthCheckStatusDetails={props.healthCheckDetails.pubSub}/>
-          <HealthCheckField label="SPA Renderer" healthCheckStatusDetails={props.healthCheckDetails.spaRenderer}/>
+          <HealthCheckField label="Database" icon={<StorageIcon fontSize="small" />} healthCheckStatusDetails={props.healthCheckDetails.database}/>
+          <HealthCheckField label="Key Value Store" icon={<VpnKeyIcon fontSize="small" />} healthCheckStatusDetails={props.healthCheckDetails.keyValueStore}/>
+          <HealthCheckField label="PubSub" icon={<CloudQueueIcon fontSize="small" />} healthCheckStatusDetails={props.healthCheckDetails.pubSub}/>
+          <HealthCheckField label="SPA Renderer" icon={<WebIcon fontSize="small" />} healthCheckStatusDetails={props.healthCheckDetails.spaRenderer}/>
           <HealthCheckField
             label="Internet Connectivity"
+            icon={<PublicIcon fontSize="small" />}
             healthCheckStatusDetails={props.healthCheckDetails.internetConnectivity}/>
         </div>
       </div>
