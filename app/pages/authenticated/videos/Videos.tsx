@@ -80,6 +80,7 @@ const Videos = () => {
     fetchedPages.current = new Set<number>()
     hasMore.current = true
     isLoading.current = false
+    setVideos([])
     setPageNumber(0)
     loadVideos(0)
   }, [videoSites, sortBy, searchTerm, durationRange, sizeRange, ordering])
