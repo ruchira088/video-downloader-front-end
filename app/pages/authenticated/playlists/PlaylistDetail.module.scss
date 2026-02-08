@@ -39,6 +39,31 @@
   gap: 0.5em;
 }
 
+.albumArtSection {
+  display: flex;
+  align-items: flex-start;
+}
+
+.albumArtPreview {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
+.albumArtImage {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 0.5em;
+  box-shadow: var(--card-shadow);
+}
+
+.albumArtActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
 .description {
   opacity: 0.7;
   margin: 0;

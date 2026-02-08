@@ -96,3 +96,26 @@ export const reorderPlaylistVideos = async (
 ): Promise<Playlist> => {
   return updatePlaylist(playlistId, undefined, undefined, videoIds)
 }
+
+export const uploadAlbumArt = async (
+  playlistId: string,
+  file: File
+): Promise<Playlist> => {
+  const formData = new FormData()
+  formData.append("file", file)
+
+  const response = await axiosClient.put(
+    `/playlists/id/${playlistId}/album-art`,
+    formData
+  )
+  const playlist = zodParse(Playlist, response.data)
+
+  return playlist
+}
+
+export const removeAlbumArt = async (playlistId: string): Promise<Playlist> => {
+  const response = await axiosClient.delete(`/playlists/id/${playlistId}/album-art`)
+  const playlist = zodParse(Playlist, response.data)
+
+  return playlist
+}

@@ -65,7 +65,11 @@ const Videos = () => {
           hasMore.current = false
         }
 
-        setVideos(videos => videos.concat(results))
+        if (pageNumber === 0) {
+          setVideos(results)
+        } else {
+          setVideos(videos => videos.concat(results))
+        }
       } finally {
         isLoading.current = false
       }
@@ -76,7 +80,6 @@ const Videos = () => {
     fetchedPages.current = new Set<number>()
     hasMore.current = true
     isLoading.current = false
-    setVideos([])
     setPageNumber(0)
     loadVideos(0)
   }, [videoSites, sortBy, searchTerm, durationRange, sizeRange, ordering])

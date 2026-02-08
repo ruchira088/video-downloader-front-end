@@ -17,6 +17,9 @@ import VpnKeyIcon from "@mui/icons-material/VpnKey"
 import CloudQueueIcon from "@mui/icons-material/CloudQueue"
 import WebIcon from "@mui/icons-material/Web"
 import PublicIcon from "@mui/icons-material/Public"
+import ImageIcon from "@mui/icons-material/Image"
+import VideoLibraryIcon from "@mui/icons-material/VideoLibrary"
+import FolderIcon from "@mui/icons-material/Folder"
 import { None, type Option, Some } from "~/types/Option"
 import Helmet from "~/components/helmet/Helmet"
 import { DateTime } from "luxon"
@@ -94,6 +97,7 @@ const FileRepositoryHealthCheck: FC<FileRepositoryHealthCheckProps> = props => (
         <div className={styles.healthCheckSectionContent}>
           <HealthCheckField
             label={props.fileRepositoryHealthStatusDetails.imageFolder.filePath}
+            icon={<ImageIcon fontSize="small" />}
             healthCheckStatusDetails={props.fileRepositoryHealthStatusDetails.imageFolder.healthStatusDetails}/>
         </div>
       </div>
@@ -102,6 +106,7 @@ const FileRepositoryHealthCheck: FC<FileRepositoryHealthCheckProps> = props => (
         <div className={styles.healthCheckSectionContent}>
           <HealthCheckField
             label={props.fileRepositoryHealthStatusDetails.videoFolder.filePath}
+            icon={<VideoLibraryIcon fontSize="small" />}
             healthCheckStatusDetails={props.fileRepositoryHealthStatusDetails.videoFolder.healthStatusDetails}/>
         </div>
       </div>
@@ -113,6 +118,7 @@ const FileRepositoryHealthCheck: FC<FileRepositoryHealthCheckProps> = props => (
               <HealthCheckField
                 key={healthCheckStatusDetails.filePath}
                 label={healthCheckStatusDetails.filePath}
+                icon={<FolderIcon fontSize="small" />}
                 healthCheckStatusDetails={healthCheckStatusDetails.healthStatusDetails}/>
             )}
           </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react"
+import React, { useEffect, useState, useCallback, useRef } from "react"
 import { useNavigate } from "react-router"
 import { Button, IconButton, CircularProgress } from "@mui/material"
 import Delete from "@mui/icons-material/Delete"
@@ -6,6 +6,7 @@ import PlayArrow from "@mui/icons-material/PlayArrow"
 import ArrowBack from "@mui/icons-material/ArrowBack"
 import Add from "@mui/icons-material/Add"
 import Close from "@mui/icons-material/Close"
+import AddPhotoAlternate from "@mui/icons-material/AddPhotoAlternate"
 import {
   DndContext,
   closestCenter,
@@ -30,8 +31,12 @@ import {
   updatePlaylist,
   removeVideoFromPlaylist,
   reorderPlaylistVideos,
-  addVideoToPlaylist
+  addVideoToPlaylist,
+  uploadAlbumArt,
+  removeAlbumArt
 } from "~/services/playlist/PlaylistService"
+import { imageUrl } from "~/services/asset/AssetService"
+import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
 import Helmet from "~/components/helmet/Helmet"
 import EditableLabel from "~/components/editable-label/EditableLabel"
 import PlaylistVideoCard from "./components/PlaylistVideoCard"
@@ -52,7 +57,9 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 const PlaylistDetail = (props: Route.ComponentProps) => {
   const navigate = useNavigate()
+  const { safeMode } = useApplicationConfiguration()
   const playlistId = props.params.playlistId
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [playlist, setPlaylist] = useState<Option<Playlist>>(None.of())
   const [isLoading, setIsLoading] = useState(true)
@@ -61,6 +68,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
   const [isShuffled, setIsShuffled] = useState(false)
   const [shuffledVideos, setShuffledVideos] = useState<Video[]>([])
   const [showAddVideos, setShowAddVideos] = useState(false)
+  const [isUploadingAlbumArt, setIsUploadingAlbumArt] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -154,6 +162,25 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     setPlaylist(Some.of(updatedPlaylist))
   }
 
+  const handleAlbumArtUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setIsUploadingAlbumArt(true)
+    try {
+      const updatedPlaylist = await uploadAlbumArt(playlistId, file)
+      setPlaylist(Some.of(updatedPlaylist))
+    } finally {
+      setIsUploadingAlbumArt(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
+  }
+
+  const handleRemoveAlbumArt = async () => {
+    const updatedPlaylist = await removeAlbumArt(playlistId)
+    setPlaylist(Some.of(updatedPlaylist))
+  }
+
   const handlePlay = () => {
     if (displayedVideos.length > 0) {
       setCurrentIndex(0)
@@ -221,6 +248,50 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
               <Delete />
             </IconButton>
           </div>
+        </div>
+
+        <div className={styles.albumArtSection}>
+          {p.albumArt.fold(
+            () => (
+              <Button
+                variant="outlined"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingAlbumArt}
+                startIcon={isUploadingAlbumArt ? <CircularProgress size={16} /> : <AddPhotoAlternate />}
+              >
+                {isUploadingAlbumArt ? "Uploading..." : "Add Album Art"}
+              </Button>
+            ),
+            (albumArt) => (
+              <div className={styles.albumArtPreview}>
+                <img
+                  src={imageUrl(albumArt, safeMode)}
+                  alt={`${p.title} album art`}
+                  className={styles.albumArtImage}
+                />
+                <div className={styles.albumArtActions}>
+                  <Button
+                    size="small"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingAlbumArt}
+                    startIcon={<AddPhotoAlternate />}
+                  >
+                    Change
+                  </Button>
+                  <IconButton size="small" color="error" onClick={handleRemoveAlbumArt}>
+                    <Delete fontSize="small" />
+                  </IconButton>
+                </div>
+              </div>
+            )
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleAlbumArtUpload}
+            hidden
+          />
         </div>
 
         {p.description && (
