@@ -120,7 +120,7 @@ jobs:
           role-session-name: video-downloader-front-end-s3-publish
           role-to-assume: "arn:aws:iam::365562660444:role/github_iam_role"
 
-      - name: Build and Publish Docker image
+      - name: Upload bundle to S3
         run: ansible-playbook playbooks/s3-upload.yml
 
   build-and-publish-docker-image:
@@ -180,7 +180,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: ap-southeast-2
-          role-session-name: video-downloader-front-end-deploy
+          role-session-name: video-downloader-front-end-dev-deploy
           role-to-assume: "arn:aws:iam::365562660444:role/github_iam_role"
 
       - name: Install deploy dependencies
@@ -213,7 +213,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: ap-southeast-2
-          role-session-name: video-downloader-front-end-deploy
+          role-session-name: video-downloader-front-end-staging-deploy
           role-to-assume: "arn:aws:iam::365562660444:role/github_iam_role"
 
       - name: Install deploy dependencies
@@ -246,7 +246,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: ap-southeast-2
-          role-session-name: video-downloader-front-end-deploy
+          role-session-name: video-downloader-front-end-production-deploy
           role-to-assume: "arn:aws:iam::365562660444:role/github_iam_role"
 
       - name: Install deploy dependencies
