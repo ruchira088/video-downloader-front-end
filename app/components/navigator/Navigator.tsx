@@ -15,6 +15,7 @@ const navigationTabs: NavigationTab[] = [
   { label: "Playlists", path: "/playlists" },
   { label: "Schedule", path: "/schedule" },
   { label: "Downloading", path: "/downloading" },
+  { label: "Duplicates", path: "/duplicates" },
   { label: "Information", path: "/information" }
 ]
 

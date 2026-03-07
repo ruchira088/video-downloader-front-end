@@ -13,6 +13,7 @@ import {ListResponse} from "~/models/ListResponse"
 import type {Option} from "~/types/Option"
 import {zodParse} from "~/types/Zod"
 import type {Ordering} from "~/models/Ordering"
+import {DuplicateVideoGroups} from "~/models/DuplicateVideo"
 
 export const searchVideos = async (
   maybeSearchTerm: Option<string>,
@@ -94,6 +95,11 @@ export const deleteVideo = async (videoId: string, deleteFile: boolean): Promise
   const video = zodParse(Video, response.data)
 
   return video
+}
+
+export const fetchDuplicateVideos = async (pageNumber: number, pageSize: number): Promise<DuplicateVideoGroups> => {
+  const response = await axiosClient.get(`/videos/duplicates?pageNumber=${pageNumber}&pageSize=${pageSize}`)
+  return zodParse(DuplicateVideoGroups, response.data)
 }
 
 export const scanForVideos = (): Promise<void> => axiosClient.post("/videos/scan")
