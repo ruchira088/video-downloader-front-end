@@ -20,6 +20,7 @@ const VideoCard: FC<VideoCardProps> =
       ) : (
         <Timestamp timestamp={props.video.createdAt} className={styles.videoTimestamp}/>
       )}
+      {import.meta.env.DEV && <div className={styles.videoId}>{props.video.videoMetadata.id}</div>}
     </div>
 
 export default VideoCard
