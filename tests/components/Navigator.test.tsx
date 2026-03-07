@@ -27,6 +27,7 @@ describe("Navigator", () => {
     expect(screen.getByText("Playlists")).toBeInTheDocument()
     expect(screen.getByText("Schedule")).toBeInTheDocument()
     expect(screen.getByText("Downloading")).toBeInTheDocument()
+    expect(screen.getByText("Duplicates")).toBeInTheDocument()
     expect(screen.getByText("Information")).toBeInTheDocument()
   })
 
@@ -38,14 +39,15 @@ describe("Navigator", () => {
     expect(screen.getByRole("link", { name: "Playlists" })).toHaveAttribute("href", "/playlists")
     expect(screen.getByRole("link", { name: "Schedule" })).toHaveAttribute("href", "/schedule")
     expect(screen.getByRole("link", { name: "Downloading" })).toHaveAttribute("href", "/downloading")
+    expect(screen.getByRole("link", { name: "Duplicates" })).toHaveAttribute("href", "/duplicates")
     expect(screen.getByRole("link", { name: "Information" })).toHaveAttribute("href", "/information")
   })
 
-  test("should render six navigation tabs", () => {
+  test("should render seven navigation tabs", () => {
     renderWithRouter()
 
     const links = screen.getAllByRole("link")
-    expect(links).toHaveLength(6)
+    expect(links).toHaveLength(7)
   })
 
   test("should mark the correct tab as active for nested paths", () => {
