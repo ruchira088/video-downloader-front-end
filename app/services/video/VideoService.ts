@@ -98,7 +98,7 @@ export const deleteVideo = async (videoId: string, deleteFile: boolean): Promise
 }
 
 export const fetchDuplicateVideos = async (pageNumber: number, pageSize: number): Promise<DuplicateVideoGroups> => {
-  const response = await axiosClient.get(`/videos/duplicates?pageNumber=${pageNumber}&pageSize=${pageSize}`)
+  const response = await axiosClient.get(`/videos/duplicates?page-number=${pageNumber}&page-size=${pageSize}`)
   return zodParse(DuplicateVideoGroups, response.data)
 }
 

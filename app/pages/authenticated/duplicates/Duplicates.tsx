@@ -23,6 +23,7 @@ const Duplicates = () => {
   const isLoading = useRef(false)
   const hasMore = useRef(true)
   const fetchedPages = useRef(new Set<number>())
+  const loadedGroupIds = useRef(new Set<string>())
 
   const loadDuplicates = async (page: number) => {
     if (fetchedPages.current.has(page)) return
@@ -37,8 +38,11 @@ const Duplicates = () => {
         hasMore.current = false
       }
 
+      const unseenEntries = groupEntries.filter(([groupId]) => !loadedGroupIds.current.has(groupId))
+      unseenEntries.forEach(([groupId]) => loadedGroupIds.current.add(groupId))
+
       const newGroups: DuplicateGroupEntry[] = await Promise.all(
-        groupEntries.map(async ([groupId, duplicates]) => {
+        unseenEntries.map(async ([groupId, duplicates]) => {
           const videos = await Promise.all(
             duplicates.map(duplicate => fetchVideoById(duplicate.videoId))
           )
@@ -60,7 +64,7 @@ const Duplicates = () => {
 
   const loadMore = () => {
     if (!isLoading.current && hasMore.current) {
-      setPageNumber(prev => prev + 1)
+      setPageNumber(fetchedPages.current.size)
     }
   }
 
