@@ -1,10 +1,16 @@
-import { describe, expect, test } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import PlaylistCard from "~/pages/authenticated/playlists/components/PlaylistCard"
 import { DateTime } from "luxon"
 import { None } from "~/types/Option"
 import { FileResource, FileResourceType } from "~/models/FileResource"
 import React from "react"
+
+vi.mock("~/providers/ApplicationConfigurationProvider", () => ({
+  useApplicationConfiguration: () => ({
+    safeMode: false,
+  }),
+}))
 
 const createMockPlaylist = (overrides = {}) => ({
   id: "playlist-123",

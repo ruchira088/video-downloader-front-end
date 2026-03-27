@@ -13,19 +13,27 @@
   }
 }
 
+.coverImage {
+  width: 8em;
+  height: 8em;
+  border-radius: 0.5em;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
 .iconContainer {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 4em;
-  height: 4em;
+  width: 8em;
+  height: 8em;
   background-color: var(--primary-color);
   border-radius: 0.5em;
   flex-shrink: 0;
 }
 
 .icon {
-  font-size: 2em;
+  font-size: 6em;
   color: white;
 }
 
@@ -56,9 +64,10 @@
 }
 
 .meta {
+  padding-top: 0.5em;
   display: flex;
-  gap: 0.75em;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.25em;
 }
 
 .videoCount {

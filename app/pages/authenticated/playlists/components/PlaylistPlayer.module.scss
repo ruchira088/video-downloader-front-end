@@ -80,7 +80,8 @@
 }
 
 .upNextList {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12em, 1fr));
   gap: 1em;
   overflow-x: auto;
   padding-bottom: 0.5em;

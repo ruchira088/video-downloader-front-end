@@ -50,7 +50,7 @@ const PlaylistPlayer: FC<PlaylistPlayerProps> = ({
   const thumbnailUrl = imageUrl(currentVideo.videoMetadata.thumbnail, safeMode)
   const videoSource = videoUrl(currentVideo.fileResource)
 
-  const upNextVideos = videos.slice(currentIndex + 1, currentIndex + 4)
+  const upNextVideos = videos.slice(currentIndex + 1)
 
   const handleVideoEnded = () => {
     onNext()

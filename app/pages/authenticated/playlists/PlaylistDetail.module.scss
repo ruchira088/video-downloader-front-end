@@ -51,16 +51,14 @@
 }
 
 .albumArtImage {
-  width: 120px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 0.5em;
-  box-shadow: var(--card-shadow);
+  width: 10em;
+  height: 10em;
+  object-fit: contain;
 }
 
 .albumArtActions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.25em;
 }
 

@@ -16,6 +16,12 @@ vi.mock("~/components/helmet/Helmet", () => ({
   default: ({ title }: { title: string }) => <title>{title}</title>
 }))
 
+vi.mock("~/providers/ApplicationConfigurationProvider", () => ({
+  useApplicationConfiguration: () => ({
+    safeMode: false,
+  }),
+}))
+
 const createMockPlaylist = (id: string, title: string) => ({
   id,
   userId: "user-123",
