@@ -6,6 +6,7 @@ import pornhub from "~/images/site-logos/porn-hub.png"
 import pornone from "~/images/site-logos/porn-one.png"
 import spankbang from "~/images/site-logos/spankbang.png"
 import eporner from "~/images/site-logos/eporner.png"
+import sxyprn from "~/images/site-logos/sxyprn.png"
 import xfreehd from "~/images/site-logos/xfreehd.png"
 import xhamster from "~/images/site-logos/xhamster.png"
 import xnxx from "~/images/site-logos/xnxx.png"
@@ -28,6 +29,7 @@ const VideoSiteCard: FC<VideoSiteCardProps> = props =>
 const videoSiteLogos: Record<string, string> = {
   pornhub,
   spankbang,
+  sxyprn,
   pornone,
   eporner,
   xfreehd,
