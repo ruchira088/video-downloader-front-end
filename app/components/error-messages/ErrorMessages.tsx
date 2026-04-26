@@ -1,5 +1,5 @@
 import React, { type FC } from "react"
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutlined"
 import styles from "./ErrorMessages.module.scss"
 
 type ErrorMessagesProps = {

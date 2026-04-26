@@ -67,8 +67,9 @@ const VideoSearch = ({
           label="Search videos"
           size="small"
           slotProps={{
+            ...params.slotProps,
             input: {
-              ...params.InputProps,
+              ...params.slotProps?.input,
               startAdornment: (
                 <InputAdornment position="start" sx={{ pl: 1 }}>
                   <SearchIcon />

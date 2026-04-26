@@ -5,10 +5,12 @@ import {videoServiceSummary} from "~/services/video/VideoService"
 import styles from "./VideoSitesSelector.module.scss"
 
 const menuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: 256,
-      width: 250
+  slotProps: {
+    paper: {
+      style: {
+        maxHeight: 256,
+        width: 250
+      }
     }
   }
 }
