@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor, act } from "@testing-library/react"
 import HistoryPage from "~/pages/authenticated/history/HistoryPage"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { DateTime, Duration } from "luxon"
@@ -8,6 +8,17 @@ import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigur
 import { Some } from "~/types/Option"
 import { FileResourceType } from "~/models/FileResource"
 import React from "react"
+import { intersectionObserverCallbacks } from "../setup"
+
+const triggerIntersection = async () => {
+  const callback = intersectionObserverCallbacks[intersectionObserverCallbacks.length - 1]
+  await act(async () => {
+    callback(
+      [{ isIntersecting: true } as IntersectionObserverEntry],
+      {} as IntersectionObserver
+    )
+  })
+}
 
 vi.mock("~/services/history/HistoryService", () => ({
   getVideoHistory: vi.fn(),
@@ -132,6 +143,57 @@ describe("HistoryPage", () => {
     await waitFor(() => {
       const videoElements = screen.getAllByText(/Test Video video-1/)
       expect(videoElements).toHaveLength(1)
+    })
+  })
+
+  describe("Pagination", () => {
+    beforeEach(() => {
+      intersectionObserverCallbacks.length = 0
+    })
+
+    test("should load the next page when scroll trigger intersects", async () => {
+      const { getVideoHistory } = await import("~/services/history/HistoryService")
+      const fullFirstPage = Array.from({ length: 50 }, (_, i) =>
+        createMockVideoWatchHistory(`page0-${i}`)
+      )
+      vi.mocked(getVideoHistory)
+        .mockResolvedValueOnce(fullFirstPage)
+        .mockResolvedValueOnce([createMockVideoWatchHistory("page1-video")])
+
+      renderWithRouter(<HistoryPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/Test Video page0-0/)).toBeInTheDocument()
+      })
+      expect(vi.mocked(getVideoHistory)).toHaveBeenCalledWith(0, 50)
+      expect(vi.mocked(getVideoHistory)).toHaveBeenCalledTimes(1)
+
+      await triggerIntersection()
+
+      await waitFor(() => {
+        expect(vi.mocked(getVideoHistory)).toHaveBeenCalledWith(1, 50)
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText(/Test Video page1-video/)).toBeInTheDocument()
+      })
+    })
+
+    test("should not load more when results are less than page size", async () => {
+      const { getVideoHistory } = await import("~/services/history/HistoryService")
+      vi.mocked(getVideoHistory).mockResolvedValue([
+        createMockVideoWatchHistory("only-video"),
+      ])
+
+      renderWithRouter(<HistoryPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/Test Video only-video/)).toBeInTheDocument()
+      })
+
+      const callsBefore = vi.mocked(getVideoHistory).mock.calls.length
+      await triggerIntersection()
+      expect(vi.mocked(getVideoHistory).mock.calls.length).toBe(callsBefore)
     })
   })
 })

@@ -8,6 +8,46 @@ import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigur
 import { Some, None } from "~/types/Option"
 import { FileResourceType } from "~/models/FileResource"
 import React from "react"
+import { intersectionObserverCallbacks } from "../setup"
+
+const triggerIntersection = async () => {
+  const callback = intersectionObserverCallbacks[intersectionObserverCallbacks.length - 1]
+  await act(async () => {
+    callback(
+      [{ isIntersecting: true } as IntersectionObserverEntry],
+      {} as IntersectionObserver
+    )
+  })
+}
+
+const buildVideo = (id: string, title: string) => ({
+  videoMetadata: {
+    url: `https://example.com/video/${id}`,
+    id,
+    videoSite: "youtube",
+    title,
+    duration: Duration.fromObject({ minutes: 5 }),
+    size: 1024000000,
+    thumbnail: {
+      id: `thumb-${id}`,
+      type: FileResourceType.Thumbnail as const,
+      createdAt: DateTime.now(),
+      path: "/path/to/thumb",
+      mediaType: "image/jpeg",
+      size: 1024,
+    },
+  },
+  fileResource: {
+    id: `file-${id}`,
+    type: FileResourceType.Video as const,
+    createdAt: DateTime.now(),
+    path: "/path/to/video",
+    mediaType: "video/mp4",
+    size: 1024000000,
+  },
+  createdAt: DateTime.now(),
+  watchTime: Duration.fromObject({ minutes: 2 }),
+})
 
 vi.mock("~/services/video/VideoService", () => ({
   searchVideos: vi.fn(),
@@ -363,6 +403,71 @@ describe("Videos", () => {
     await waitFor(() => {
       // Verify searchVideos was called again after ordering change
       expect(searchVideos).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe("Pagination", () => {
+    beforeEach(() => {
+      intersectionObserverCallbacks.length = 0
+    })
+
+    test("should load and concatenate the next page when scroll trigger intersects", async () => {
+      const { searchVideos } = await import("~/services/video/VideoService")
+      const fullPage = Array.from({ length: 50 }, (_, i) => buildVideo(`p0-${i}`, `Page0 ${i}`))
+
+      vi.mocked(searchVideos)
+        .mockResolvedValueOnce({
+          results: fullPage,
+          pageNumber: 0,
+          pageSize: 50,
+          searchTerm: None.of(),
+        })
+        .mockResolvedValueOnce({
+          results: [buildVideo("p1-0", "Page1 0")],
+          pageNumber: 1,
+          pageSize: 50,
+          searchTerm: None.of(),
+        })
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByText("Page0 0")).toBeInTheDocument()
+      })
+      expect(vi.mocked(searchVideos)).toHaveBeenCalledTimes(1)
+
+      await triggerIntersection()
+
+      await waitFor(() => {
+        expect(vi.mocked(searchVideos)).toHaveBeenCalledTimes(2)
+      })
+
+      // Page-1 result should be appended; page-0 results should still be present
+      await waitFor(() => {
+        expect(screen.getByText("Page1 0")).toBeInTheDocument()
+      })
+      expect(screen.getByText("Page0 0")).toBeInTheDocument()
+    })
+
+    test("should not refetch when results are less than page size (hasMore=false)", async () => {
+      const { searchVideos } = await import("~/services/video/VideoService")
+      vi.mocked(searchVideos).mockResolvedValue({
+        results: [buildVideo("only", "Only Video")],
+        pageNumber: 0,
+        pageSize: 50,
+        searchTerm: None.of(),
+      })
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByText("Only Video")).toBeInTheDocument()
+      })
+
+      const callsBefore = vi.mocked(searchVideos).mock.calls.length
+      await triggerIntersection()
+      // No new fetch since hasMore is false
+      expect(vi.mocked(searchVideos).mock.calls.length).toBe(callsBefore)
     })
   })
 })

@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
-import { render, screen, waitFor, fireEvent } from "@testing-library/react"
+import { render, screen, waitFor, fireEvent, act } from "@testing-library/react"
 import ScheduledVideos from "~/pages/authenticated/downloading/ScheduledVideos"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { DateTime, Duration } from "luxon"
@@ -10,14 +10,30 @@ import { SchedulingStatus } from "~/models/SchedulingStatus"
 import { FileResourceType } from "~/models/FileResource"
 import React from "react"
 
-// Mock IntersectionObserver for InfiniteScroll component
+// Capture-style IntersectionObserver for InfiniteScroll — allows tests below
+// to manually trigger intersection events to exercise loadMore.
+const localIntersectionCallbacks: IntersectionObserverCallback[] = []
+
 class MockIntersectionObserver {
   observe = vi.fn()
   unobserve = vi.fn()
   disconnect = vi.fn()
-  constructor() {}
+  takeRecords = vi.fn().mockReturnValue([])
+  constructor(callback: IntersectionObserverCallback) {
+    localIntersectionCallbacks.push(callback)
+  }
 }
 vi.stubGlobal("IntersectionObserver", MockIntersectionObserver)
+
+const triggerIntersection = async () => {
+  const callback = localIntersectionCallbacks[localIntersectionCallbacks.length - 1]
+  await act(async () => {
+    callback(
+      [{ isIntersecting: true } as IntersectionObserverEntry],
+      {} as IntersectionObserver
+    )
+  })
+}
 
 const createMockScheduledVideo = (id: string) => ({
   lastUpdatedAt: DateTime.now(),
@@ -514,6 +530,57 @@ describe("ScheduledVideos", () => {
 
     await waitFor(() => {
       expect(updateSchedulingStatus).toHaveBeenCalledWith("video-1", SchedulingStatus.Queued)
+    })
+  })
+
+  describe("Pagination", () => {
+    beforeEach(() => {
+      localIntersectionCallbacks.length = 0
+    })
+
+    test("should fetch the next page when scroll trigger intersects", async () => {
+      const { fetchScheduledVideos } = await import("~/services/scheduling/SchedulingService")
+      const fullPage = Array.from({ length: 50 }, (_, i) =>
+        createMockScheduledVideo(`page0-${i}`)
+      )
+
+      vi.mocked(fetchScheduledVideos)
+        .mockResolvedValueOnce(fullPage)
+        .mockResolvedValueOnce([createMockScheduledVideo("page1-video")])
+
+      renderWithContext()
+
+      await waitFor(() => {
+        expect(screen.getByText(/Test Video page0-0/)).toBeInTheDocument()
+      })
+      expect(vi.mocked(fetchScheduledVideos)).toHaveBeenCalledTimes(1)
+
+      await triggerIntersection()
+
+      await waitFor(() => {
+        expect(vi.mocked(fetchScheduledVideos)).toHaveBeenCalledTimes(2)
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText(/Test Video page1-video/)).toBeInTheDocument()
+      })
+    })
+
+    test("should not fetch more when results are less than page size", async () => {
+      const { fetchScheduledVideos } = await import("~/services/scheduling/SchedulingService")
+      vi.mocked(fetchScheduledVideos).mockResolvedValue([
+        createMockScheduledVideo("only-video"),
+      ])
+
+      renderWithContext()
+
+      await waitFor(() => {
+        expect(screen.getByText(/Test Video only-video/)).toBeInTheDocument()
+      })
+
+      const callsBefore = vi.mocked(fetchScheduledVideos).mock.calls.length
+      await triggerIntersection()
+      expect(vi.mocked(fetchScheduledVideos).mock.calls.length).toBe(callsBefore)
     })
   })
 })
