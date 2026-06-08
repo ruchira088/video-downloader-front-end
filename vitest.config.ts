@@ -1,19 +1,14 @@
 import { defineConfig } from "vitest/config"
+import { bundledDependencies } from "./bundled-dependencies"
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
+  // See bundled-dependencies.ts. Shared with vite.config.ts so the two configs can't drift.
+  ssr: { noExternal: bundledDependencies },
   test: {
     globals: true,
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts"],
-    server: {
-      deps: {
-        // Inline MUI and react-transition-group so Vite transforms them instead of
-        // letting Node's ESM resolver reject MUI's directory import of
-        // `react-transition-group/TransitionGroupContext`.
-        inline: ["@mui/material", "react-transition-group"],
-      },
-    },
     reporters: process.env.CI ? ["default", "junit", "github-actions"] : ["default"],
     outputFile: {
       junit: "./test-results/junit.xml",
