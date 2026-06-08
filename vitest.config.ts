@@ -6,6 +6,14 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts"],
+    server: {
+      deps: {
+        // Inline MUI and react-transition-group so Vite transforms them instead of
+        // letting Node's ESM resolver reject MUI's directory import of
+        // `react-transition-group/TransitionGroupContext`.
+        inline: ["@mui/material", "react-transition-group"],
+      },
+    },
     reporters: process.env.CI ? ["default", "junit", "github-actions"] : ["default"],
     outputFile: {
       junit: "./test-results/junit.xml",
