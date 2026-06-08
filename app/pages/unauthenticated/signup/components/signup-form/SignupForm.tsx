@@ -1,4 +1,4 @@
-import React, { type ChangeEvent, type Dispatch, type FC, type SetStateAction, useState } from "react"
+import React, { type FC, useState } from "react"
 import { Button, TextField, InputAdornment, IconButton } from "@mui/material"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
@@ -8,6 +8,7 @@ import styles from "./SignupForm.module.scss"
 import ErrorMessages from "~/components/error-messages/ErrorMessages"
 import smallLogo from "~/images/small-logo.svg"
 import { Link } from "react-router"
+import { extractErrorMessages, onFieldChange } from "~/pages/unauthenticated/AuthFormHelpers"
 
 interface Errors {
   firstName: string | null
@@ -27,26 +28,6 @@ const EMPTY_ERRORS: Errors = {
   response: []
 }
 
-const extractErrorMessages = (error: unknown): string[] => {
-  if (error && typeof error === "object" && "response" in error) {
-    const axiosError = error as { response?: { status?: number; data?: { errors?: string[] } } }
-
-    if (axiosError.response?.status === 409) {
-      return ["An account with this email already exists."]
-    }
-
-    if (axiosError.response?.data?.errors && Array.isArray(axiosError.response.data.errors)) {
-      return axiosError.response.data.errors
-    }
-  }
-
-  if (error instanceof Error) {
-    return [error.message]
-  }
-
-  return ["An unexpected error occurred. Please try again."]
-}
-
 type SignupFormProps = {
   onSignup: () => void
 }
@@ -62,10 +43,7 @@ const SignupForm: FC<SignupFormProps> = props => {
   const [errors, setErrors] = useState<Errors>(EMPTY_ERRORS)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const onChange = (callback: Dispatch<SetStateAction<string>>) => (event: ChangeEvent<HTMLInputElement>) => {
-    setErrors(EMPTY_ERRORS)
-    callback(event.target.value)
-  }
+  const onChange = onFieldChange(() => setErrors(EMPTY_ERRORS))
 
   const validateNonEmpty = (field: keyof Omit<Errors, "response">, value: string, label: string): boolean => {
     if (value.trim().length === 0) {
@@ -109,7 +87,7 @@ const SignupForm: FC<SignupFormProps> = props => {
         await login(email, password)
         props.onSignup()
       } catch (error: unknown) {
-        const errorMessages = extractErrorMessages(error)
+        const errorMessages = extractErrorMessages(error, { 409: "An account with this email already exists." })
         setErrors(errors => ({
           ...errors,
           response: errorMessages,

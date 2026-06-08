@@ -1,28 +1,9 @@
-import React, { useEffect } from "react"
-import { Outlet, useNavigate } from "react-router"
-import { getAuthenticatedUser, getAuthenticationToken } from "~/services/authentication/AuthenticationService"
-import type { AuthenticationToken } from "~/models/AuthenticationToken"
-import type { Option } from "~/types/Option"
+import React from "react"
+import { Outlet } from "react-router"
+import { useRedirectOnAuth } from "~/pages/useRedirectOnAuth"
 
 const UnauthenticatedLayout = () => {
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    checkAuthentication()
-  }, [])
-
-  const checkAuthentication = () => {
-    const token: Option<AuthenticationToken> = getAuthenticationToken()
-
-    token.forEach(async () => {
-      try {
-        await getAuthenticatedUser()
-        navigate("/")
-      } catch {
-        // User not authenticated, stay on login page
-      }
-    })
-  }
+  useRedirectOnAuth(true)
 
   return <Outlet />
 }

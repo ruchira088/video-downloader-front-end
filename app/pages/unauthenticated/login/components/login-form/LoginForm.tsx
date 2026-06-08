@@ -1,4 +1,4 @@
-import React, { type ChangeEvent, type Dispatch, type FC, type SetStateAction, useState } from "react"
+import React, { type FC, useState } from "react"
 import { Button, TextField, InputAdornment, IconButton } from "@mui/material"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
@@ -8,6 +8,7 @@ import styles from "./LoginForm.module.scss"
 import ErrorMessages from "~/components/error-messages/ErrorMessages"
 import smallLogo from "~/images/small-logo.svg"
 import { Link } from "react-router"
+import { extractErrorMessages, onFieldChange } from "~/pages/unauthenticated/AuthFormHelpers"
 
 interface Errors {
   email: string | null
@@ -16,26 +17,6 @@ interface Errors {
 }
 
 const EMPTY_ERRORS: Errors = { email: null, password: null, response: [] }
-
-const extractErrorMessages = (error: unknown): string[] => {
-  if (error && typeof error === "object" && "response" in error) {
-    const axiosError = error as { response?: { status?: number; data?: { errors?: string[] } } }
-
-    if (axiosError.response?.status === 401) {
-      return ["Invalid email or password. Please try again."]
-    }
-
-    if (axiosError.response?.data?.errors && Array.isArray(axiosError.response.data.errors)) {
-      return axiosError.response.data.errors
-    }
-  }
-
-  if (error instanceof Error) {
-    return [error.message]
-  }
-
-  return ["An unexpected error occurred. Please try again."]
-}
 
 type LoginFormProps = {
   onAuthenticate: (token: AuthenticationToken) => void
@@ -47,10 +28,7 @@ const LoginForm: FC<LoginFormProps> = props => {
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Errors>(EMPTY_ERRORS)
 
-  const onChange = (callback: Dispatch<SetStateAction<string>>) => (event: ChangeEvent<HTMLInputElement>) => {
-    setErrors(EMPTY_ERRORS)
-    callback(event.target.value)
-  }
+  const onChange = onFieldChange(() => setErrors(EMPTY_ERRORS))
 
   const onLoginClick = async () => {
     const isEmailValid = validateNonEmpty("email", email)
@@ -61,7 +39,7 @@ const LoginForm: FC<LoginFormProps> = props => {
         const authenticationToken = await login(email, password)
         props.onAuthenticate(authenticationToken)
       } catch (error: unknown) {
-        const errorMessages = extractErrorMessages(error)
+        const errorMessages = extractErrorMessages(error, { 401: "Invalid email or password. Please try again." })
         setErrors(errors => ({
           ...errors,
           response: errorMessages,

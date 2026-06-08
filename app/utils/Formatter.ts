@@ -43,14 +43,11 @@ export const humanReadableDuration = (duration: Duration): string => {
   const rescaledDuration = duration.rescale()
   const durationUnits = ["hour", "minute", "second"] as DurationUnit[]
 
-  const stringValue =
-    durationUnits
-      .map<[number, DurationUnit]>(unit => [rescaledDuration.get(unit), unit])
-      .filter(([value, _]) => value > 0)
-      .map(([value, unit]) => `${value} ${unit}${value > 1 ? "s" : ""}`)
-      .join(" ")
-
-  return stringValue
+  return durationUnits
+    .map<[number, DurationUnit]>(unit => [rescaledDuration.get(unit), unit])
+    .filter(([value]) => value > 0)
+    .map(([value, unit]) => `${value} ${unit}${value > 1 ? "s" : ""}`)
+    .join(" ")
 }
 
 export const shortHumanReadableDuration = (duration: Duration): string => {
@@ -63,4 +60,4 @@ export const shortHumanReadableDuration = (duration: Duration): string => {
   }
 }
 
-const formatTwoDigits = (number: number): string => (number < 10 ? `0${number}` : number.toString())
+const formatTwoDigits = (number: number): string => String(number).padStart(2, "0")

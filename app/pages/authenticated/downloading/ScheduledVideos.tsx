@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {Map} from "immutable"
 import {
   deleteScheduledVideoById,
@@ -14,6 +14,7 @@ import styles from "./ScheduledVideos.module.scss"
 import {Ordering} from "~/models/Ordering"
 import {None, Option, Some} from "~/types/Option"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
+import {usePaginatedFetch} from "~/components/infinite-scroll/usePaginatedFetch"
 import VideoScanButton from "~/components/scan/VideoScanButton"
 import {Button} from "@mui/material"
 import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVideo"
@@ -46,21 +47,11 @@ const ScheduledVideos = () => {
   const [downloadableScheduledVideos, setDownloadableScheduledVideos] =
     useState(Map<string, DownloadableScheduledVideo>())
 
-  const [pageNumber, setPageNumber] = useState(0)
   const [disableRetry, setDisableRetry] = useState(false)
-  const hasMore = useRef(true)
-  const isLoading = useRef(false)
 
-  const retrieveScheduledVideos = async () => {
-    isLoading.current = true
-
-    try {
-      const scheduledVideos = await fetchScheduledVideos(None.of(), pageNumber, PAGE_SIZE, SortBy.Date, Ordering.Ascending)
-
-      if (scheduledVideos.length < PAGE_SIZE) {
-        hasMore.current = false
-      }
-
+  const { hasMore, loadMore } = usePaginatedFetch(
+    pageNumber => fetchScheduledVideos(None.of(), pageNumber, PAGE_SIZE, SortBy.Date, Ordering.Ascending),
+    scheduledVideos => {
       const downloadableScheduledVideoMap: Map<string, DownloadableScheduledVideo> = Map(
         scheduledVideos.map((scheduledVideoDownload) => [
           scheduledVideoDownload.videoMetadata.id,
@@ -75,14 +66,9 @@ const ScheduledVideos = () => {
       setDownloadableScheduledVideos((downloadableScheduledVideos) =>
         downloadableScheduledVideos.concat(downloadableScheduledVideoMap)
       )
-    } finally {
-      isLoading.current = false
-    }
-  }
-
-  useEffect(() => {
-    retrieveScheduledVideos()
-  }, [pageNumber])
+    },
+    { pageSize: PAGE_SIZE }
+  )
 
   const onDownloadProgress = (downloadProgress: DownloadProgress) =>
     setDownloadableScheduledVideos(scheduledVideoDownloads =>
@@ -123,13 +109,6 @@ const ScheduledVideos = () => {
     return scheduledVideoDownloadStream(onDownloadProgress, onScheduledVideoDownloadUpdate)
   }, [])
 
-  const loadMore = () => {
-    if (!isLoading.current) {
-      isLoading.current = true
-      setPageNumber(pageNumber => pageNumber + 1)
-    }
-  }
-
   const retryAll = async () => {
     setDisableRetry(true)
 
@@ -158,7 +137,7 @@ const ScheduledVideos = () => {
 
   return (
     <div className={styles.scheduledVideos}>
-      <Helmet title="Downloding Videos"/>
+      <Helmet title="Downloading Videos"/>
       <div className={styles.buttonContainer}>
         <VideoScanButton className={styles.scanForVideos}/>
         <Button
@@ -171,7 +150,7 @@ const ScheduledVideos = () => {
       </div>
       <InfiniteScroll
         loadMore={loadMore}
-        hasMore={hasMore.current}
+        hasMore={hasMore}
         className={styles.scheduledVideoGallery}
       >
         {

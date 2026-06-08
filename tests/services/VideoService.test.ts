@@ -98,16 +98,16 @@ describe("VideoService", () => {
         abortController.signal
       )
 
-      expect(mockAxiosGet).toHaveBeenCalledWith(
-        expect.stringContaining("/videos/search?"),
-        { signal: abortController.signal }
-      )
-      const callUrl = mockAxiosGet.mock.calls[0][0] as string
-      expect(callUrl).toContain("page-number=0")
-      expect(callUrl).toContain("page-size=10")
-      expect(callUrl).toContain("sort-by=date")
-      expect(callUrl).toContain("search-term=test")
-      expect(callUrl).toContain("site=youtube.com")
+      expect(mockAxiosGet).toHaveBeenCalledWith("/videos/search", {
+        signal: abortController.signal,
+        params: expect.objectContaining({
+          "page-number": 0,
+          "page-size": 10,
+          "sort-by": SortBy.Date,
+          "search-term": "test",
+          site: "youtube.com",
+        }),
+      })
     })
 
     test("should exclude search term when None", async () => {
@@ -138,9 +138,9 @@ describe("VideoService", () => {
         abortController.signal
       )
 
-      const callUrl = mockAxiosGet.mock.calls[0][0] as string
-      expect(callUrl).not.toContain("search-term=")
-      expect(callUrl).not.toContain("site=")
+      const params = mockAxiosGet.mock.calls[0][1]?.params as Record<string, unknown>
+      expect(params["search-term"]).toBeNull()
+      expect(params.site).toBeUndefined()
     })
 
     test("should return parsed search result", async () => {

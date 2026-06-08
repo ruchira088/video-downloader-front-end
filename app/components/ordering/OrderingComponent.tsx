@@ -12,8 +12,8 @@ type OrderingComponentProps = {
 const OrderingComponent: FC<OrderingComponentProps> = props =>
   <FormControl className={props.className}>
     <RadioGroup row value={props.ordering} onChange={value => props.onOrderingChange(value.target.value as Ordering)}>
-      <FormControlLabel value={Ordering.Ascending} control={<Radio/>} label={<div>Ascending</div>}/>
-      <FormControlLabel value={Ordering.Descending} control={<Radio/>} label={<div>Descending</div>}/>
+      <FormControlLabel value={Ordering.Ascending} control={<Radio/>} label="Ascending"/>
+      <FormControlLabel value={Ordering.Descending} control={<Radio/>} label="Descending"/>
     </RadioGroup>
   </FormControl>
 

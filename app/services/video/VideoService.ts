@@ -26,29 +26,19 @@ export const searchVideos = async (
   ordering: Ordering,
   abortSignal: AbortSignal
 ): Promise<SearchResult<Video>> => {
-  const pageNumberQuery = `page-number=${pageNumber}`
-  const pageSizeQuery = `page-size=${pageSize}`
-  const sortByQuery = `sort-by=${sortBy}`
-  const sizeQuery = "size=" + rangeEncoder(simpleStringEncoder()).encode(sizeRange)
-  const durationQuery = "duration=" + rangeEncoder(durationRangeStringEncoder).encode(durationRange)
-  const searchTermQuery = maybeSearchTerm.map((term) => `search-term=${term}`).toNullable()
-  const sitesQuery = videoSites.length === 0 ? "" : `site=${videoSites.join(",")}`
-  const orderingQuery = "order=" + ordering
-
-  const queryParameters: string = [
-    pageNumberQuery,
-    pageSizeQuery,
-    sortByQuery,
-    sizeQuery,
-    durationQuery,
-    searchTermQuery,
-    sitesQuery,
-    orderingQuery,
-  ]
-    .filter((query) => query != null && query !== "")
-    .join("&")
-
-  const response = await axiosClient.get("/videos/search?" + queryParameters, { signal: abortSignal })
+  const response = await axiosClient.get("/videos/search", {
+    signal: abortSignal,
+    params: {
+      "page-number": pageNumber,
+      "page-size": pageSize,
+      "sort-by": sortBy,
+      size: rangeEncoder(simpleStringEncoder()).encode(sizeRange),
+      duration: rangeEncoder(durationRangeStringEncoder).encode(durationRange),
+      order: ordering,
+      "search-term": maybeSearchTerm.toNullable(),
+      site: videoSites.length === 0 ? undefined : videoSites.join(","),
+    },
+  })
 
   const searchResult: SearchResult<Video> = zodParse(SearchResult(Video), response.data)
 

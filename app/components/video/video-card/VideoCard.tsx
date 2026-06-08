@@ -15,11 +15,7 @@ const VideoCard: FC<VideoCardProps> =
   props =>
     <div className={styles.videoCard}>
       <VideoMetadataCard videoMetadata={props.video.videoMetadata} />
-      {props.lastWatched ? (
-        <Timestamp timestamp={props.lastWatched} className={styles.videoTimestamp}/>
-      ) : (
-        <Timestamp timestamp={props.video.createdAt} className={styles.videoTimestamp}/>
-      )}
+      <Timestamp timestamp={props.lastWatched ?? props.video.createdAt} className={styles.videoTimestamp}/>
       {import.meta.env.DEV && <div className={styles.videoId}>{props.video.videoMetadata.id}</div>}
     </div>
 

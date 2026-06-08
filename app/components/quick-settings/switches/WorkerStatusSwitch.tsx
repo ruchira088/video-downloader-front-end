@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react"
 import { WorkerStatus } from "~/models/WorkerStatus"
 import { fetchWorkerStatus, updateWorkerStatus } from "~/services/scheduling/SchedulingService"
-import { IconButton, Tooltip } from "@mui/material"
 import { PlayCircle, PauseCircle } from "@mui/icons-material"
-import styles from "./QuickSettingsButton.module.scss"
+import QuickSettingsButton from "./QuickSettingsButton"
 
 const WorkerStatusSwitch = () => {
   const [workerStatus, setWorkerStatus] = useState<WorkerStatus | null>(null)
@@ -32,19 +31,13 @@ const WorkerStatusSwitch = () => {
   const isAvailable = workerStatus === WorkerStatus.Available
 
   return (
-    <Tooltip title={isAvailable ? "Pause Workers" : "Start Workers"}>
-      <span>
-        <IconButton
-          onClick={onClick}
-          size="small"
-          disabled={workerStatus === null}
-          aria-label={isAvailable ? "Pause workers" : "Start workers"}
-          className={styles.quickSettingsButton}
-        >
-          {isAvailable ? <PauseCircle /> : <PlayCircle />}
-        </IconButton>
-      </span>
-    </Tooltip>
+    <QuickSettingsButton
+      tooltip={isAvailable ? "Pause Workers" : "Start Workers"}
+      ariaLabel={isAvailable ? "Pause workers" : "Start workers"}
+      icon={isAvailable ? <PauseCircle /> : <PlayCircle />}
+      onClick={onClick}
+      disabled={workerStatus === null}
+    />
   )
 }
 

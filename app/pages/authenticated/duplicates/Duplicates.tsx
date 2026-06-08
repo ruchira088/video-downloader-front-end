@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useRef, useState } from "react"
 import { Link } from "react-router"
 import { Button } from "@mui/material"
 import { deleteVideo, fetchDuplicateVideos, fetchVideoById } from "~/services/video/VideoService"
 import { Video } from "~/models/Video"
-import type { DuplicateVideoGroups } from "~/models/DuplicateVideo"
 import VideoCard from "~/components/video/video-card/VideoCard"
 import Helmet from "~/components/helmet/Helmet"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
+import { usePaginatedFetch } from "~/components/infinite-scroll/usePaginatedFetch"
 
 import styles from "./Duplicates.module.scss"
 
@@ -19,25 +19,11 @@ type DuplicateGroupEntry = {
 
 const Duplicates = () => {
   const [groups, setGroups] = useState<DuplicateGroupEntry[]>([])
-  const [pageNumber, setPageNumber] = useState(0)
-  const isLoading = useRef(false)
-  const hasMore = useRef(true)
-  const fetchedPages = useRef(new Set<number>())
   const loadedGroupIds = useRef(new Set<string>())
 
-  const loadDuplicates = async (page: number) => {
-    if (fetchedPages.current.has(page)) return
-    fetchedPages.current.add(page)
-    isLoading.current = true
-
-    try {
-      const duplicateGroups: DuplicateVideoGroups = await fetchDuplicateVideos(page, PAGE_SIZE)
-      const groupEntries = Object.entries(duplicateGroups)
-
-      if (groupEntries.length < PAGE_SIZE) {
-        hasMore.current = false
-      }
-
+  const { isLoading, hasMore, loadMore } = usePaginatedFetch(
+    async page => Object.entries(await fetchDuplicateVideos(page, PAGE_SIZE)),
+    async groupEntries => {
       const unseenEntries = groupEntries.filter(([groupId]) => !loadedGroupIds.current.has(groupId))
       unseenEntries.forEach(([groupId]) => loadedGroupIds.current.add(groupId))
 
@@ -53,20 +39,9 @@ const Duplicates = () => {
       if (newGroups.length > 0) {
         setGroups(prev => prev.concat(newGroups))
       }
-    } finally {
-      isLoading.current = false
-    }
-  }
-
-  useEffect(() => {
-    loadDuplicates(pageNumber)
-  }, [pageNumber])
-
-  const loadMore = () => {
-    if (!isLoading.current && hasMore.current) {
-      setPageNumber(fetchedPages.current.size)
-    }
-  }
+    },
+    { pageSize: PAGE_SIZE }
+  )
 
   const onDeleteVideo = async (videoId: string) => {
     await deleteVideo(videoId, true)
@@ -85,13 +60,13 @@ const Duplicates = () => {
     <div className={styles.duplicatesPage}>
       <Helmet title="Duplicates" />
 
-      {groups.length === 0 && !isLoading.current && (
+      {groups.length === 0 && !isLoading && (
         <div className={styles.emptyState}>No duplicate videos found</div>
       )}
 
       <InfiniteScroll
         loadMore={loadMore}
-        hasMore={hasMore.current}
+        hasMore={hasMore}
         className={styles.duplicateGroups}
       >
         {groups.map(group => (

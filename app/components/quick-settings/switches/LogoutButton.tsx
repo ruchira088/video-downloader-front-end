@@ -1,8 +1,7 @@
-import { IconButton, Tooltip } from "@mui/material"
 import LogoutIcon from "@mui/icons-material/Logout"
 import { logout } from "~/services/authentication/AuthenticationService"
 import { useNavigate } from "react-router"
-import styles from "./QuickSettingsButton.module.scss"
+import QuickSettingsButton from "./QuickSettingsButton"
 
 const LogoutButton = () => {
   const navigate = useNavigate()
@@ -13,11 +12,7 @@ const LogoutButton = () => {
   }
 
   return (
-    <Tooltip title="Logout">
-      <IconButton onClick={handleLogout} size="small" aria-label="Logout" className={styles.quickSettingsButton}>
-        <LogoutIcon />
-      </IconButton>
-    </Tooltip>
+    <QuickSettingsButton tooltip="Logout" ariaLabel="Logout" icon={<LogoutIcon />} onClick={handleLogout} />
   )
 }
 

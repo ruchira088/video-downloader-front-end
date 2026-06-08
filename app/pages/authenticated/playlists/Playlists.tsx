@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useState } from "react"
 import { Link } from "react-router"
 import { Button } from "@mui/material"
 import Add from "@mui/icons-material/Add"
@@ -10,6 +10,7 @@ import { PlaylistOrdering } from "~/models/PlaylistOrdering"
 import { None } from "~/types/Option"
 import PlaylistCard from "./components/PlaylistCard"
 import CreatePlaylistDialog from "./components/CreatePlaylistDialog"
+import { usePaginatedFetch } from "~/components/infinite-scroll/usePaginatedFetch"
 
 import styles from "./Playlists.module.scss"
 
@@ -17,48 +18,18 @@ const PAGE_SIZE = 50
 
 const Playlists = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([])
-  const [pageNumber, setPageNumber] = useState(0)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const isLoading = useRef(false)
-  const hasMore = useRef(true)
 
-  const loadPlaylists = async () => {
-    if (isLoading.current) return
-
-    isLoading.current = true
-
-    try {
-      const newPlaylists = await fetchPlaylists(
-        None.of(),
-        pageNumber,
-        PAGE_SIZE,
-        PlaylistSortBy.CreatedAt,
-        PlaylistOrdering.Descending
-      )
-
-      if (newPlaylists.length < PAGE_SIZE) {
-        hasMore.current = false
-      }
-
-      setPlaylists(prev => [...prev, ...newPlaylists])
-    } finally {
-      isLoading.current = false
-    }
-  }
-
-  useEffect(() => {
-    loadPlaylists()
-  }, [pageNumber])
+  const { isLoading, hasMore, loadMore } = usePaginatedFetch<Playlist>(
+    pageNumber =>
+      fetchPlaylists(None.of(), pageNumber, PAGE_SIZE, PlaylistSortBy.CreatedAt, PlaylistOrdering.Descending),
+    newPlaylists => setPlaylists(prev => [...prev, ...newPlaylists]),
+    { pageSize: PAGE_SIZE }
+  )
 
   const handlePlaylistCreated = (playlist: Playlist) => {
     setPlaylists(prev => [playlist, ...prev])
     setIsDialogOpen(false)
-  }
-
-  const loadMore = () => {
-    if (!isLoading.current && hasMore.current) {
-      setPageNumber(prev => prev + 1)
-    }
   }
 
   return (
@@ -86,14 +57,14 @@ const Playlists = () => {
           </Link>
         ))}
       </div>
-      {hasMore.current && playlists.length > 0 && (
+      {hasMore && playlists.length > 0 && (
         <div className={styles.loadMoreContainer}>
           <Button onClick={loadMore} variant="outlined">
             Load More
           </Button>
         </div>
       )}
-      {playlists.length === 0 && !isLoading.current && (
+      {playlists.length === 0 && !isLoading && (
         <div className={styles.emptyState}>
           <p>No playlists yet. Create your first playlist to get started!</p>
         </div>
