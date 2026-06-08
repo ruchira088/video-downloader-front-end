@@ -28,11 +28,7 @@ export default defineConfig({
         "app/**/*.test.{ts,tsx}",
         "app/+types/**",
         "app/entry.{client,server}.tsx",
-        "app/routes.ts",
-        "app/models/FrontendServiceInformation.ts",
-        // Files using complex Option.map patterns that are difficult to unit test
-        "app/pages/authenticated/videos/video-page/VideoPage.tsx",
-        "app/pages/authenticated/service-information/**/*.tsx"
+        "app/routes.ts"
       ],
       thresholds: {
         statements: 60,
