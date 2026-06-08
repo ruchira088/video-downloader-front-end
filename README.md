@@ -10,6 +10,8 @@ A modern, full-featured React web application for downloading and managing video
 - **Real-time Progress** - Monitor download progress with live updates via EventSource
 - **Watch History** - Track viewing progress with timestamp bookmarks
 - **Video Playback** - Stream videos with playback position persistence
+- **Playlists** - Create and manage playlists with drag-and-drop ordering
+- **Duplicate Detection** - Find and resolve duplicate videos in the library
 - **Metadata Management** - View and edit video metadata and thumbnails
 - **Theme Support** - Light and dark mode with smooth transitions
 - **Authentication** - Secure login with token-based authentication
@@ -18,20 +20,22 @@ A modern, full-featured React web application for downloading and managing video
 
 | Category | Technologies |
 |----------|-------------|
-| **Framework** | React 19, React Router 7 |
-| **Language** | TypeScript 5.8 |
-| **Build Tool** | Vite 7 |
-| **UI Library** | Material-UI (MUI) 7 |
+| **Framework** | React 19, React Router 7 (SPA mode) |
+| **Language** | TypeScript 6 |
+| **Build Tool** | Vite 8 |
+| **UI Library** | Material-UI (MUI) 9 |
 | **Styling** | Sass/SCSS, Emotion |
 | **HTTP Client** | Axios |
 | **Validation** | Zod 4 |
 | **Date/Time** | Luxon |
+| **Drag & Drop** | dnd-kit |
+| **Error Monitoring** | Sentry |
 | **Testing** | Vitest, jsdom |
 | **Deployment** | Docker, AWS CDK |
 
 ## Prerequisites
 
-- Node.js LTS (v20+)
+- Node.js 24 (see `.nvmrc`)
 - npm
 - Docker (optional, for containerized deployment)
 
@@ -73,7 +77,10 @@ The development server runs at `http://localhost:5173`.
 | `npm run build` | Build for production |
 | `npm test` | Run tests in watch mode |
 | `npm run test:run` | Run tests once |
+| `npm run test:coverage` | Run tests once with coverage report |
 | `npm run typecheck` | Run TypeScript type checking |
+| `npm run lint` / `npm run lint:fix` | Lint (and autofix) sources |
+| `npm run ci:checks` | Full CI gate: typecheck → lint → test:coverage |
 
 ## Configuration
 
@@ -139,8 +146,12 @@ video-downloader-front-end/
 | `/history` | History | Watch history and progress |
 | `/schedule` | Schedule | Schedule new downloads |
 | `/downloading` | Downloading | Monitor active downloads |
+| `/playlists` | Playlists | Browse and create playlists |
+| `/playlists/:playlistId` | Playlist Detail | View and reorder a playlist |
+| `/duplicates` | Duplicates | Find and resolve duplicate videos |
 | `/information` | Information | System status and info |
 | `/sign-in` | Login | User authentication |
+| `/sign-up` | Signup | User registration |
 
 ## Testing
 
@@ -195,10 +206,11 @@ npm run cdk deploy
 ### Services
 
 - **AuthenticationService** - Login/logout, token management
-- **VideoService** - Video CRUD operations, search, metadata
-- **SchedulingService** - Download scheduling, progress tracking
+- **VideoService** - Video CRUD operations, search, metadata, duplicate detection
+- **SchedulingService** - Download scheduling, real-time progress tracking, worker status
+- **PlaylistService** - Playlist CRUD and video ordering
 - **HistoryService** - Watch history and playback positions
-- **ConfigService** - Application configuration and preferences
+- **ConfigurationService** - Application configuration and preferences
 
 ### Data Models
 
