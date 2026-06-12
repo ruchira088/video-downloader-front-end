@@ -19,6 +19,6 @@ export const getEnvironment = (): Environment => {
   const host: string = window.location.host
 
   return Option.fromNullable(Object.entries(URL_MAPPINGS).find(([_, hosts]) => hosts.includes(host)))
-    .map(([env]) => env as unknown as Environment)
+    .map(([env]) => Number(env) as Environment)
     .getOrElse(() => Environment.Development)
 }
