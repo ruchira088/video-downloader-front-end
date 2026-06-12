@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, test, vi } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
+import { act, render, screen, waitFor } from "@testing-library/react"
 import ServiceInformation from "~/pages/authenticated/service-information/ServiceInformation"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { DateTime, Duration } from "luxon"
@@ -115,6 +115,10 @@ describe("ServiceInformation", () => {
     vi.mocked(retrieveBackendServiceInformation).mockResolvedValue(createMockBackendInfo())
     vi.mocked(performHealthCheck).mockResolvedValue(createMockHealthCheck())
     vi.mocked(frontendServiceInformation).mockReturnValue(createMockFrontendInfo())
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   test("should render the page with Backend and Frontend section titles", async () => {
@@ -260,14 +264,18 @@ describe("ServiceInformation", () => {
     })
   })
 
-  test("should call retrieveBackendServiceInformation on mount", async () => {
+  test("should call retrieveBackendServiceInformation only once on mount", async () => {
     const { retrieveBackendServiceInformation } = await import("~/services/health/HealthCheckService")
 
     renderWithRouter()
 
     await waitFor(() => {
-      expect(retrieveBackendServiceInformation).toHaveBeenCalled()
+      expect(retrieveBackendServiceInformation).toHaveBeenCalledTimes(1)
     })
+
+    await act(() => vi.advanceTimersByTimeAsync(5000))
+
+    expect(retrieveBackendServiceInformation).toHaveBeenCalledTimes(1)
   })
 
   test("should call performHealthCheck on mount", async () => {
