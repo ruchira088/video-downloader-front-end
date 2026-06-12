@@ -28,10 +28,12 @@ let mockEventSourceInstance: {
   url: string
   withCredentials: boolean
   listeners: Map<string, ((event: MessageEvent) => void)[]>
+  onerror: ((event: Event) => void) | null
   close: ReturnType<typeof vi.fn>
   addEventListener: (type: string, listener: (event: MessageEvent) => void) => void
   removeEventListener: (type: string, listener: (event: MessageEvent) => void) => void
   simulateMessage: (type: string, data: unknown) => void
+  simulateRawMessage: (type: string, rawData: string) => void
 } | null = null
 
 const createMockEventSource = () => {
@@ -40,6 +42,7 @@ const createMockEventSource = () => {
     url: "",
     withCredentials: false,
     listeners,
+    onerror: null as ((event: Event) => void) | null,
     close: vi.fn(),
     addEventListener(type: string, listener: (event: MessageEvent) => void) {
       if (!listeners.has(type)) {
@@ -59,6 +62,11 @@ const createMockEventSource = () => {
     simulateMessage(type: string, data: unknown) {
       const typeListeners = listeners.get(type) || []
       const event = { data: JSON.stringify(data) } as MessageEvent
+      typeListeners.forEach(l => l(event))
+    },
+    simulateRawMessage(type: string, rawData: string) {
+      const typeListeners = listeners.get(type) || []
+      const event = { data: rawData } as MessageEvent
       typeListeners.forEach(l => l(event))
     }
   }
@@ -277,8 +285,9 @@ describe("SchedulingService", () => {
     test("should create EventSource with correct URL and credentials", () => {
       const onProgress = vi.fn()
       const onUpdate = vi.fn()
+      const onError = vi.fn()
 
-      scheduledVideoDownloadStream(onProgress, onUpdate)
+      scheduledVideoDownloadStream(onProgress, onUpdate, onError)
 
       expect(mockEventSourceInstance).not.toBeNull()
       expect(mockEventSourceInstance!.url).toBe("http://test-api.example.com/schedule/updates")
@@ -288,8 +297,9 @@ describe("SchedulingService", () => {
     test("should call onDownloadProgress when receiving ACTIVE_DOWNLOAD event", () => {
       const onProgress = vi.fn()
       const onUpdate = vi.fn()
+      const onError = vi.fn()
 
-      scheduledVideoDownloadStream(onProgress, onUpdate)
+      scheduledVideoDownloadStream(onProgress, onUpdate, onError)
 
       const mockProgressData = {
         videoId: "video-123",
@@ -308,8 +318,9 @@ describe("SchedulingService", () => {
     test("should call onScheduledVideoDownloadUpdate when receiving SCHEDULED_VIDEO_DOWNLOAD_UPDATE event", () => {
       const onProgress = vi.fn()
       const onUpdate = vi.fn()
+      const onError = vi.fn()
 
-      scheduledVideoDownloadStream(onProgress, onUpdate)
+      scheduledVideoDownloadStream(onProgress, onUpdate, onError)
 
       const mockUpdateData = createMockScheduledDownload("video-456", "Queued")
 
@@ -325,8 +336,9 @@ describe("SchedulingService", () => {
     test("should return cleanup function that removes listeners and closes connection", () => {
       const onProgress = vi.fn()
       const onUpdate = vi.fn()
+      const onError = vi.fn()
 
-      const cleanup = scheduledVideoDownloadStream(onProgress, onUpdate)
+      const cleanup = scheduledVideoDownloadStream(onProgress, onUpdate, onError)
 
       // Store initial listener counts
       const initialActiveDownloadListeners = mockEventSourceInstance!.listeners.get(EventStreamEventType.ACTIVE_DOWNLOAD)?.length ?? 0
@@ -349,8 +361,9 @@ describe("SchedulingService", () => {
     test("should not call handlers after cleanup", () => {
       const onProgress = vi.fn()
       const onUpdate = vi.fn()
+      const onError = vi.fn()
 
-      const cleanup = scheduledVideoDownloadStream(onProgress, onUpdate)
+      const cleanup = scheduledVideoDownloadStream(onProgress, onUpdate, onError)
       cleanup()
 
       // Simulate messages after cleanup - handlers should not be called since listeners were removed
@@ -363,6 +376,56 @@ describe("SchedulingService", () => {
       mockEventSourceInstance!.simulateMessage(EventStreamEventType.ACTIVE_DOWNLOAD, mockProgressData)
 
       expect(onProgress).not.toHaveBeenCalled()
+    })
+
+    test("should log instead of throwing when receiving a malformed event payload", () => {
+      const onProgress = vi.fn()
+      const onUpdate = vi.fn()
+      const onError = vi.fn()
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+      scheduledVideoDownloadStream(onProgress, onUpdate, onError)
+
+      expect(() =>
+        mockEventSourceInstance!.simulateRawMessage(EventStreamEventType.ACTIVE_DOWNLOAD, "not-json")
+      ).not.toThrow()
+      expect(() =>
+        mockEventSourceInstance!.simulateRawMessage(EventStreamEventType.SCHEDULED_VIDEO_DOWNLOAD_UPDATE, "{}")
+      ).not.toThrow()
+
+      expect(onProgress).not.toHaveBeenCalled()
+      expect(onUpdate).not.toHaveBeenCalled()
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to parse download progress event", expect.any(Error))
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to parse scheduled video download update event", expect.any(Error))
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    test("should invoke onError when the EventSource errors", () => {
+      const onProgress = vi.fn()
+      const onUpdate = vi.fn()
+      const onError = vi.fn()
+
+      scheduledVideoDownloadStream(onProgress, onUpdate, onError)
+
+      const errorEvent = new Event("error")
+      mockEventSourceInstance!.onerror!(errorEvent)
+
+      expect(onError).toHaveBeenCalledWith(errorEvent)
+    })
+
+    test("should clear onerror handler on cleanup", () => {
+      const onProgress = vi.fn()
+      const onUpdate = vi.fn()
+      const onError = vi.fn()
+
+      const cleanup = scheduledVideoDownloadStream(onProgress, onUpdate, onError)
+
+      expect(mockEventSourceInstance!.onerror).not.toBeNull()
+
+      cleanup()
+
+      expect(mockEventSourceInstance!.onerror).toBeNull()
     })
   })
 })

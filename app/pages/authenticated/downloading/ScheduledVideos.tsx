@@ -106,7 +106,12 @@ const ScheduledVideos = () => {
 
 
   useEffect(() => {
-    return scheduledVideoDownloadStream(onDownloadProgress, onScheduledVideoDownloadUpdate)
+    return scheduledVideoDownloadStream(
+      onDownloadProgress,
+      onScheduledVideoDownloadUpdate,
+      // EventSource auto-reconnects; log so dropped connections (e.g. expired session, server restart) are visible
+      (event) => console.error("Scheduled video download stream error", event)
+    )
   }, [])
 
   const retryAll = async () => {

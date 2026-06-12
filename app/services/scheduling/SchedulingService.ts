@@ -6,6 +6,7 @@ import {SchedulingStatus} from "~/models/SchedulingStatus"
 import {WorkerStatus, WorkerStatusResult} from "~/models/WorkerStatus"
 import {Ordering} from "~/models/Ordering"
 import type {Option} from "~/types/Option"
+import {Either} from "~/types/Either"
 import {zodParse} from "~/types/Zod"
 import {ListResponse} from "~/models/ListResponse"
 import {DownloadProgress} from "~/models/DownloadProgress"
@@ -13,26 +14,33 @@ import {EventStreamEventType} from "~/pages/authenticated/downloading/EventStrea
 
 export const scheduledVideoDownloadStream = (
   onDownloadProgress: (downloadProgress: DownloadProgress) => void,
-  onScheduledVideoDownloadUpdate: (scheduledVideoDownload: ScheduledVideoDownload) => void
+  onScheduledVideoDownloadUpdate: (scheduledVideoDownload: ScheduledVideoDownload) => void,
+  onError: (event: Event) => void
 ): (() => void) => {
   const eventSource = new EventSource(`${apiConfiguration.baseUrl}/schedule/updates`, {withCredentials: true})
 
-  const onActionDownloadMessage = (messageEvent: MessageEvent) => {
-    const downloadProgress = zodParse(DownloadProgress, JSON.parse(messageEvent.data))
-    onDownloadProgress(downloadProgress)
-  }
+  const onActionDownloadMessage = (messageEvent: MessageEvent) =>
+    Either.fromTry(() => zodParse(DownloadProgress, JSON.parse(messageEvent.data)))
+      .fold(
+        error => console.error("Failed to parse download progress event", error),
+        onDownloadProgress
+      )
 
-  const onScheduledVideoDownloadUpdateMessage = (messageEvent: MessageEvent) => {
-    const scheduledVideoDownload = zodParse(ScheduledVideoDownload, JSON.parse(messageEvent.data))
-    onScheduledVideoDownloadUpdate(scheduledVideoDownload)
-  }
+  const onScheduledVideoDownloadUpdateMessage = (messageEvent: MessageEvent) =>
+    Either.fromTry(() => zodParse(ScheduledVideoDownload, JSON.parse(messageEvent.data)))
+      .fold(
+        error => console.error("Failed to parse scheduled video download update event", error),
+        onScheduledVideoDownloadUpdate
+      )
 
   eventSource.addEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, onActionDownloadMessage)
   eventSource.addEventListener(EventStreamEventType.SCHEDULED_VIDEO_DOWNLOAD_UPDATE, onScheduledVideoDownloadUpdateMessage)
+  eventSource.onerror = onError
 
   return () => {
     eventSource.removeEventListener(EventStreamEventType.ACTIVE_DOWNLOAD, onActionDownloadMessage)
     eventSource.removeEventListener(EventStreamEventType.SCHEDULED_VIDEO_DOWNLOAD_UPDATE, onScheduledVideoDownloadUpdateMessage)
+    eventSource.onerror = null
     eventSource.close()
   }
 }
