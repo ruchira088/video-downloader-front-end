@@ -19,9 +19,9 @@ describe("humanReadableSize", () => {
     })
   })
 
-  describe("kilobytes (> 1000)", () => {
+  describe("kilobytes (>= 1000)", () => {
     test("should format kilobyte values", () => {
-      // Note: the function uses < (not <=), so 1000 stays as bytes
+      expect(humanReadableSize(1000)).toBe("1kB")
       expect(humanReadableSize(1001)).toBe("1kB")
       expect(humanReadableSize(1500)).toBe("2kB")
       expect(humanReadableSize(10000)).toBe("10kB")
@@ -29,9 +29,9 @@ describe("humanReadableSize", () => {
     })
   })
 
-  describe("megabytes (> 1,000,000)", () => {
+  describe("megabytes (>= 1,000,000)", () => {
     test("should format megabyte values", () => {
-      // Note: the function uses < (not <=), so exact boundary stays in previous unit
+      expect(humanReadableSize(1000000)).toBe("1MB")
       expect(humanReadableSize(1000001)).toBe("1MB")
       expect(humanReadableSize(1500000)).toBe("2MB")
       expect(humanReadableSize(10000000)).toBe("10MB")
@@ -39,9 +39,9 @@ describe("humanReadableSize", () => {
     })
   })
 
-  describe("gigabytes (> 1,000,000,000)", () => {
+  describe("gigabytes (>= 1,000,000,000)", () => {
     test("should format gigabyte values with decimals", () => {
-      // Note: the function uses < (not <=), so exact boundary stays in previous unit
+      expect(humanReadableSize(1000000000)).toBe("1.00GB")
       expect(humanReadableSize(1000000001)).toBe("1.00GB")
       expect(humanReadableSize(1500000000)).toBe("1.50GB")
       expect(humanReadableSize(2500000000)).toBe("2.50GB")
@@ -132,9 +132,13 @@ describe("humanReadableDuration", () => {
     expect(humanReadableDuration(duration)).toBe("1 hour 1 minute 1 second")
   })
 
-  test("should return empty string for zero duration", () => {
+  test("should return '0 seconds' for zero duration", () => {
     const duration = Duration.fromObject({ seconds: 0 })
-    expect(humanReadableDuration(duration)).toBe("")
+    expect(humanReadableDuration(duration)).toBe("0 seconds")
+  })
+
+  test("should return '0 seconds' for zero-millisecond duration", () => {
+    expect(humanReadableDuration(Duration.fromMillis(0))).toBe("0 seconds")
   })
 })
 

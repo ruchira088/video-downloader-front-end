@@ -4,6 +4,8 @@ import { AuthenticationToken } from "~/models/AuthenticationToken"
 import { User } from "~/models/User"
 import { ApplicationConfiguration, Theme } from "~/models/ApplicationConfiguration"
 import { FileResource, FileResourceType } from "~/models/FileResource"
+import { VideoServiceSummary } from "~/models/VideoServiceSummary"
+import { Duration } from "luxon"
 
 describe("AuthenticationToken", () => {
   const validToken = {
@@ -228,6 +230,35 @@ describe("FileResource", () => {
       const invalid = { ...validFileResource, createdAt: "not a date" }
       expect(() => VideoFileResource.parse(invalid)).toThrow()
     })
+  })
+})
+
+describe("VideoServiceSummary", () => {
+  const validSummary = {
+    videoCount: 42,
+    totalSize: 1024000000,
+    totalDuration: { length: 3600, unit: "seconds" },
+    sites: ["youtube", "vimeo"],
+  }
+
+  test("should parse valid video service summary", () => {
+    const result = VideoServiceSummary.parse(validSummary)
+
+    expect(result.videoCount).toBe(42)
+    expect(result.totalSize).toBe(1024000000)
+    expect(result.totalDuration).toBeInstanceOf(Duration)
+    expect(result.totalDuration.as("seconds")).toBe(3600)
+    expect(result.sites).toEqual(["youtube", "vimeo"])
+  })
+
+  test("should reject missing videoCount", () => {
+    const invalid = { ...validSummary, videoCount: undefined }
+    expect(() => VideoServiceSummary.parse(invalid)).toThrow()
+  })
+
+  test("should reject non-array sites", () => {
+    const invalid = { ...validSummary, sites: "youtube" }
+    expect(() => VideoServiceSummary.parse(invalid)).toThrow()
   })
 })
 

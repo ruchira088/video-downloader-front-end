@@ -19,6 +19,26 @@ describe("Either", () => {
       expect((result as Left<Error, number>).value).toBe(error)
     })
 
+    test("should wrap thrown non-Error values in an Error", () => {
+      const result = Either.fromTry<number>(() => {
+        throw "plain string failure"
+      })
+      expect(result).toBeInstanceOf(Left)
+      const error = (result as Left<Error, number>).value
+      expect(error).toBeInstanceOf(Error)
+      expect(error.message).toBe("plain string failure")
+    })
+
+    test("should wrap thrown numbers in an Error", () => {
+      const result = Either.fromTry<number>(() => {
+        throw 404
+      })
+      expect(result).toBeInstanceOf(Left)
+      const error = (result as Left<Error, number>).value
+      expect(error).toBeInstanceOf(Error)
+      expect(error.message).toBe("404")
+    })
+
     test("should handle JSON parsing", () => {
       const validJson = Either.fromTry(() => JSON.parse('{"a": 1}'))
       expect(validJson).toBeInstanceOf(Right)

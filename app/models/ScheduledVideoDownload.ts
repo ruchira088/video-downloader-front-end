@@ -8,7 +8,7 @@ const ErrorInformation = z.object({
   details: z.string(),
 }).transform(value => ({
   message: value.message,
-  stackTrace: value.details.split("\\\n")
+  stackTrace: value.details.split(/\\?\r?\n/)
 }))
 
 export const ScheduledVideoDownload = z.object({

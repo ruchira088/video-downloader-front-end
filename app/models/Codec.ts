@@ -1,4 +1,4 @@
-import { Either, Right } from "~/types/Either"
+import { Either, Left, Right } from "~/types/Either"
 
 export type Codec<A, B> = Encoder<A, B> & Decoder<B, A>
 
@@ -15,10 +15,10 @@ export function codec<A, B>(encoder: Encoder<A, B>, decoder: Decoder<B, A>): Cod
 
 export function identityCodec<A>(): Codec<A, A> {
   return {
-    decode<A>(value: A): Either<Error, A> {
+    decode(value: A): Either<Error, A> {
       return Right.of(value)
     },
-    encode<A>(value: A): A {
+    encode(value: A): A {
       return value
     },
   }
@@ -38,7 +38,7 @@ export function encodeMap<A, B, C>(encoder: Encoder<A, B>, f: (value: B) => C): 
 
 export function simpleStringEncoder<A>(): Encoder<A, string> {
   return {
-    encode<A>(value: A): string {
+    encode(value: A): string {
       return `${value}`
     },
   }
@@ -58,6 +58,10 @@ export function decodeMap<A, B, C>(decoder: Decoder<A, B>, f: (value: B) => C): 
 
 export const stringToNumberDecoder: Decoder<string, number> = {
   decode(value: string): Either<Error, number> {
-    return Either.fromTry(() => parseInt(value, 10))
+    const parsed = parseInt(value, 10)
+
+    return Number.isNaN(parsed)
+      ? Left.of(new Error(`Unable to parse "${value}" as a number`))
+      : Right.of(parsed)
   },
 }

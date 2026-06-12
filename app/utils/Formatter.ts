@@ -30,7 +30,7 @@ const GIGA_BYTE: ByteSize = {
 
 export const humanReadableSize = (size: number, alwaysShowDecimals = false, separator: string = ""): string => {
   const byteSize = Option.fromNullable(
-    [GIGA_BYTE, MEGA_BYTE, KILO_BYTE].find((byteSize) => byteSize.floor < size)
+    [GIGA_BYTE, MEGA_BYTE, KILO_BYTE].find((byteSize) => byteSize.floor <= size)
   ).getOrElse(() => BYTE)
 
   return `${(size / byteSize.floor).toFixed(byteSize.unit === GIGA_BYTE.unit || alwaysShowDecimals ? 2 : 0)}${separator}${
@@ -43,11 +43,12 @@ export const humanReadableDuration = (duration: Duration): string => {
   const rescaledDuration = duration.rescale()
   const durationUnits = ["hour", "minute", "second"] as DurationUnit[]
 
-  return durationUnits
+  const parts = durationUnits
     .map<[number, DurationUnit]>(unit => [rescaledDuration.get(unit), unit])
     .filter(([value]) => value > 0)
     .map(([value, unit]) => `${value} ${unit}${value > 1 ? "s" : ""}`)
-    .join(" ")
+
+  return parts.length === 0 ? "0 seconds" : parts.join(" ")
 }
 
 export const shortHumanReadableDuration = (duration: Duration): string => {
