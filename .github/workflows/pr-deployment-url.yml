@@ -1,0 +1,31 @@
+name: video-downloader-front-end PR deployment URL
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+    branches:
+      - main
+
+jobs:
+  comment-deployment-url:
+    name: Comment deployment URL
+    runs-on: ubuntu-latest
+
+    # Fork PRs do not get a dev deployment
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Comment deployment URL on PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          gh pr comment "$PR_URL" --body "🚀 Dev deployment: https://${HEAD_REF}.videos.ruchij.com
+
+          This environment will be destroyed when the PR is closed."
