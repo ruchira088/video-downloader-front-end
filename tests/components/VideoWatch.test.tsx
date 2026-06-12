@@ -8,6 +8,16 @@ import { Some } from "~/types/Option"
 import { FileResourceType } from "~/models/FileResource"
 import React from "react"
 
+const mockNavigate = vi.fn()
+
+vi.mock("react-router", async () => {
+  const actual = await vi.importActual("react-router")
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  }
+})
+
 vi.mock("~/services/asset/AssetService", () => ({
   imageUrl: vi.fn(() => "https://example.com/image.jpg"),
   videoUrl: vi.fn(() => "https://example.com/video.mp4"),
@@ -274,6 +284,68 @@ describe("VideoWatch", () => {
     await waitFor(() => {
       expect(deleteVideo).toHaveBeenCalledWith("video-123", true)
     })
+  })
+
+  test("should toggle the delete file checkbox visually", async () => {
+    renderWithContext()
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Delete Video?")).toBeInTheDocument()
+    })
+
+    const checkbox = screen.getByRole("checkbox")
+    expect(checkbox).not.toBeChecked()
+
+    fireEvent.click(checkbox)
+    expect(checkbox).toBeChecked()
+
+    fireEvent.click(checkbox)
+    expect(checkbox).not.toBeChecked()
+  })
+
+  test("should navigate to the videos listing after a successful delete", async () => {
+    renderWithContext()
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Delete Video?")).toBeInTheDocument()
+    })
+
+    const dialogButtons = screen.getAllByRole("button", { name: "Delete" })
+    fireEvent.click(dialogButtons[dialogButtons.length - 1])
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/")
+    })
+  })
+
+  test("should not navigate and keep the dialog open when delete fails", async () => {
+    const { deleteVideo } = await import("~/services/video/VideoService")
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    vi.mocked(deleteVideo).mockRejectedValueOnce(new Error("delete failed"))
+
+    renderWithContext()
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Delete Video?")).toBeInTheDocument()
+    })
+
+    const dialogButtons = screen.getAllByRole("button", { name: "Delete" })
+    fireEvent.click(dialogButtons[dialogButtons.length - 1])
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalled()
+    })
+
+    expect(mockNavigate).not.toHaveBeenCalled()
+    expect(screen.getByText("Delete Video?")).toBeInTheDocument()
+
+    consoleErrorSpy.mockRestore()
   })
 
   test("should update video title when edited", async () => {
