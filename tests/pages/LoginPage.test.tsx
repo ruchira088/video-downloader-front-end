@@ -5,13 +5,14 @@ import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
 
 const mockNavigate = vi.fn()
+let mockSearchParams = new URLSearchParams()
 
 vi.mock("react-router", async () => {
   const actual = await vi.importActual("react-router")
   return {
     ...actual,
     useNavigate: () => mockNavigate,
-    useSearchParams: () => [new URLSearchParams()],
+    useSearchParams: () => [mockSearchParams],
   }
 })
 
@@ -27,64 +28,64 @@ vi.mock("~/pages/unauthenticated/login/components/login-form/LoginForm", () => (
   ),
 }))
 
+const renderLoginPage = () => {
+  const router = createMemoryRouter([
+    {
+      path: "/",
+      element: <LoginPage />,
+    },
+  ])
+
+  render(<RouterProvider router={router} />)
+}
+
 describe("LoginPage", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockSearchParams = new URLSearchParams()
   })
 
   test("should render login form", () => {
-    const router = createMemoryRouter([
-      {
-        path: "/",
-        element: <LoginPage />,
-      },
-    ])
-
-    render(<RouterProvider router={router} />)
+    renderLoginPage()
 
     expect(screen.getByTestId("login-button")).toBeInTheDocument()
   })
 
   test("should navigate to home on authenticate when no redirect param", () => {
-    const router = createMemoryRouter([
-      {
-        path: "/",
-        element: <LoginPage />,
-      },
-    ])
-
-    render(<RouterProvider router={router} />)
+    renderLoginPage()
 
     fireEvent.click(screen.getByTestId("login-button"))
 
     expect(mockNavigate).toHaveBeenCalledWith("/")
   })
-})
 
-describe("LoginPage with redirect", () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
+  test("should navigate to in-app redirect path on authenticate", () => {
+    mockSearchParams = new URLSearchParams("?redirect=/history")
+
+    renderLoginPage()
+
+    fireEvent.click(screen.getByTestId("login-button"))
+
+    expect(mockNavigate).toHaveBeenCalledWith("/history")
   })
 
-  test("should navigate to redirect URL on authenticate", async () => {
-    vi.doMock("react-router", async () => {
-      const actual = await vi.importActual("react-router")
-      return {
-        ...actual,
-        useNavigate: () => mockNavigate,
-        useSearchParams: () => [new URLSearchParams("?redirect=/videos")],
-      }
-    })
+  test("should fall back to home when redirect is an external URL", () => {
+    mockSearchParams = new URLSearchParams("?redirect=https://evil.example")
 
-    const router = createMemoryRouter([
-      {
-        path: "/login",
-        element: <LoginPage />,
-      },
-    ], { initialEntries: ["/login?redirect=/videos"] })
+    renderLoginPage()
 
-    render(<RouterProvider router={router} />)
+    fireEvent.click(screen.getByTestId("login-button"))
 
-    expect(screen.getByTestId("login-button")).toBeInTheDocument()
+    expect(mockNavigate).toHaveBeenCalledWith("/")
+  })
+
+  test("should fall back to home when redirect is a protocol-relative URL", () => {
+    mockSearchParams = new URLSearchParams("?redirect=//evil.example")
+
+    renderLoginPage()
+
+    fireEvent.click(screen.getByTestId("login-button"))
+
+    expect(mockNavigate).toHaveBeenCalledWith("/")
   })
 })

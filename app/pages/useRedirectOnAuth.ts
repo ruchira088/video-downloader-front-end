@@ -30,7 +30,8 @@ export const useRedirectOnAuth = (redirectWhenAuthenticated: boolean): void => {
         }
       })
     } else {
-      const redirectUrl = `/sign-in?${REDIRECT_QUERY_PARAMETER}=${window.location.pathname}`
+      const redirectTarget = encodeURIComponent(window.location.pathname + window.location.search)
+      const redirectUrl = `/sign-in?${REDIRECT_QUERY_PARAMETER}=${redirectTarget}`
 
       maybeToken.fold(
         () => {
