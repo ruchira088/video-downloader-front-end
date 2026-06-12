@@ -14,11 +14,28 @@ vi.mock("~/services/authentication/AuthenticationService", () => ({
 }))
 
 describe("HttpClient", () => {
+  const originalLocation = window.location
+  const mockLocationAssign = vi.fn()
+
+  const stubLocation = (pathname: string, search: string = "") => {
+    Object.defineProperty(window, "location", {
+      value: { pathname, search, assign: mockLocationAssign },
+      writable: true,
+      configurable: true,
+    })
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
+    stubLocation("/")
   })
 
   afterEach(() => {
+    Object.defineProperty(window, "location", {
+      value: originalLocation,
+      writable: true,
+      configurable: true,
+    })
     vi.resetModules()
   })
 
@@ -49,7 +66,8 @@ describe("HttpClient", () => {
       expect(result).toEqual(mockResponse)
     })
 
-    test("should remove authentication token on 401 error and reject", async () => {
+    test("should remove authentication token on 401 error, redirect to sign-in and reject", async () => {
+      stubLocation("/history", "?page=2")
       const { axiosClient } = await import("~/services/http/HttpClient")
 
       const interceptors = (axiosClient.interceptors.response as any).handlers
@@ -60,9 +78,45 @@ describe("HttpClient", () => {
         message: "Unauthorized",
       }
 
-      // The interceptor should remove auth token and reject
+      // The interceptor should remove auth token, redirect and reject
       await expect(interceptor.rejected(error401)).rejects.toEqual(error401)
       expect(mockRemoveAuthenticationToken).toHaveBeenCalledTimes(1)
+      expect(mockLocationAssign).toHaveBeenCalledTimes(1)
+      expect(mockLocationAssign).toHaveBeenCalledWith("/sign-in?redirect=" + encodeURIComponent("/history?page=2"))
+    })
+
+    test("should not redirect on 401 error when already on the sign-in page", async () => {
+      stubLocation("/sign-in")
+      const { axiosClient } = await import("~/services/http/HttpClient")
+
+      const interceptors = (axiosClient.interceptors.response as any).handlers
+      const interceptor = interceptors[0]
+
+      const error401 = {
+        response: { status: 401 },
+        message: "Unauthorized",
+      }
+
+      await expect(interceptor.rejected(error401)).rejects.toEqual(error401)
+      expect(mockRemoveAuthenticationToken).toHaveBeenCalledTimes(1)
+      expect(mockLocationAssign).not.toHaveBeenCalled()
+    })
+
+    test("should not redirect on 401 error when already on the sign-up page", async () => {
+      stubLocation("/sign-up")
+      const { axiosClient } = await import("~/services/http/HttpClient")
+
+      const interceptors = (axiosClient.interceptors.response as any).handlers
+      const interceptor = interceptors[0]
+
+      const error401 = {
+        response: { status: 401 },
+        message: "Unauthorized",
+      }
+
+      await expect(interceptor.rejected(error401)).rejects.toEqual(error401)
+      expect(mockRemoveAuthenticationToken).toHaveBeenCalledTimes(1)
+      expect(mockLocationAssign).not.toHaveBeenCalled()
     })
 
     test("should reject non-401 errors", async () => {
@@ -78,6 +132,7 @@ describe("HttpClient", () => {
 
       await expect(interceptor.rejected(error500)).rejects.toEqual(error500)
       expect(mockRemoveAuthenticationToken).not.toHaveBeenCalled()
+      expect(mockLocationAssign).not.toHaveBeenCalled()
     })
 
     test("should reject errors without response status", async () => {
