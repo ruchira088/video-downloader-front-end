@@ -23,10 +23,12 @@ Object.defineProperty(window, "matchMedia", {
 })
 
 // Mock IntersectionObserver with configurable callback
-// Store callbacks so tests can trigger intersection events
+// Store callbacks so tests can trigger intersection events, and instances so
+// tests can assert on observe/unobserve/disconnect calls
 export const intersectionObserverCallbacks: IntersectionObserverCallback[] = []
+export const intersectionObserverInstances: MockIntersectionObserver[] = []
 
-class MockIntersectionObserver implements IntersectionObserver {
+export class MockIntersectionObserver implements IntersectionObserver {
   readonly root: Element | Document | null = null
   readonly rootMargin: string = ""
   readonly scrollMargin: string = ""
@@ -36,6 +38,7 @@ class MockIntersectionObserver implements IntersectionObserver {
   constructor(callback: IntersectionObserverCallback) {
     this.callback = callback
     intersectionObserverCallbacks.push(callback)
+    intersectionObserverInstances.push(this)
   }
 
   observe = vi.fn()

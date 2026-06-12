@@ -12,6 +12,11 @@ interface PaginatedFetchOptions {
   readonly resetDeps?: DependencyList
 }
 
+// Covers both DOMException AbortError and axios CanceledError.
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === "AbortError") ||
+  (error instanceof Error && error.name === "CanceledError")
+
 /**
  * Encapsulates the infinite-scroll pagination control shared across pages:
  * page-number state, loading/has-more tracking, per-page de-duplication and the
@@ -52,11 +57,20 @@ export function usePaginatedFetch<T>(
 
   const loadPage = async (page: number) => {
     if (fetchedPages.current.has(page)) return
-    fetchedPages.current.add(page)
+
+    // Capture the controller and page set used for this request so that, after
+    // the await, a reset (which replaces both) can be detected.
+    const controller = abortController.current
+    const pages = fetchedPages.current
+    pages.add(page)
     setLoading(true)
 
     try {
-      const results = await fetchPageRef.current(page, abortController.current.signal)
+      const results = await fetchPageRef.current(page, controller.signal)
+
+      // A reset or unmount aborted this request while it was in flight; its
+      // results belong to a stale query, so drop them.
+      if (controller.signal.aborted) return
 
       if (results.length < pageSize) {
         hasMoreRef.current = false
@@ -64,14 +78,27 @@ export function usePaginatedFetch<T>(
       }
 
       await onResultsRef.current(results, page)
+    } catch (error) {
+      // Forget the page so a failed fetch can be retried.
+      pages.delete(page)
+
+      if (!isAbortError(error)) {
+        console.error(error)
+      }
     } finally {
-      setLoading(false)
+      // Only the request owning the current controller may flip the loading
+      // state; an aborted/stale request must not clobber a newer request's.
+      if (controller === abortController.current) {
+        setLoading(false)
+      }
     }
   }
 
   // Initial load, and reset whenever the reset dependencies change.
   useEffect(() => {
-    abortController.current = new AbortController()
+    abortController.current.abort()
+    const controller = new AbortController()
+    abortController.current = controller
     fetchedPages.current = new Set<number>()
     hasMoreRef.current = true
     setHasMore(true)
@@ -82,6 +109,8 @@ export function usePaginatedFetch<T>(
     } else {
       setPageNumber(0)
     }
+
+    return () => controller.abort()
   }, resetDeps)
 
   // Load the next page whenever the page number advances.
