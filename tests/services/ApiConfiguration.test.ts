@@ -7,12 +7,13 @@ describe("ApiConfiguration", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
     vi.resetModules()
   })
 
   describe("inferBaseApiUrl", () => {
-    test("should use API_URL query parameter when present", async () => {
-      // Mock window.location with API_URL query parameter
+    test("should use API_URL query parameter in development environment", async () => {
+      // Mock window.location with API_URL query parameter (example.com is not a known host ⇒ Development)
       const mockUrl = new URL("https://example.com?API_URL=https://custom-api.example.com")
       const mockHistory = { replaceState: vi.fn() }
 
@@ -34,6 +35,28 @@ describe("ApiConfiguration", () => {
       expect(mockHistory.replaceState).toHaveBeenCalled()
     })
 
+    test("should ignore API_URL query parameter on a production host", async () => {
+      const mockUrl = new URL("https://videos.ruchij.com?API_URL=https://evil.example")
+      const mockHistory = { replaceState: vi.fn() }
+
+      vi.stubGlobal("window", {
+        location: {
+          href: mockUrl.href,
+          search: mockUrl.search,
+          protocol: mockUrl.protocol,
+          host: mockUrl.host,
+        },
+        history: mockHistory,
+      })
+
+      vi.resetModules()
+      const { apiConfiguration } = await import("~/services/ApiConfiguration")
+
+      expect(apiConfiguration.baseUrl).toBe("https://api.video.home.ruchij.com")
+      // The parameter is still scrubbed from the URL, but its value is never used
+      expect(mockHistory.replaceState).toHaveBeenCalled()
+    })
+
     test("should use VITE_API_URL environment variable when no query param", async () => {
       // Mock window.location without API_URL query parameter
       const mockUrl = new URL("https://example.com")
@@ -48,17 +71,12 @@ describe("ApiConfiguration", () => {
         history: { replaceState: vi.fn() },
       })
 
-      // Mock import.meta.env
-      vi.stubGlobal("import", {
-        meta: {
-          env: {
-            VITE_API_URL: "https://env-api.example.com",
-          },
-        },
-      })
+      vi.stubEnv("VITE_API_URL", "https://env-api.example.com")
 
       vi.resetModules()
-      // Note: This test may not fully work due to import.meta limitations in testing
+      const { apiConfiguration } = await import("~/services/ApiConfiguration")
+
+      expect(apiConfiguration.baseUrl).toBe("https://env-api.example.com")
     })
 
     test("should use API_URL_MAPPINGS for known hosts", async () => {
