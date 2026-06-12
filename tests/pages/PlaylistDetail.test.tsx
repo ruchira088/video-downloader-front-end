@@ -1006,6 +1006,151 @@ describe("PlaylistDetail", () => {
     })
   })
 
+  describe("Shuffle Staleness", () => {
+    test("should exclude a removed video from the shuffled play queue", async () => {
+      const user = userEvent.setup()
+      const playlist = createMockPlaylist(3)
+      mockFetchPlaylistById.mockResolvedValue(playlist)
+      mockRemoveVideoFromPlaylist.mockResolvedValue({
+        ...playlist,
+        videos: playlist.videos.filter(v => v.videoMetadata.id !== "video-2"),
+      })
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+      })
+
+      // Start playing and enable shuffle
+      await user.click(screen.getByRole("button", { name: /play/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText("1 / 3")).toBeInTheDocument()
+      })
+
+      const shuffleButton = screen.getByTestId("ShuffleIcon").closest("button")!
+      await user.click(shuffleButton)
+
+      // Close the player while shuffle stays enabled
+      const closeIcons = screen.getAllByTestId("CloseIcon")
+      const closeButton = closeIcons[closeIcons.length - 1].closest("button")!
+      await user.click(closeButton)
+
+      await waitFor(() => {
+        expect(screen.queryByText("1 / 3")).not.toBeInTheDocument()
+      })
+
+      // Remove Video 2 (first delete icon is in the header, then one per video card)
+      const deleteIcons = screen.getAllByTestId("DeleteIcon")
+      const videoDeleteButton = deleteIcons[2].closest("button")!
+      await user.click(videoDeleteButton)
+
+      await waitFor(() => {
+        expect(mockRemoveVideoFromPlaylist).toHaveBeenCalled()
+      })
+
+      // Replaying while shuffled should use a queue without the removed video
+      await user.click(screen.getByRole("button", { name: /play/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText("1 / 2")).toBeInTheDocument()
+      })
+
+      expect(screen.queryByText("Video 2")).not.toBeInTheDocument()
+    })
+
+    test("should include a newly added video in the shuffled play queue", async () => {
+      const user = userEvent.setup()
+      const playlist = createMockPlaylist(2)
+      mockFetchPlaylistById.mockResolvedValue(playlist)
+      mockSearchVideos.mockResolvedValue({
+        results: [createMockVideo("new-video", "New Video")],
+        pageNumber: 0,
+        pageSize: 50,
+        searchTerm: None.of(),
+      })
+      mockAddVideoToPlaylist.mockResolvedValue({
+        ...playlist,
+        videos: [...playlist.videos, createMockVideo("new-video", "New Video")],
+      })
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+      })
+
+      // Start playing and enable shuffle
+      await user.click(screen.getByRole("button", { name: /play/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText("1 / 2")).toBeInTheDocument()
+      })
+
+      const shuffleButton = screen.getByTestId("ShuffleIcon").closest("button")!
+      await user.click(shuffleButton)
+
+      // Close the player while shuffle stays enabled
+      const closeIcons = screen.getAllByTestId("CloseIcon")
+      const closeButton = closeIcons[closeIcons.length - 1].closest("button")!
+      await user.click(closeButton)
+
+      await waitFor(() => {
+        expect(screen.queryByText("1 / 2")).not.toBeInTheDocument()
+      })
+
+      // Add a new video via the search panel
+      await user.click(screen.getByRole("button", { name: /add videos/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText("New Video")).toBeInTheDocument()
+      })
+
+      const addButton = screen.getByTestId("AddIcon").closest("button")!
+      await user.click(addButton)
+
+      await waitFor(() => {
+        expect(mockAddVideoToPlaylist).toHaveBeenCalled()
+      })
+
+      // Replaying while shuffled should include the newly added video in the queue
+      await user.click(screen.getByRole("button", { name: /^play$/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText("1 / 3")).toBeInTheDocument()
+      })
+    })
+
+    test("should keep the video when removal fails on the server", async () => {
+      const user = userEvent.setup()
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      mockFetchPlaylistById.mockResolvedValue(createMockPlaylist(2))
+      mockRemoveVideoFromPlaylist.mockRejectedValue(new Error("Remove failed"))
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByText("Video 1")).toBeInTheDocument()
+      })
+
+      const deleteIcons = screen.getAllByTestId("DeleteIcon")
+      const videoDeleteButton = deleteIcons[1].closest("button")!
+      await user.click(videoDeleteButton)
+
+      await waitFor(() => {
+        expect(mockRemoveVideoFromPlaylist).toHaveBeenCalled()
+      })
+
+      // The video should still be displayed since the server call failed
+      expect(screen.getByText("Video 1")).toBeInTheDocument()
+      expect(screen.getByText("2 videos")).toBeInTheDocument()
+      expect(consoleErrorSpy).toHaveBeenCalled()
+
+      consoleErrorSpy.mockRestore()
+    })
+  })
+
   describe("Player ends at last video", () => {
     test("should close player when reaching end of playlist", async () => {
       const user = userEvent.setup()

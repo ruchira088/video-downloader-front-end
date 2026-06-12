@@ -24,7 +24,7 @@ import {
 } from "@dnd-kit/sortable"
 import { Playlist } from "~/models/Playlist"
 import { Video } from "~/models/Video"
-import { None, type Option, Some } from "~/types/Option"
+import { None, Option, Some } from "~/types/Option"
 import {
   fetchPlaylistById,
   deletePlaylist,
@@ -135,14 +135,22 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
   }
 
   const handleUpdateTitle = async (title: string) => {
-    await updatePlaylist(playlistId, title)
-    setPlaylist(prev => prev.map(p => ({ ...p, title })))
+    try {
+      await updatePlaylist(playlistId, title)
+      setPlaylist(prev => prev.map(p => ({ ...p, title })))
+    } catch (error) {
+      console.error("Failed to update playlist title", error)
+    }
   }
 
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this playlist?")) {
-      await deletePlaylist(playlistId)
-      navigate("/playlists")
+      try {
+        await deletePlaylist(playlistId)
+        navigate("/playlists")
+      } catch (error) {
+        console.error("Failed to delete playlist", error)
+      }
     }
   }
 
@@ -150,16 +158,32 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     const currentPlaylist = playlist.toNullable()
     if (!currentPlaylist) return
 
-    const updatedPlaylist = await removeVideoFromPlaylist(currentPlaylist, videoId)
-    setPlaylist(Some.of(updatedPlaylist))
+    try {
+      const updatedPlaylist = await removeVideoFromPlaylist(currentPlaylist, videoId)
+      setPlaylist(Some.of(updatedPlaylist))
+      if (isShuffled) {
+        setShuffledVideos(prev => prev.filter(v => v.videoMetadata.id !== videoId))
+      }
+    } catch (error) {
+      console.error("Failed to remove video from playlist", error)
+    }
   }
 
   const handleAddVideo = async (videoId: string) => {
     const currentPlaylist = playlist.toNullable()
     if (!currentPlaylist) return
 
-    const updatedPlaylist = await addVideoToPlaylist(currentPlaylist, videoId)
-    setPlaylist(Some.of(updatedPlaylist))
+    try {
+      const updatedPlaylist = await addVideoToPlaylist(currentPlaylist, videoId)
+      setPlaylist(Some.of(updatedPlaylist))
+      if (isShuffled) {
+        Option.fromNullable(
+          updatedPlaylist.videos.find(v => v.videoMetadata.id === videoId)
+        ).forEach(addedVideo => setShuffledVideos(prev => [...prev, addedVideo]))
+      }
+    } catch (error) {
+      console.error("Failed to add video to playlist", error)
+    }
   }
 
   const handleAlbumArtUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,6 +194,8 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     try {
       const updatedPlaylist = await uploadAlbumArt(playlistId, file)
       setPlaylist(Some.of(updatedPlaylist))
+    } catch (error) {
+      console.error("Failed to upload album art", error)
     } finally {
       setIsUploadingAlbumArt(false)
       if (fileInputRef.current) fileInputRef.current.value = ""
@@ -177,8 +203,12 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
   }
 
   const handleRemoveAlbumArt = async () => {
-    const updatedPlaylist = await removeAlbumArt(playlistId)
-    setPlaylist(Some.of(updatedPlaylist))
+    try {
+      const updatedPlaylist = await removeAlbumArt(playlistId)
+      setPlaylist(Some.of(updatedPlaylist))
+    } catch (error) {
+      console.error("Failed to remove album art", error)
+    }
   }
 
   const handlePlay = () => {
