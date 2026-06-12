@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import LoginForm from "~/pages/unauthenticated/login/components/login-form/LoginForm"
 import { DateTime } from "luxon"
@@ -68,6 +68,18 @@ describe("LoginForm", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 
       expect(screen.getByLabelText("Password")).toHaveAttribute("type", "password")
+    })
+
+    test("should have name and autocomplete attributes for autofill", () => {
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+
+      const emailInput = screen.getByLabelText(/email/i)
+      expect(emailInput).toHaveAttribute("name", "email")
+      expect(emailInput).toHaveAttribute("autocomplete", "email")
+
+      const passwordInput = screen.getByLabelText("Password")
+      expect(passwordInput).toHaveAttribute("name", "password")
+      expect(passwordInput).toHaveAttribute("autocomplete", "current-password")
     })
 
     test("should toggle password visibility when clicking visibility button", async () => {
@@ -211,6 +223,19 @@ describe("LoginForm", () => {
       })
     })
 
+    test("should submit when pressing Enter in a field", async () => {
+      const user = userEvent.setup()
+      mockLogin.mockResolvedValue(mockToken)
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+
+      await user.type(screen.getByLabelText(/email/i), "test@example.com")
+      await user.type(screen.getByLabelText("Password"), "password123{enter}")
+
+      await waitFor(() => {
+        expect(mockLogin).toHaveBeenCalledWith("test@example.com", "password123")
+      })
+    })
+
     test("should call onAuthenticate with token on success", async () => {
       const user = userEvent.setup()
       mockLogin.mockResolvedValue(mockToken)
@@ -222,6 +247,57 @@ describe("LoginForm", () => {
 
       await waitFor(() => {
         expect(mockOnAuthenticate).toHaveBeenCalledWith(mockToken)
+      })
+    })
+  })
+
+  describe("Submission Guard", () => {
+    test("should disable the login button while submitting", async () => {
+      const user = userEvent.setup()
+      mockLogin.mockImplementation(() => new Promise(() => {})) // Never resolves
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+
+      await user.type(screen.getByLabelText(/email/i), "test@example.com")
+      await user.type(screen.getByLabelText("Password"), "password123")
+      await user.click(screen.getByRole("button", { name: /login/i }))
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /logging in/i })).toBeDisabled()
+      })
+    })
+
+    test("should only call login once when clicked twice while in flight", async () => {
+      const user = userEvent.setup()
+      mockLogin.mockImplementation(() => new Promise(() => {})) // Never resolves
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+
+      await user.type(screen.getByLabelText(/email/i), "test@example.com")
+      await user.type(screen.getByLabelText("Password"), "password123")
+
+      const loginButton = screen.getByRole("button", { name: /login/i })
+      await user.click(loginButton)
+
+      await waitFor(() => {
+        expect(loginButton).toBeDisabled()
+      })
+
+      // Force a second click even though the button is disabled
+      fireEvent.click(loginButton)
+
+      expect(mockLogin).toHaveBeenCalledTimes(1)
+    })
+
+    test("should re-enable the login button after a failure", async () => {
+      const user = userEvent.setup()
+      mockLogin.mockRejectedValue({ response: { status: 401 } })
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+
+      await user.type(screen.getByLabelText(/email/i), "test@example.com")
+      await user.type(screen.getByLabelText("Password"), "wrongpassword")
+      await user.click(screen.getByRole("button", { name: /login/i }))
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /login/i })).toBeEnabled()
       })
     })
   })
