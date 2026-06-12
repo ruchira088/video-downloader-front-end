@@ -119,4 +119,67 @@ describe("Schedule", () => {
       expect(screen.queryByRole("progressbar")).not.toBeInTheDocument()
     })
   })
+
+  test("should disable the schedule button while scheduling is in flight", async () => {
+    const { scheduleVideo } = await import("~/services/scheduling/SchedulingService")
+    let resolveSchedule: () => void
+    vi.mocked(scheduleVideo).mockImplementation(() => new Promise(resolve => {
+      resolveSchedule = () => resolve(createMockScheduledVideoDownload())
+    }))
+
+    render(<Schedule />)
+
+    fireEvent.change(screen.getByLabelText("Website URL"), { target: { value: "https://example.com/video" } })
+
+    const button = screen.getByRole("button", { name: "Schedule Download" })
+    fireEvent.click(button)
+
+    expect(button).toBeDisabled()
+
+    resolveSchedule!()
+
+    await waitFor(() => {
+      expect(button).toBeEnabled()
+    })
+  })
+
+  test("should hide progress bar, show an error and keep the URL when scheduling fails", async () => {
+    const { scheduleVideo } = await import("~/services/scheduling/SchedulingService")
+    vi.mocked(scheduleVideo).mockRejectedValue(new Error("Unable to schedule video"))
+
+    render(<Schedule />)
+
+    const input = screen.getByLabelText("Website URL")
+    fireEvent.change(input, { target: { value: "https://example.com/video" } })
+
+    fireEvent.click(screen.getByRole("button", { name: "Schedule Download" }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Scheduling failed")).toBeInTheDocument()
+    })
+
+    expect(screen.getByText("Unable to schedule video")).toBeInTheDocument()
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument()
+    expect(input).toHaveValue("https://example.com/video")
+    expect(screen.getByRole("button", { name: "Schedule Download" })).toBeEnabled()
+  })
+
+  test("should clear the error when the URL is edited", async () => {
+    const { scheduleVideo } = await import("~/services/scheduling/SchedulingService")
+    vi.mocked(scheduleVideo).mockRejectedValue(new Error("Unable to schedule video"))
+
+    render(<Schedule />)
+
+    const input = screen.getByLabelText("Website URL")
+    fireEvent.change(input, { target: { value: "https://example.com/video" } })
+    fireEvent.click(screen.getByRole("button", { name: "Schedule Download" }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Scheduling failed")).toBeInTheDocument()
+    })
+
+    fireEvent.change(input, { target: { value: "https://example.com/other-video" } })
+
+    expect(screen.queryByText("Scheduling failed")).not.toBeInTheDocument()
+  })
 })
