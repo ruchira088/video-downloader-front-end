@@ -15,6 +15,7 @@ import {
   login,
   logout,
   getAuthenticatedUser,
+  getAuthenticationToken,
   REDIRECT_QUERY_PARAMETER,
 } from "~/services/authentication/AuthenticationService"
 
@@ -39,8 +40,11 @@ describe("AuthenticationService", () => {
     role: "User",
   }
 
+  const STORAGE_KEY = "Authentication-Token"
+
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
   })
 
   describe("REDIRECT_QUERY_PARAMETER", () => {
@@ -74,6 +78,49 @@ describe("AuthenticationService", () => {
       mockAxiosPost.mockRejectedValue(new Error("Network error"))
 
       await expect(login("test@example.com", "password")).rejects.toThrow("Network error")
+    })
+
+    test("should persist the token without the secret", async () => {
+      mockAxiosPost.mockResolvedValue({ data: mockTokenData })
+
+      await login("test@example.com", "password123")
+
+      const storedValue = JSON.parse(localStorage.getItem(STORAGE_KEY) as string)
+
+      expect(storedValue).not.toHaveProperty("secret")
+      expect(storedValue.renewals).toBe(0)
+      expect(typeof storedValue.expiresAt).toBe("string")
+      expect(typeof storedValue.issuedAt).toBe("string")
+    })
+  })
+
+  describe("getAuthenticationToken", () => {
+    test("should return None when no token is stored", () => {
+      expect(getAuthenticationToken().isEmpty()).toBe(true)
+    })
+
+    test("should decode a stored token persisted by login", async () => {
+      mockAxiosPost.mockResolvedValue({ data: mockTokenData })
+
+      await login("test@example.com", "password123")
+
+      const token = getAuthenticationToken().toNullable()
+
+      expect(token).not.toBeNull()
+      expect(token).not.toHaveProperty("secret")
+      expect(token?.expiresAt.toISO()).toBe(mockTokenData.expiresAt)
+      expect(token?.renewals).toBe(0)
+    })
+
+    test("should decode legacy stored tokens that still contain a secret", () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(mockTokenData))
+
+      const token = getAuthenticationToken().toNullable()
+
+      expect(token).not.toBeNull()
+      expect(token).not.toHaveProperty("secret")
+      expect(token?.expiresAt.toISO()).toBe(mockTokenData.expiresAt)
+      expect(token?.renewals).toBe(0)
     })
   })
 
@@ -114,7 +161,4 @@ describe("AuthenticationService", () => {
       expect(result.firstName).toBe("Test")
     })
   })
-
-  // Tests for getAuthenticationToken and removeAuthenticationToken are skipped
-  // as they involve localStorage which requires more complex mocking with jsdom
 })

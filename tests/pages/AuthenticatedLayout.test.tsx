@@ -7,10 +7,9 @@ import { None, Some } from "~/types/Option"
 import { DateTime } from "luxon"
 import { Role } from "~/models/User"
 
-const createMockToken = () => ({
-  secret: "test-token",
-  expiresAt: DateTime.now().plus({ hours: 1 }),
-  issuedAt: DateTime.now(),
+const createMockToken = (expiresAt = DateTime.now().plus({ hours: 1 })) => ({
+  expiresAt,
+  issuedAt: DateTime.now().minus({ days: 1 }),
   renewals: 0,
 })
 
@@ -130,6 +129,35 @@ describe("AuthenticatedLayout", () => {
       expect(removeAuthenticationToken).toHaveBeenCalled()
       expect(mockNavigate).toHaveBeenCalledWith("/sign-in?redirect=/videos")
     })
+  })
+
+  test("should redirect to sign-in without a server check when the token is expired", async () => {
+    const { getAuthenticationToken, getAuthenticatedUser, removeAuthenticationToken } =
+      await import("~/services/authentication/AuthenticationService")
+    vi.mocked(getAuthenticationToken).mockReturnValue(
+      Some.of(createMockToken(DateTime.now().minus({ hours: 1 })))
+    )
+
+    const router = createMemoryRouter([
+      {
+        path: "/",
+        element: <AuthenticatedLayout />,
+        children: [
+          {
+            index: true,
+            element: <div>Child</div>,
+          },
+        ],
+      },
+    ])
+
+    render(<RouterProvider router={router} />)
+
+    await waitFor(() => {
+      expect(removeAuthenticationToken).toHaveBeenCalled()
+      expect(mockNavigate).toHaveBeenCalledWith("/sign-in?redirect=/videos")
+    })
+    expect(getAuthenticatedUser).not.toHaveBeenCalled()
   })
 
   test("should check authentication on mount", async () => {

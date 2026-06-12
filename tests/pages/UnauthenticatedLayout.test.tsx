@@ -7,10 +7,9 @@ import { None, Some } from "~/types/Option"
 import { DateTime } from "luxon"
 import { Role } from "~/models/User"
 
-const createMockToken = () => ({
-  secret: "test-token",
-  expiresAt: DateTime.now().plus({ hours: 1 }),
-  issuedAt: DateTime.now(),
+const createMockToken = (expiresAt = DateTime.now().plus({ hours: 1 })) => ({
+  expiresAt,
+  issuedAt: DateTime.now().minus({ days: 1 }),
   renewals: 0,
 })
 
@@ -36,6 +35,7 @@ vi.mock("react-router", async () => {
 vi.mock("~/services/authentication/AuthenticationService", () => ({
   getAuthenticationToken: vi.fn(),
   getAuthenticatedUser: vi.fn(),
+  removeAuthenticationToken: vi.fn(),
 }))
 
 describe("UnauthenticatedLayout", () => {
@@ -141,5 +141,37 @@ describe("UnauthenticatedLayout", () => {
     // Wait a bit and check navigate was not called
     await new Promise(resolve => setTimeout(resolve, 50))
     expect(mockNavigate).not.toHaveBeenCalledWith("/")
+  })
+
+  test("should remove an expired token and stay on page without a server check", async () => {
+    const { getAuthenticationToken, getAuthenticatedUser, removeAuthenticationToken } =
+      await import("~/services/authentication/AuthenticationService")
+    vi.mocked(getAuthenticationToken).mockReturnValue(
+      Some.of(createMockToken(DateTime.now().minus({ hours: 1 })))
+    )
+
+    const router = createMemoryRouter([
+      {
+        path: "/",
+        element: <UnauthenticatedLayout />,
+        children: [
+          {
+            index: true,
+            element: <div data-testid="child">Child</div>,
+          },
+        ],
+      },
+    ])
+
+    render(<RouterProvider router={router} />)
+
+    await waitFor(() => {
+      expect(removeAuthenticationToken).toHaveBeenCalled()
+    })
+
+    // Wait a bit and check no server round-trip or navigation happened
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(getAuthenticatedUser).not.toHaveBeenCalled()
+    expect(mockNavigate).not.toHaveBeenCalled()
   })
 })

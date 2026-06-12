@@ -9,3 +9,12 @@ export const AuthenticationToken = z.object({
 })
 
 export type AuthenticationToken = z.infer<typeof AuthenticationToken>
+
+/**
+ * Persisted form of the authentication token. The `secret` is deliberately omitted:
+ * authentication rides on cookies, so the secret never needs to be stored where XSS
+ * could read it. Decoding strips a `secret` left behind by older stored entries.
+ */
+export const StoredAuthenticationToken = AuthenticationToken.omit({ secret: true })
+
+export type StoredAuthenticationToken = z.infer<typeof StoredAuthenticationToken>
