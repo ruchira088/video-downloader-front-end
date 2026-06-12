@@ -1,4 +1,5 @@
-import { Option } from "~/types/Option"
+import { Either } from "~/types/Either"
+import { None, Option, Some } from "~/types/Option"
 
 export interface Encoder<A, B> {
   encode(value: A): B
@@ -35,7 +36,16 @@ export class LocalKeyValueStore<K, V extends {}> implements KeyValueStore<K, V> 
         localStorage.getItem(this.stringKey(key))
       )
 
-    return stringValue.map(this.keySpace.valueCodec.decode)
+    return stringValue.flatMap(value =>
+      Either.fromTry(() => this.keySpace.valueCodec.decode(value))
+        .fold<Option<V>>(
+          () => {
+            localStorage.removeItem(this.stringKey(key))
+            return None.of()
+          },
+          decodedValue => Some.of(decodedValue)
+        )
+    )
   }
 
   put(key: K, value: V): void {

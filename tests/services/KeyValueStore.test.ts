@@ -132,6 +132,15 @@ describe("LocalKeyValueStore", () => {
         value: 99,
       })
     })
+    test("should return None and remove the entry when the stored value is corrupt", () => {
+      localStorageMock.setItem("TestStore-key1", "not-valid-json{{{")
+
+      const result = store.get("key1")
+
+      expect(result).toBeInstanceOf(None)
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith("TestStore-key1")
+      expect(localStorageMock.getItem("TestStore-key1")).toBeNull()
+    })
   })
 
   describe("remove", () => {
