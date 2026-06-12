@@ -7,8 +7,14 @@ const LogoutButton = () => {
   const navigate = useNavigate()
 
   const handleLogout = async () => {
-    await logout()
-    navigate("/sign-in")
+    try {
+      await logout()
+    } catch (error) {
+      // The local session is cleared even when the server-side logout fails
+      console.error("Server-side logout failed", error)
+    } finally {
+      navigate("/sign-in")
+    }
   }
 
   return (

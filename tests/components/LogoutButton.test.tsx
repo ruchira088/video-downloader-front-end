@@ -70,4 +70,27 @@ describe("LogoutButton", () => {
       expect(screen.getByText("Sign In Page")).toBeInTheDocument()
     })
   })
+
+  test("should still navigate to sign-in page when logout fails", async () => {
+    const user = userEvent.setup()
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    mockLogout.mockRejectedValue(new Error("Network error"))
+
+    renderWithRouter()
+
+    const logoutButton = screen.getByRole("button", { name: /logout/i })
+    await user.click(logoutButton)
+
+    await waitFor(() => {
+      expect(mockLogout).toHaveBeenCalled()
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText("Sign In Page")).toBeInTheDocument()
+    })
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith("Server-side logout failed", expect.any(Error))
+
+    consoleErrorSpy.mockRestore()
+  })
 })
