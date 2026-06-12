@@ -5,6 +5,7 @@ import { afterEach, vi } from "vitest"
 // Cleanup after each test
 afterEach(() => {
   cleanup()
+  intersectionObserverCallbacks.length = 0
 })
 
 // Mock window.matchMedia
