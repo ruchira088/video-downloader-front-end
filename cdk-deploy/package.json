@@ -8,7 +8,9 @@
     "build": "tsc",
     "cdk": "cdk",
     "cdk-deploy": "cdk deploy --require-approval=never",
-    "deploy": "npm run build && npm run cdk-deploy"
+    "deploy": "npm run build && npm run cdk-deploy",
+    "cdk-destroy": "cdk destroy --force",
+    "destroy": "npm run build && npm run cdk-destroy"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
