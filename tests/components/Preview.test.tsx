@@ -37,7 +37,7 @@ const createMockVideoMetadata = () => ({
   },
 })
 
-const renderWithContext = (url: string) => {
+const previewWithContext = (url: string) => {
   const contextValue = {
     safeMode: false,
     theme: Theme.Light,
@@ -45,12 +45,14 @@ const renderWithContext = (url: string) => {
     setTheme: vi.fn(),
   }
 
-  return render(
+  return (
     <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
       <Preview url={url} />
     </ApplicationConfigurationContext.Provider>
   )
 }
+
+const renderWithContext = (url: string) => render(previewWithContext(url))
 
 describe("Preview", () => {
   beforeEach(() => {
@@ -93,5 +95,54 @@ describe("Preview", () => {
 
     // Should show loading component
     expect(screen.getByRole("progressbar")).toBeInTheDocument()
+  })
+
+  test("should not overwrite the newer preview with a slow stale response", async () => {
+    let resolveStale: (value: ReturnType<typeof createMockVideoMetadata>) => void = () => {}
+    const staleMetadata = { ...createMockVideoMetadata(), title: "Old Video" }
+    const freshMetadata = { ...createMockVideoMetadata(), title: "New Video" }
+
+    mockMetadata
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveStale = resolve }))
+      .mockResolvedValueOnce(freshMetadata)
+
+    const { rerender } = renderWithContext("https://example.com/old")
+
+    // Fire the request for the old URL; its response stays pending
+    await act(async () => {
+      vi.advanceTimersByTime(500)
+    })
+
+    rerender(previewWithContext("https://example.com/new"))
+
+    // Fire the request for the new URL; its response resolves immediately
+    await act(async () => {
+      vi.advanceTimersByTime(500)
+    })
+
+    expect(screen.getByText("New Video")).toBeInTheDocument()
+
+    // The stale response arrives late and must not overwrite the newer preview
+    await act(async () => {
+      resolveStale(staleMetadata)
+    })
+
+    expect(screen.getByText("New Video")).toBeInTheDocument()
+    expect(screen.queryByText("Old Video")).not.toBeInTheDocument()
+  })
+
+  test("should show an error state instead of the spinner when metadata fails", async () => {
+    mockMetadata.mockRejectedValue(new Error("metadata failed"))
+
+    renderWithContext("https://example.com/video")
+
+    expect(screen.getByRole("progressbar")).toBeInTheDocument()
+
+    await act(async () => {
+      vi.advanceTimersByTime(500)
+    })
+
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument()
+    expect(screen.getByText("Unable to load video preview")).toBeInTheDocument()
   })
 })
