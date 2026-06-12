@@ -289,4 +289,85 @@ describe("VideoMetadataCard", () => {
     removeEventListenerSpy.mockRestore()
   })
 
+  test("should not start a second interval when hover fires again", async () => {
+    const { fetchVideoSnapshotsByVideoId } = await import("~/services/video/VideoService")
+    const setIntervalSpy = vi.spyOn(window, "setInterval")
+
+    renderWithContext(createMockVideoMetadata(), { disableSnapshots: false })
+
+    const container = screen.getByAltText("video thumbnail").parentElement!
+    fireEvent.mouseOver(container)
+    fireEvent.mouseOver(container)
+
+    await waitFor(() => {
+      expect(fetchVideoSnapshotsByVideoId).toHaveBeenCalledTimes(1)
+    })
+
+    const snapshotIntervalCalls = setIntervalSpy.mock.calls.filter(([, delay]) => delay === 400)
+    expect(snapshotIntervalCalls).toHaveLength(1)
+    setIntervalSpy.mockRestore()
+  })
+
+  test("should clear the interval on mouse leave", async () => {
+    const { fetchVideoSnapshotsByVideoId } = await import("~/services/video/VideoService")
+    const setIntervalSpy = vi.spyOn(window, "setInterval")
+    const clearIntervalSpy = vi.spyOn(window, "clearInterval")
+
+    renderWithContext(createMockVideoMetadata(), { disableSnapshots: false })
+
+    const container = screen.getByAltText("video thumbnail").parentElement!
+    fireEvent.mouseOver(container)
+    const intervalId = setIntervalSpy.mock.results[0].value
+
+    await waitFor(() => {
+      expect(fetchVideoSnapshotsByVideoId).toHaveBeenCalled()
+    })
+
+    fireEvent.mouseLeave(container)
+
+    expect(clearIntervalSpy).toHaveBeenCalledWith(intervalId)
+    setIntervalSpy.mockRestore()
+    clearIntervalSpy.mockRestore()
+  })
+
+  test("should clear the interval on unmount", async () => {
+    const { fetchVideoSnapshotsByVideoId } = await import("~/services/video/VideoService")
+    const setIntervalSpy = vi.spyOn(window, "setInterval")
+    const clearIntervalSpy = vi.spyOn(window, "clearInterval")
+
+    const { unmount } = renderWithContext(createMockVideoMetadata(), { disableSnapshots: false })
+
+    const container = screen.getByAltText("video thumbnail").parentElement!
+    fireEvent.mouseOver(container)
+    const intervalId = setIntervalSpy.mock.results[0].value
+
+    await waitFor(() => {
+      expect(fetchVideoSnapshotsByVideoId).toHaveBeenCalled()
+    })
+
+    unmount()
+
+    expect(clearIntervalSpy).toHaveBeenCalledWith(intervalId)
+    setIntervalSpy.mockRestore()
+    clearIntervalSpy.mockRestore()
+  })
+
+  test("should log an error when fetching snapshots fails", async () => {
+    const { fetchVideoSnapshotsByVideoId } = await import("~/services/video/VideoService")
+    vi.mocked(fetchVideoSnapshotsByVideoId).mockRejectedValueOnce(new Error("fetch failed"))
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+    renderWithContext(createMockVideoMetadata(), { disableSnapshots: false })
+
+    const thumbnail = screen.getByAltText("video thumbnail")
+    fireEvent.mouseOver(thumbnail.parentElement!)
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.objectContaining({ message: "fetch failed" }))
+    })
+
+    expect(thumbnail).toBeInTheDocument()
+    consoleErrorSpy.mockRestore()
+  })
+
 })
