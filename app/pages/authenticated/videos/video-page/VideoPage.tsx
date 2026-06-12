@@ -14,6 +14,7 @@ const VideoPage = (props: Route.ComponentProps) => {
   const videoId = props.params.videoId
   const [video, setVideo] = useState<Option<Video>>(None.of())
   const [videoSnapshots, setVideoSnapshots] = useState<Snapshot[]>([])
+  const [hasError, setHasError] = useState(false)
 
   const timestamp: Duration = Duration.fromObject({
     seconds: Option.fromNullable(queryParams.get("timestamp"))
@@ -21,20 +22,52 @@ const VideoPage = (props: Route.ComponentProps) => {
       .getOrElse(() => 0)
   })
 
-  const fetchVideo = async () => {
-    const video = await fetchVideoById(videoId)
-    setVideo(Some.of(video))
-  }
-
-  const fetchVideoSnapshots = async () => {
-    const snapshots = await fetchVideoSnapshotsByVideoId(videoId)
-    setVideoSnapshots(snapshots)
-  }
-
   useEffect(() => {
+    let cancelled = false
+
+    setVideo(None.of())
+    setVideoSnapshots([])
+    setHasError(false)
+
+    const fetchVideo = async () => {
+      try {
+        const video = await fetchVideoById(videoId)
+
+        if (!cancelled) {
+          setVideo(Some.of(video))
+        }
+      } catch {
+        if (!cancelled) {
+          setHasError(true)
+        }
+      }
+    }
+
+    const fetchVideoSnapshots = async () => {
+      try {
+        const snapshots = await fetchVideoSnapshotsByVideoId(videoId)
+
+        if (!cancelled) {
+          setVideoSnapshots(snapshots)
+        }
+      } catch {
+        if (!cancelled) {
+          setHasError(true)
+        }
+      }
+    }
+
     fetchVideo()
     fetchVideoSnapshots()
+
+    return () => {
+      cancelled = true
+    }
   }, [videoId])
+
+  if (hasError) {
+    return <div>Unable to load video</div>
+  }
 
   return (
     <LoadableComponent>
