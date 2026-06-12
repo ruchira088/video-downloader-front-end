@@ -44,7 +44,12 @@ const Duplicates = () => {
   )
 
   const onDeleteVideo = async (videoId: string) => {
-    await deleteVideo(videoId, true)
+    try {
+      await deleteVideo(videoId, true)
+    } catch (error) {
+      console.error(error)
+      return
+    }
 
     setGroups(prev =>
       prev

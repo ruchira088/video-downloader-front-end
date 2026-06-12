@@ -87,7 +87,7 @@ const ErrorDetailsDialog: FC<ErrorDetailsDialogProps> = props => (
       {props.scheduleVideoDownload.errorInfo?.message}
     </DialogContent>
     <DialogActions>
-      <Button onClick={() => props.onUpdateStatus(SchedulingStatus.Queued).finally(props.onClose)}>Retry</Button>
+      <Button onClick={() => props.onUpdateStatus(SchedulingStatus.Queued).catch(console.error).finally(props.onClose)}>Retry</Button>
       <Button onClick={props.onClose}>Cancel</Button>
     </DialogActions>
   </Dialog>
@@ -110,7 +110,7 @@ const ScheduledVideoDeleteDialog: FC<ScheduledVideoDeleteDialogProps> = props =>
       <Button
         color="secondary"
         variant="contained"
-        onClick={() => props.onDelete().finally(props.onClose)}
+        onClick={() => props.onDelete().catch(console.error).finally(props.onClose)}
       >
         Delete
       </Button>

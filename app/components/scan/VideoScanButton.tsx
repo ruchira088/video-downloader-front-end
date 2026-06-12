@@ -29,12 +29,21 @@ const VideoScanButton: FC<VideoScanButtonProps> = props => {
 
   const onClick = async () => {
     setScanStatus(Some.of(ScanStatus.InProgress))
-    await scanForVideos()
+
+    try {
+      await scanForVideos()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   const retrieveScanStatus = async () => {
-    const videoScan: VideoScan = await fetchVideoScanStatus()
-    setScanStatus(Some.of(videoScan.scanStatus))
+    try {
+      const videoScan: VideoScan = await fetchVideoScanStatus()
+      setScanStatus(Some.of(videoScan.scanStatus))
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   const label = isScanInProgress ? "Scanning..." : "Scan For Videos"

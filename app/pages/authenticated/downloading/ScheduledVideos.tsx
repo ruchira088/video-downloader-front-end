@@ -114,6 +114,8 @@ const ScheduledVideos = () => {
 
     try {
       await retryFailedScheduledVideos()
+    } catch (error) {
+      console.error(error)
     } finally {
       setDisableRetry(false)
     }

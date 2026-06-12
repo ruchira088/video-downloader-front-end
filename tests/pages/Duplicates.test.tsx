@@ -202,6 +202,33 @@ describe("Duplicates", () => {
     })
   })
 
+  test("should keep the video in the group when delete fails", async () => {
+    const user = userEvent.setup()
+    mockFetchDuplicateVideos.mockResolvedValue({
+      "group-1": createDuplicateGroup("group-1", ["video-1", "video-2"]),
+    })
+    mockDeleteVideo.mockRejectedValue(new Error("Failed to delete video"))
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+    renderPage()
+
+    await waitFor(() => {
+      expect(screen.getByText("Video video-1")).toBeInTheDocument()
+    })
+
+    const deleteButtons = screen.getAllByRole("button", { name: /delete/i })
+    await user.click(deleteButtons[0])
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalled()
+    })
+
+    expect(screen.getByText("Video video-1")).toBeInTheDocument()
+    expect(screen.getByText("Video video-2")).toBeInTheDocument()
+
+    consoleErrorSpy.mockRestore()
+  })
+
   test("should render links to video pages", async () => {
     mockFetchDuplicateVideos.mockResolvedValue({
       "group-1": createDuplicateGroup("group-1", ["video-1", "video-2"]),
