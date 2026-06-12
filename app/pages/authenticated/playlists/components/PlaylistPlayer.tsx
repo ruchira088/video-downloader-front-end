@@ -119,7 +119,8 @@ const PlaylistPlayer: FC<PlaylistPlayerProps> = ({
                 const actualIndex = currentIndex + 1 + idx
 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={video.videoMetadata.id}
                     className={styles.upNextItem}
                     onClick={() => onIndexChange(actualIndex)}
@@ -133,7 +134,7 @@ const PlaylistPlayer: FC<PlaylistPlayerProps> = ({
                     <div className={styles.upNextInfo}>
                       <span className={styles.upNextItemTitle}>{videoTitle}</span>
                     </div>
-                  </div>
+                  </button>
                 )
               })}
             </div>

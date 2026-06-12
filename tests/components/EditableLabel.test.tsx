@@ -1,16 +1,11 @@
 import { describe, expect, test, vi } from "vitest"
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import EditableLabel from "~/components/editable-label/EditableLabel"
 
 // Helper function to enter edit mode
 async function enterEditMode(user: ReturnType<typeof userEvent.setup>) {
-  const textContainer = screen.getByText(/Title/).closest("div")!
-  await act(async () => {
-    fireEvent.mouseEnter(textContainer)
-  })
-  const editButton = await screen.findByRole("button", { name: /edit/i })
-  await user.click(editButton)
+  await user.click(screen.getByRole("button", { name: /edit/i }))
 }
 
 describe("EditableLabel", () => {
@@ -22,46 +17,23 @@ describe("EditableLabel", () => {
       expect(screen.getByText("Test Title")).toBeInTheDocument()
     })
 
-    test("should not show edit button initially", () => {
+    test("should always render the edit button so it is reachable by keyboard", () => {
       const onUpdateText = vi.fn()
       render(<EditableLabel textValue="Test Title" onUpdateText={onUpdateText} />)
 
-      expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument()
+      expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument()
     })
 
-    test("should show edit button on hover", async () => {
+    test("should update displayed label when textValue prop changes", () => {
       const onUpdateText = vi.fn()
-      render(<EditableLabel textValue="Test Title" onUpdateText={onUpdateText} />)
+      const { rerender } = render(<EditableLabel textValue="Initial Title" onUpdateText={onUpdateText} />)
 
-      const textContainer = screen.getByText("Test Title").closest("div")!
-      await act(async () => {
-        fireEvent.mouseEnter(textContainer)
-      })
+      expect(screen.getByText("Initial Title")).toBeInTheDocument()
 
-      await waitFor(() => {
-        expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument()
-      })
-    })
+      rerender(<EditableLabel textValue="Updated Title" onUpdateText={onUpdateText} />)
 
-    test("should hide edit button when mouse leaves", async () => {
-      const onUpdateText = vi.fn()
-      render(<EditableLabel textValue="Test Title" onUpdateText={onUpdateText} />)
-
-      const textContainer = screen.getByText("Test Title").closest("div")!
-
-      await act(async () => {
-        fireEvent.mouseEnter(textContainer)
-      })
-      await waitFor(() => {
-        expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument()
-      })
-
-      await act(async () => {
-        fireEvent.mouseLeave(textContainer)
-      })
-      await waitFor(() => {
-        expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument()
-      })
+      expect(screen.getByText("Updated Title")).toBeInTheDocument()
+      expect(screen.queryByText("Initial Title")).not.toBeInTheDocument()
     })
   })
 
@@ -133,6 +105,26 @@ describe("EditableLabel", () => {
       await waitFor(() => {
         expect(screen.queryByRole("textbox")).not.toBeInTheDocument()
       })
+    })
+
+    test("should stay in edit mode and log the error when save fails", async () => {
+      const user = userEvent.setup()
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const saveError = new Error("Save failed")
+      const onUpdateText = vi.fn().mockRejectedValue(saveError)
+      render(<EditableLabel textValue="Test Title" onUpdateText={onUpdateText} />)
+
+      await enterEditMode(user)
+
+      await user.click(screen.getByRole("button", { name: /save/i }))
+
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to update text", saveError)
+      })
+      expect(screen.getByRole("textbox")).toBeInTheDocument()
+      expect(screen.getByRole("textbox")).toHaveValue("Test Title")
+
+      consoleErrorSpy.mockRestore()
     })
   })
 

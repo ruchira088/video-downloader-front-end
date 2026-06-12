@@ -36,12 +36,14 @@ const ScheduledVideoDownloadCard: FC<ScheduledVideoDownloadCardProps> = props =>
         classNames={styles.videoMetadata}
         enableSourceLink={true}
         disableSnapshots={true}>
-        <div
+        <button
+          type="button"
+          aria-label="Delete scheduled video"
           className={styles.deleteButton}
           onClick={() => setDialogVisibility(Some.of(ModalDialogType.Delete))}
         >
           X
-        </div>
+        </button>
       </VideoMetadataCard>
       <Timestamp timestamp={props.downloadableScheduledVideo.scheduledAt} className={styles.scheduledTimestamp}/>
       <div className={styles.downloadSection}>
@@ -156,11 +158,12 @@ const Actions: FC<ActionsProps> = props => {
       <div className={styles.statusInfo}>
         <div className={styles.status}>{status}</div>
         {status === SchedulingStatus.Error &&
-          <div
+          <button
+            type="button"
             onClick={props.onClickErrorDetails}
             className={classNames(styles.errorDetails)}>
             Error Details
-          </div>
+          </button>
         }
       </div>
     </div>

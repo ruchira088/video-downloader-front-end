@@ -110,7 +110,7 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
         { props.children }
         {
           props.enableSourceLink &&
-          <a href={props.videoMetadata.url} target="_blank" className={styles.videoSiteUrl}>
+          <a href={props.videoMetadata.url} target="_blank" rel="noopener noreferrer" className={styles.videoSiteUrl}>
             <VideoSiteCard videoSite={props.videoMetadata.videoSite}/>
           </a>
         }
