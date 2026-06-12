@@ -67,7 +67,12 @@ describe("HistoryService", () => {
 
       await getVideoHistory(0, 20)
 
-      expect(mockAxiosGet).toHaveBeenCalledWith("/videos/history?page-number=0&page-size=20")
+      expect(mockAxiosGet).toHaveBeenCalledWith("/videos/history", {
+        params: {
+          "page-number": 0,
+          "page-size": 20,
+        },
+      })
     })
 
     test("should return parsed video watch history", async () => {
@@ -109,7 +114,12 @@ describe("HistoryService", () => {
 
       await getVideoHistory(5, 50)
 
-      expect(mockAxiosGet).toHaveBeenCalledWith("/videos/history?page-number=5&page-size=50")
+      expect(mockAxiosGet).toHaveBeenCalledWith("/videos/history", {
+        params: {
+          "page-number": 5,
+          "page-size": 50,
+        },
+      })
     })
   })
 })

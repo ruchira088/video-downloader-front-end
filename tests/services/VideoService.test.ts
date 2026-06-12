@@ -23,6 +23,7 @@ import {
   updateVideoTitle,
   videoServiceSummary,
   deleteVideo,
+  fetchDuplicateVideos,
   scanForVideos,
   fetchVideoScanStatus,
 } from "~/services/video/VideoService"
@@ -267,7 +268,11 @@ describe("VideoService", () => {
 
       const result = await deleteVideo("video-123", false)
 
-      expect(mockAxiosDelete).toHaveBeenCalledWith("/videos/id/video-123?delete-video-file=false")
+      expect(mockAxiosDelete).toHaveBeenCalledWith("/videos/id/video-123", {
+        params: {
+          "delete-video-file": false,
+        },
+      })
       expect(result.videoMetadata.id).toBe("video-123")
     })
 
@@ -276,7 +281,37 @@ describe("VideoService", () => {
 
       await deleteVideo("video-123", true)
 
-      expect(mockAxiosDelete).toHaveBeenCalledWith("/videos/id/video-123?delete-video-file=true")
+      expect(mockAxiosDelete).toHaveBeenCalledWith("/videos/id/video-123", {
+        params: {
+          "delete-video-file": true,
+        },
+      })
+    })
+  })
+
+  describe("fetchDuplicateVideos", () => {
+    test("should call API with pagination params and return parsed groups", async () => {
+      const mockGroups = {
+        "group-1": [
+          {
+            videoId: "video-123",
+            duplicateGroupId: "group-1",
+            createdAt: "2024-01-15T10:00:00+00:00",
+          },
+        ],
+      }
+      mockAxiosGet.mockResolvedValue({ data: mockGroups })
+
+      const result = await fetchDuplicateVideos(2, 25)
+
+      expect(mockAxiosGet).toHaveBeenCalledWith("/videos/duplicates", {
+        params: {
+          "page-number": 2,
+          "page-size": 25,
+        },
+      })
+      expect(result["group-1"]).toHaveLength(1)
+      expect(result["group-1"][0].videoId).toBe("video-123")
     })
   })
 
