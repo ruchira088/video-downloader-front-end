@@ -1,9 +1,19 @@
-import { describe, expect, test, vi } from "vitest"
+import { beforeEach, describe, expect, test, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import { meta, links, Layout, HydrateFallback, ErrorBoundary } from "~/root"
+import { initSentry } from "~/services/Sentry"
 import React from "react"
 
 const mockIsRouteErrorResponse = vi.fn()
+const mockCaptureException = vi.fn()
+
+vi.mock("~/services/Sentry", () => ({
+  initSentry: vi.fn(),
+}))
+
+vi.mock("@sentry/react", () => ({
+  captureException: (error: unknown) => mockCaptureException(error),
+}))
 
 vi.mock("react-router", () => ({
   isRouteErrorResponse: (error: any) => mockIsRouteErrorResponse(error),
@@ -21,6 +31,16 @@ vi.mock("~/providers/ApplicationConfigurationProvider", () => ({
 }))
 
 describe("root", () => {
+  beforeEach(() => {
+    mockCaptureException.mockClear()
+  })
+
+  describe("Sentry initialization", () => {
+    test("should initialize Sentry at module scope", () => {
+      expect(initSentry).toHaveBeenCalled()
+    })
+  })
+
   describe("meta", () => {
     test("should return correct meta tags", () => {
       const result = meta({} as any)
@@ -91,6 +111,35 @@ describe("root", () => {
 
       expect(screen.getByText("Error")).toBeInTheDocument()
       expect(screen.getByText("Internal Server Error")).toBeInTheDocument()
+    })
+
+    test("should not capture 404 route errors", () => {
+      const routeError = { status: 404, statusText: "Not Found" }
+      mockIsRouteErrorResponse.mockReturnValue(true)
+
+      render(<ErrorBoundary error={routeError as any} params={defaultParams} />)
+
+      expect(mockCaptureException).not.toHaveBeenCalled()
+    })
+
+    test("should capture non-404 route errors", () => {
+      const routeError = { status: 500, statusText: "Internal Server Error" }
+      mockIsRouteErrorResponse.mockReturnValue(true)
+
+      render(<ErrorBoundary error={routeError as any} params={defaultParams} />)
+
+      expect(mockCaptureException).toHaveBeenCalledExactlyOnceWith(routeError)
+    })
+
+    test("should capture real errors once even across re-renders", () => {
+      const error = new Error("Test error")
+      mockIsRouteErrorResponse.mockReturnValue(false)
+
+      const { rerender } = render(<ErrorBoundary error={error} params={defaultParams} />)
+      rerender(<ErrorBoundary error={error} params={defaultParams} />)
+      rerender(<ErrorBoundary error={error} params={defaultParams} />)
+
+      expect(mockCaptureException).toHaveBeenCalledExactlyOnceWith(error)
     })
   })
 })
