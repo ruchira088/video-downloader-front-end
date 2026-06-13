@@ -18,6 +18,7 @@ import { Duration } from "luxon"
 import { Option } from "~/types/Option"
 import { translate } from "~/services/sanitize/SanitizationService"
 import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
+import { useNavigate } from "react-router"
 
 type VideoDeleteDialogProps = {
   readonly isVisible: boolean
@@ -35,14 +36,18 @@ const VideoDeleteDialog: FC<VideoDeleteDialogProps> = props => {
       <DialogContent>
         <VideoMetadataCard videoMetadata={props.videoMetadata} />
         <div>
-          Delete video file <Checkbox value={deleteFile} onChange={(event) => setDeleteFile(event.target.checked)} />
+          Delete video file <Checkbox checked={deleteFile} onChange={(event) => setDeleteFile(event.target.checked)} />
         </div>
       </DialogContent>
       <DialogActions>
         <Button
           color="secondary"
           variant="contained"
-          onClick={() => props.onDelete(deleteFile).then(() => setDeleteFile(false))}
+          onClick={() =>
+            props.onDelete(deleteFile)
+              .then(() => setDeleteFile(false))
+              .catch((error) => console.error(error))
+          }
         >
           Delete
         </Button>
@@ -125,6 +130,7 @@ const VideoWatch: FC<VideoWatchProps> = props => {
   const [isDeleteDialogVisible, setDeleteDialogVisibility] = useState<boolean>(false)
   const [resolution, setResolution] = useState<Resolution | null>(null)
   const { safeMode } = useApplicationConfiguration()
+  const navigate = useNavigate()
 
   useEffect(() => {
     Option.fromNullable(videoPlayer.current)
@@ -151,6 +157,7 @@ const VideoWatch: FC<VideoWatchProps> = props => {
   const onDeleteVideo = async (deleteFile: boolean): Promise<void> => {
     await deleteVideo(props.video.videoMetadata.id, deleteFile)
     setDeleteDialogVisibility(false)
+    navigate("/")
   }
 
   const title = translate(props.video.videoMetadata.title, safeMode)
