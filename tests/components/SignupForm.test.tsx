@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import SignupForm from "~/pages/unauthenticated/signup/components/signup-form/SignupForm"
 import { MemoryRouter } from "react-router"
@@ -91,6 +91,30 @@ describe("SignupForm", () => {
       expect(screen.getByLabelText("Email")).toHaveValue("")
       expect(screen.getByLabelText("Password")).toHaveValue("")
       expect(screen.getByLabelText("Confirm Password")).toHaveValue("")
+    })
+
+    test("should have name and autocomplete attributes for autofill", () => {
+      renderWithRouter(<SignupForm onSignup={mockOnSignup} />)
+
+      const firstNameInput = screen.getByLabelText("First Name")
+      expect(firstNameInput).toHaveAttribute("name", "firstName")
+      expect(firstNameInput).toHaveAttribute("autocomplete", "given-name")
+
+      const lastNameInput = screen.getByLabelText("Last Name")
+      expect(lastNameInput).toHaveAttribute("name", "lastName")
+      expect(lastNameInput).toHaveAttribute("autocomplete", "family-name")
+
+      const emailInput = screen.getByLabelText("Email")
+      expect(emailInput).toHaveAttribute("name", "email")
+      expect(emailInput).toHaveAttribute("autocomplete", "email")
+
+      const passwordInput = screen.getByLabelText("Password")
+      expect(passwordInput).toHaveAttribute("name", "password")
+      expect(passwordInput).toHaveAttribute("autocomplete", "new-password")
+
+      const confirmPasswordInput = screen.getByLabelText("Confirm Password")
+      expect(confirmPasswordInput).toHaveAttribute("name", "confirmPassword")
+      expect(confirmPasswordInput).toHaveAttribute("autocomplete", "new-password")
     })
 
     test("should render link to sign in page", () => {
@@ -345,6 +369,52 @@ describe("SignupForm", () => {
       await waitFor(() => {
         expect(mockOnSignup).toHaveBeenCalled()
       })
+    })
+
+    test("should submit when pressing Enter in a field", async () => {
+      const user = userEvent.setup()
+      mockCreateUser.mockResolvedValue(mockUser)
+      mockLogin.mockResolvedValue(mockToken)
+      renderWithRouter(<SignupForm onSignup={mockOnSignup} />)
+
+      await user.type(screen.getByLabelText("First Name"), "John")
+      await user.type(screen.getByLabelText("Last Name"), "Doe")
+      await user.type(screen.getByLabelText("Email"), "john@example.com")
+      await user.type(screen.getByLabelText("Password"), "password123")
+      await user.type(screen.getByLabelText("Confirm Password"), "password123{enter}")
+
+      await waitFor(() => {
+        expect(mockCreateUser).toHaveBeenCalledWith({
+          firstName: "John",
+          lastName: "Doe",
+          email: "john@example.com",
+          password: "password123",
+        })
+      })
+    })
+
+    test("should only call createUser once when clicked twice while in flight", async () => {
+      const user = userEvent.setup()
+      mockCreateUser.mockImplementation(() => new Promise(() => {})) // Never resolves
+      renderWithRouter(<SignupForm onSignup={mockOnSignup} />)
+
+      await user.type(screen.getByLabelText("First Name"), "John")
+      await user.type(screen.getByLabelText("Last Name"), "Doe")
+      await user.type(screen.getByLabelText("Email"), "john@example.com")
+      await user.type(screen.getByLabelText("Password"), "password123")
+      await user.type(screen.getByLabelText("Confirm Password"), "password123")
+
+      const signupButton = screen.getByRole("button", { name: /sign up/i })
+      await user.click(signupButton)
+
+      await waitFor(() => {
+        expect(signupButton).toBeDisabled()
+      })
+
+      // Force a second click even though the button is disabled
+      fireEvent.click(signupButton)
+
+      expect(mockCreateUser).toHaveBeenCalledTimes(1)
     })
 
     test("should show loading state during submission", async () => {

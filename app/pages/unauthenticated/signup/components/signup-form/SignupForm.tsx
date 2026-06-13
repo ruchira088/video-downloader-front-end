@@ -70,7 +70,11 @@ const SignupForm: FC<SignupFormProps> = props => {
     return true
   }
 
-  const onSignupClick = async () => {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (isSubmitting) return
+
     const isFirstNameValid = validateNonEmpty("firstName", firstName, "First name")
     const isLastNameValid = validateNonEmpty("lastName", lastName, "Last name")
     const isEmailNonEmpty = validateNonEmpty("email", email, "Email")
@@ -105,7 +109,7 @@ const SignupForm: FC<SignupFormProps> = props => {
         <h1 className={styles.title}>Video Downloader</h1>
         <p className={styles.subtitle}>Create your account</p>
       </div>
-      <div className={styles.signupFormBody}>
+      <form className={styles.signupFormBody} onSubmit={onSubmit} noValidate>
         <div className={styles.nameRow}>
           <TextField
             error={errors.firstName != null}
@@ -113,6 +117,8 @@ const SignupForm: FC<SignupFormProps> = props => {
             onChange={onChange(setFirstName)}
             label="First Name"
             helperText={errors.firstName}
+            name="firstName"
+            autoComplete="given-name"
             className={styles.textField}
             fullWidth
           />
@@ -122,6 +128,8 @@ const SignupForm: FC<SignupFormProps> = props => {
             onChange={onChange(setLastName)}
             label="Last Name"
             helperText={errors.lastName}
+            name="lastName"
+            autoComplete="family-name"
             className={styles.textField}
             fullWidth
           />
@@ -133,6 +141,8 @@ const SignupForm: FC<SignupFormProps> = props => {
           label="Email"
           helperText={errors.email}
           type="email"
+          name="email"
+          autoComplete="email"
           className={styles.textField}
           fullWidth
         />
@@ -143,6 +153,8 @@ const SignupForm: FC<SignupFormProps> = props => {
           helperText={errors.password}
           label="Password"
           type={showPassword ? "text" : "password"}
+          name="password"
+          autoComplete="new-password"
           className={styles.textField}
           fullWidth
           slotProps={{
@@ -168,6 +180,8 @@ const SignupForm: FC<SignupFormProps> = props => {
           helperText={errors.confirmPassword}
           label="Confirm Password"
           type={showConfirmPassword ? "text" : "password"}
+          name="confirmPassword"
+          autoComplete="new-password"
           className={styles.textField}
           fullWidth
           slotProps={{
@@ -188,7 +202,7 @@ const SignupForm: FC<SignupFormProps> = props => {
         />
         <div className={styles.signupButton}>
           <Button
-            onClick={onSignupClick}
+            type="submit"
             variant="contained"
             color="primary"
             disabled={isSubmitting}
@@ -196,7 +210,7 @@ const SignupForm: FC<SignupFormProps> = props => {
             {isSubmitting ? "Creating Account..." : "Sign Up"}
           </Button>
         </div>
-      </div>
+      </form>
       <ErrorMessages errors={errors.response} />
       <div className={styles.loginLink}>
         Already have an account? <Link to="/sign-in">Sign in</Link>

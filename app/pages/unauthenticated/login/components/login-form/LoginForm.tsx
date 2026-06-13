@@ -27,14 +27,20 @@ const LoginForm: FC<LoginFormProps> = props => {
   const [password, setPassword] = useState<string>("")
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Errors>(EMPTY_ERRORS)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const onChange = onFieldChange(() => setErrors(EMPTY_ERRORS))
 
-  const onLoginClick = async () => {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (isSubmitting) return
+
     const isEmailValid = validateNonEmpty("email", email)
     const isPasswordValid = validateNonEmpty("password", password)
 
     if (isEmailValid && isPasswordValid) {
+      setIsSubmitting(true)
       try {
         const authenticationToken = await login(email, password)
         props.onAuthenticate(authenticationToken)
@@ -44,6 +50,8 @@ const LoginForm: FC<LoginFormProps> = props => {
           ...errors,
           response: errorMessages,
         }))
+      } finally {
+        setIsSubmitting(false)
       }
     }
   }
@@ -62,7 +70,7 @@ const LoginForm: FC<LoginFormProps> = props => {
         <h1 className={styles.title}>Video Downloader</h1>
         <p className={styles.subtitle}>Sign in to your account</p>
       </div>
-      <div className={styles.loginFormBody}>
+      <form className={styles.loginFormBody} onSubmit={onSubmit} noValidate>
         <div>
           <TextField
             error={errors.email != null}
@@ -71,6 +79,8 @@ const LoginForm: FC<LoginFormProps> = props => {
             label="Email"
             helperText={errors.email}
             type="email"
+            name="email"
+            autoComplete="email"
             className={styles.textField}
             fullWidth
           />
@@ -81,6 +91,8 @@ const LoginForm: FC<LoginFormProps> = props => {
             helperText={errors.password}
             label="Password"
             type={showPassword ? "text" : "password"}
+            name="password"
+            autoComplete="current-password"
             className={styles.textField}
             fullWidth
             slotProps={{
@@ -101,11 +113,11 @@ const LoginForm: FC<LoginFormProps> = props => {
           />
         </div>
         <div className={styles.loginButton}>
-          <Button onClick={onLoginClick} variant="contained" color="primary">
-            Login
+          <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>
+            {isSubmitting ? "Logging In..." : "Login"}
           </Button>
         </div>
-      </div>
+      </form>
       <ErrorMessages errors={errors.response} />
       <div className={styles.signupLink}>
         Don't have an account? <Link to="/sign-up">Sign up</Link>
