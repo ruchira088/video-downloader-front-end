@@ -97,6 +97,68 @@ describe("VideoPage", () => {
     expect(screen.getByTestId("snapshot-count")).toHaveTextContent("2")
   })
 
+  test("shows an error message instead of the spinner when the video fetch fails", async () => {
+    mockFetchVideoById.mockRejectedValue(new Error("not found"))
+
+    renderVideoPage("missing-video", "/video/missing-video")
+
+    await waitFor(() => {
+      expect(screen.getByText("Unable to load video")).toBeInTheDocument()
+    })
+
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("video-watch")).not.toBeInTheDocument()
+  })
+
+  test("shows an error message when the snapshots fetch fails", async () => {
+    mockFetchVideoById.mockResolvedValue(buildVideo("video-123", "My Video"))
+    mockFetchVideoSnapshots.mockRejectedValue(new Error("snapshots failed"))
+
+    renderVideoPage("video-123", "/video/video-123")
+
+    await waitFor(() => {
+      expect(screen.getByText("Unable to load video")).toBeInTheDocument()
+    })
+  })
+
+  test("resets and shows fresh data when the videoId changes", async () => {
+    mockFetchVideoById.mockResolvedValue(buildVideo("video-a", "Video A"))
+
+    const { rerender } = renderVideoPage("video-a", "/video/video-a")
+
+    await waitFor(() => {
+      expect(screen.getByTestId("title")).toHaveTextContent("Video A")
+    })
+
+    // Navigate to video B while its fetch is still pending: the page must drop
+    // video A and show the loading indicator again.
+    let resolveVideoB: (video: ReturnType<typeof buildVideo>) => void
+    mockFetchVideoById.mockReturnValue(
+      new Promise((resolve) => {
+        resolveVideoB = resolve
+      })
+    )
+
+    rerender(
+      <MemoryRouter initialEntries={["/video/video-b"]}>
+        <VideoPage {...({ params: { videoId: "video-b" } } as any)} />
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("video-watch")).not.toBeInTheDocument()
+    })
+    expect(screen.getByRole("progressbar")).toBeInTheDocument()
+
+    resolveVideoB!(buildVideo("video-b", "Video B"))
+
+    await waitFor(() => {
+      expect(screen.getByTestId("title")).toHaveTextContent("Video B")
+    })
+    expect(mockFetchVideoById).toHaveBeenLastCalledWith("video-b")
+    expect(mockFetchVideoSnapshots).toHaveBeenLastCalledWith("video-b")
+  })
+
   test("parses the timestamp query parameter", async () => {
     mockFetchVideoById.mockResolvedValue(buildVideo("video-123", "My Video"))
 
