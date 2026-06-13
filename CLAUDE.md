@@ -51,3 +51,7 @@ Requires Node 24 (`engines.node: ^24.0.0`) and npm.
 - **MUI / `react-transition-group` ESM resolution (Vite 8 / Vitest 4).** Externalized MUI triggers Node's ESM resolver to reject MUI's directory import of `react-transition-group/TransitionGroupContext`. Both the build and the tests bundle these packages via `ssr.noExternal`; the list lives in one place — `bundled-dependencies.ts` — imported by both `vite.config.ts` and `vitest.config.ts`. A new dependency with the same kind of directory-import problem just gets appended to that array.
 - **ESLint:** unused vars/args are errors unless prefixed with `_`; empty `catch` blocks are allowed.
 - **Tests** run on jsdom. `tests/setup.ts` mocks `matchMedia`, `ResizeObserver`, and `IntersectionObserver` — it exports `intersectionObserverCallbacks` so tests can fire intersection events to drive infinite scroll. Services are mocked per-suite with `vi.mock`.
+
+## Pull requests
+
+- PR descriptions must be simple and concise — a few plain sentences describing what changed and why; no headings, checklists, or boilerplate.
