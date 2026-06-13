@@ -47,7 +47,7 @@ describe("AuthenticatedLayout", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     Object.defineProperty(window, "location", {
-      value: { pathname: "/videos" },
+      value: { pathname: "/videos", search: "" },
       writable: true,
     })
   })
@@ -100,7 +100,39 @@ describe("AuthenticatedLayout", () => {
     render(<RouterProvider router={router} />)
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/sign-in?redirect=/videos")
+      expect(mockNavigate).toHaveBeenCalledWith("/sign-in?redirect=%2Fvideos")
+    })
+  })
+
+  test("should include the encoded query string in the sign-in redirect", async () => {
+    const { getAuthenticationToken } = await import(
+      "~/services/authentication/AuthenticationService"
+    )
+    vi.mocked(getAuthenticationToken).mockReturnValue(None.of())
+    Object.defineProperty(window, "location", {
+      value: { pathname: "/videos", search: "?search-term=cats&page=2" },
+      writable: true,
+    })
+
+    const router = createMemoryRouter([
+      {
+        path: "/",
+        element: <AuthenticatedLayout />,
+        children: [
+          {
+            index: true,
+            element: <div>Child</div>,
+          },
+        ],
+      },
+    ])
+
+    render(<RouterProvider router={router} />)
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        `/sign-in?redirect=${encodeURIComponent("/videos?search-term=cats&page=2")}`
+      )
     })
   })
 
@@ -127,7 +159,7 @@ describe("AuthenticatedLayout", () => {
 
     await waitFor(() => {
       expect(removeAuthenticationToken).toHaveBeenCalled()
-      expect(mockNavigate).toHaveBeenCalledWith("/sign-in?redirect=/videos")
+      expect(mockNavigate).toHaveBeenCalledWith("/sign-in?redirect=%2Fvideos")
     })
   })
 

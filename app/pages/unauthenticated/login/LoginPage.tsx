@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router"
 import Helmet from "~/components/helmet/Helmet"
 import { Option } from "~/types/Option"
 import { REDIRECT_QUERY_PARAMETER } from "~/services/authentication/AuthenticationService"
+import { safeRedirectPath } from "~/pages/unauthenticated/AuthFormHelpers"
 
 import styles from "./LoginPage.module.scss"
 
@@ -14,8 +15,7 @@ const LoginPage = () => {
   const onAuthenticate = () => {
     const redirect: Option<string> = Option.fromNullable(searchParams.get(REDIRECT_QUERY_PARAMETER))
 
-    const nextUrl = redirect.getOrElse(() => "/")
-    navigate(nextUrl)
+    navigate(safeRedirectPath(redirect))
   }
 
   return (
