@@ -160,5 +160,23 @@ describe("AuthenticationService", () => {
       expect(result.email).toBe("test@example.com")
       expect(result.firstName).toBe("Test")
     })
+
+    test("should remove the stored authentication token on success", async () => {
+      localStorage.setItem("Authentication-Token", JSON.stringify(mockTokenData))
+      mockAxiosDelete.mockResolvedValue({ data: mockUserData })
+
+      await logout()
+
+      expect(localStorage.getItem("Authentication-Token")).toBeNull()
+    })
+
+    test("should remove the stored authentication token even when the API call fails", async () => {
+      localStorage.setItem("Authentication-Token", JSON.stringify(mockTokenData))
+      mockAxiosDelete.mockRejectedValue(new Error("Network error"))
+
+      await expect(logout()).rejects.toThrow("Network error")
+
+      expect(localStorage.getItem("Authentication-Token")).toBeNull()
+    })
   })
 })
