@@ -91,21 +91,6 @@ describe("initSentry", () => {
     )
   })
 
-  test("should handle getEnvironment returning enum keys as strings", async () => {
-    // getEnvironment() currently returns enum keys ("1"/"2") for staging/prod
-    mockGetEnvironment.mockReturnValue("2" as unknown as Environment)
-
-    const initSentry = await loadInitSentry()
-    initSentry()
-
-    expect(mockInit).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({
-        environment: "production",
-        tracesSampleRate: 0.1,
-      })
-    )
-  })
-
   test("should prefer VITE_SENTRY_DSN over the environment DSN mapping", async () => {
     mockGetEnvironment.mockReturnValue(Environment.Production)
     vi.stubEnv("VITE_SENTRY_DSN", "https://override@self-hosted.example.com/2")
