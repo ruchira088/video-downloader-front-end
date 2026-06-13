@@ -2,8 +2,11 @@ import { Environment, getEnvironment } from "~/services/Config"
 
 const API_URL_QUERY_PARAMETER = "API_URL"
 
-const API_URL_MAPPINGS: Record<Environment.Staging | Environment.Production, string> = {
+type NonLocalEnvironment = Environment.Branch | Environment.Staging | Environment.Production
+
+const API_URL_MAPPINGS: Record<NonLocalEnvironment, string> = {
   [Environment.Staging]: "api.staging.video.dev.ruchij.com",
+  [Environment.Branch]: "api.staging.video.dev.ruchij.com",
   [Environment.Production]: "api.video.home.ruchij.com"
 }
 
@@ -27,7 +30,7 @@ const inferBaseApiUrl = (): string => {
       const environment = getEnvironment()
 
       if (environment in API_URL_MAPPINGS) {
-        return `${location.protocol}//${API_URL_MAPPINGS[environment as Environment.Staging | Environment.Production]}`
+        return `${location.protocol}//${API_URL_MAPPINGS[environment as NonLocalEnvironment]}`
       } else {
         const apiUrl = `${location.protocol}//api.${location.host}`
         return apiUrl
