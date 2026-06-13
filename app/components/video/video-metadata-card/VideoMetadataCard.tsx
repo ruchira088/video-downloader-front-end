@@ -27,7 +27,8 @@ type ImageDimensions = {
 
 const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
   const [maybeSnapshots, setMaybeSnapshots] = useState<Option<Snapshot[]>>(None.of())
-  const [maybeIntervalTimeout, setMaybeIntervalTimeout] = useState<Option<NodeJS.Timeout>>(None.of())
+  const [isHovering, setIsHovering] = useState<boolean>(false)
+  const intervalTimeoutRef = useRef<Option<NodeJS.Timeout>>(None.of<NodeJS.Timeout>())
   const [index, setIndex] = useState<number>(0)
   const imageRef = useRef<HTMLImageElement | null>(null)
   const [imageDimensions, setImageDimensions] = useState<Option<ImageDimensions>>(None.of<ImageDimensions>())
@@ -43,36 +44,31 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
         })
       )
 
-  const onMouseOver = () => {
-    if (!Option.fromNullable(props.disableSnapshots).getOrElse(() => false)) {
-      setMaybeIntervalTimeout(
-        Some.of(setInterval(() => setIndex((index) => index + 1), 400)
-        )
-      )
+  const onMouseEnter = () => {
+    if (!Option.fromNullable(props.disableSnapshots).getOrElse(() => false) && intervalTimeoutRef.current.isEmpty()) {
+      intervalTimeoutRef.current = Some.of(setInterval(() => setIndex((index) => index + 1), 400))
+      setIsHovering(true)
+      initializeSnapshots().catch((error) => console.error(error))
     }
   }
 
   const onMouseLeave = () => {
-    maybeIntervalTimeout.forEach(clearInterval)
-    setMaybeIntervalTimeout(None.of())
+    intervalTimeoutRef.current.forEach(clearInterval)
+    intervalTimeoutRef.current = None.of()
+    setIsHovering(false)
     setIndex(0)
   }
 
   useEffect(() => {
     return () => {
-      setMaybeSnapshots(None.of())
-      maybeIntervalTimeout.forEach(clearInterval)
+      intervalTimeoutRef.current.forEach(clearInterval)
     }
   }, [])
 
-  useEffect(() => {
-    maybeIntervalTimeout.forEach(initializeSnapshots)
-  }, [maybeIntervalTimeout])
-
   const thumbnail = (safeMode: boolean) =>
     imageUrl(
-      maybeIntervalTimeout
-        .flatMap(() => maybeSnapshots)
+      maybeSnapshots
+        .filter(() => isHovering)
         .filter((values) => values.length > 0)
         .fold<FileResource<FileResourceType.Thumbnail | FileResourceType.Snapshot>>(
           () => props.videoMetadata.thumbnail,
@@ -104,7 +100,7 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
   return (
     <div className={classNames(styles.videoMetadataCard, props.classNames)}>
       <div
-        onMouseOver={onMouseOver}
+        onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         className={styles.imageContainer}>
         { props.children }
