@@ -1,4 +1,4 @@
-import React, { type FC, type ReactNode, useEffect, useState } from "react"
+import React, { type FC, type ReactNode, useEffect, useRef, useState } from "react"
 import {
   frontendServiceInformation,
   performHealthCheck,
@@ -22,7 +22,7 @@ import VideoLibraryIcon from "@mui/icons-material/VideoLibrary"
 import FolderIcon from "@mui/icons-material/Folder"
 import { None, type Option, Some } from "~/types/Option"
 import Helmet from "~/components/helmet/Helmet"
-import { DateTime } from "luxon"
+import { DateTime, Duration } from "luxon"
 
 import styles from "./ServiceInformation.module.scss"
 import {
@@ -58,11 +58,19 @@ type CopyableTextProps = {
 
 const CopyableText: FC<CopyableTextProps> = ({ text }) => {
   const [copied, setCopied] = useState(false)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  useEffect(() => () => clearTimeout(timeoutRef.current), [])
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      console.error("Failed to copy to clipboard", error)
+    }
   }
 
   return (
@@ -217,9 +225,11 @@ const ServiceInformation = () => {
   const [backendInformation, setBackendInformation] = useState<Option<BackendServiceInformation>>(None.of())
   const [frontendInformation, setFrontendInformation] = useState(frontendServiceInformation(import.meta.env))
   const [healthCheckDetails, setHealthCheckDetails] = useState<Option<HealthCheckDetails>>(None.of())
+  const serverTimeOffset = useRef<Duration<boolean>>(Duration.fromMillis(0))
 
   const fetchBackendInformation = async () => {
     const information = await retrieveBackendServiceInformation()
+    serverTimeOffset.current = information.currentTimestamp.diff(DateTime.now())
     setBackendInformation(Some.of(information))
   }
 
@@ -240,7 +250,21 @@ const ServiceInformation = () => {
 
   useEffect(() => {
     fetchBackendInformation()
-    const intervalId = setInterval(fetchBackendInformation, 500)
+      .catch((error) => console.error("Failed to retrieve backend service information", error))
+  }, [])
+
+  useEffect(() => {
+    const intervalId =
+      setInterval(
+        () =>
+          setBackendInformation((backendInformation) =>
+            backendInformation.map((information) => ({
+              ...information,
+              currentTimestamp: DateTime.now().plus(serverTimeOffset.current)
+            }))
+          ),
+        1000
+      )
 
     return () => clearInterval(intervalId)
   }, [])
