@@ -60,7 +60,7 @@ const VideoLink: FC<VideoLinkProps> = props => {
   if (props.videoMetadata.videoSite === "local") {
     return <span>{props.videoMetadata.videoSite.toUpperCase()}</span>
   } else {
-    return <a href={props.videoMetadata.url} target="_blank">{props.videoMetadata.videoSite}</a>
+    return <a href={props.videoMetadata.url} target="_blank" rel="noopener noreferrer">{props.videoMetadata.videoSite}</a>
   }
 }
 

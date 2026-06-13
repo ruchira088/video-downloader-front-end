@@ -106,13 +106,13 @@ describe("ScheduledVideoDownloadCard", () => {
   test("should render delete button", () => {
     renderWithContext()
 
-    expect(screen.getByText("X")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Delete scheduled video" })).toBeInTheDocument()
   })
 
   test("should open delete dialog when X is clicked", () => {
     renderWithContext()
 
-    fireEvent.click(screen.getByText("X"))
+    fireEvent.click(screen.getByRole("button", { name: "Delete scheduled video" }))
 
     expect(screen.getByText("Delete Scheduled Video?")).toBeInTheDocument()
   })
@@ -121,7 +121,7 @@ describe("ScheduledVideoDownloadCard", () => {
     const onDelete = vi.fn().mockResolvedValue(undefined)
     renderWithContext(createMockDownloadableScheduledVideo(), onDelete)
 
-    fireEvent.click(screen.getByText("X"))
+    fireEvent.click(screen.getByRole("button", { name: "Delete scheduled video" }))
     fireEvent.click(screen.getByRole("button", { name: "Delete" }))
 
     await waitFor(() => {
@@ -132,7 +132,7 @@ describe("ScheduledVideoDownloadCard", () => {
   test("should close delete dialog when cancel is clicked", async () => {
     renderWithContext()
 
-    fireEvent.click(screen.getByText("X"))
+    fireEvent.click(screen.getByRole("button", { name: "Delete scheduled video" }))
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
 
     await waitFor(() => {
@@ -163,16 +163,16 @@ describe("ScheduledVideoDownloadCard", () => {
     })
   })
 
-  test("should show error details link for error status", () => {
+  test("should show error details button for error status", () => {
     renderWithContext(createMockDownloadableScheduledVideo(SchedulingStatus.Error))
 
-    expect(screen.getByText("Error Details")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Error Details" })).toBeInTheDocument()
   })
 
   test("should open error dialog when error details is clicked", () => {
     renderWithContext(createMockDownloadableScheduledVideo(SchedulingStatus.Error))
 
-    fireEvent.click(screen.getByText("Error Details"))
+    fireEvent.click(screen.getByRole("button", { name: "Error Details" }))
 
     // Check that dialog opened with error message
     expect(screen.getByText("Download failed")).toBeInTheDocument()
@@ -182,7 +182,7 @@ describe("ScheduledVideoDownloadCard", () => {
   test("should render retry button in error dialog", () => {
     renderWithContext(createMockDownloadableScheduledVideo(SchedulingStatus.Error))
 
-    fireEvent.click(screen.getByText("Error Details"))
+    fireEvent.click(screen.getByRole("button", { name: "Error Details" }))
 
     expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument()
   })
@@ -191,7 +191,7 @@ describe("ScheduledVideoDownloadCard", () => {
     const onUpdateStatus = vi.fn().mockResolvedValue(undefined)
     renderWithContext(createMockDownloadableScheduledVideo(SchedulingStatus.Error), vi.fn(), onUpdateStatus)
 
-    fireEvent.click(screen.getByText("Error Details"))
+    fireEvent.click(screen.getByRole("button", { name: "Error Details" }))
     fireEvent.click(screen.getByRole("button", { name: "Retry" }))
 
     await waitFor(() => {

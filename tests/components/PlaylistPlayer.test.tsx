@@ -170,7 +170,7 @@ describe("PlaylistPlayer", () => {
       const onIndexChange = vi.fn()
       render(<PlaylistPlayer {...defaultProps} onIndexChange={onIndexChange} />)
 
-      await user.click(screen.getByText("Second Video"))
+      await user.click(screen.getByRole("button", { name: /Second Video/ }))
 
       expect(onIndexChange).toHaveBeenCalledWith(1)
     })
