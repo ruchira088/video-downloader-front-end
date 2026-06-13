@@ -25,7 +25,7 @@ const VideoSitesSelector: FC<VideoSitesSelectorProps> = props => {
   const [availableVideoSites, setAvailableVideoSites] = useState<string[]>([])
 
   useEffect(() => {
-    videoServiceSummary().then((summary) => setAvailableVideoSites(summary.sites))
+    videoServiceSummary().then((summary) => setAvailableVideoSites(summary.sites)).catch(console.error)
   }, [])
 
   return (

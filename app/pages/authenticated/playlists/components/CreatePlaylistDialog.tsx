@@ -38,6 +38,8 @@ const CreatePlaylistDialog: FC<CreatePlaylistDialogProps> = ({
       onPlaylistCreated(playlist)
       setName("")
       setDescription("")
+    } catch (error) {
+      console.error(error)
     } finally {
       setIsSubmitting(false)
     }

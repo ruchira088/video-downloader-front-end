@@ -8,7 +8,7 @@ const WorkerStatusSwitch = () => {
   const [workerStatus, setWorkerStatus] = useState<WorkerStatus | null>(null)
 
   useEffect(() => {
-    fetchWorkerStatus().then((status) => setWorkerStatus(status))
+    fetchWorkerStatus().then((status) => setWorkerStatus(status)).catch(console.error)
   }, [])
 
   const onClick = async () => {
