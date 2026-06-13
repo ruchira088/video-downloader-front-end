@@ -7,6 +7,7 @@ describe("ApiConfiguration", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
     vi.resetModules()
   })
 
@@ -48,17 +49,33 @@ describe("ApiConfiguration", () => {
         history: { replaceState: vi.fn() },
       })
 
-      // Mock import.meta.env
-      vi.stubGlobal("import", {
-        meta: {
-          env: {
-            VITE_API_URL: "https://env-api.example.com",
-          },
-        },
-      })
+      vi.stubEnv("VITE_API_URL", "https://env-api.example.com")
 
       vi.resetModules()
-      // Note: This test may not fully work due to import.meta limitations in testing
+      const { apiConfiguration } = await import("~/services/ApiConfiguration")
+
+      expect(apiConfiguration.baseUrl).toBe("https://env-api.example.com")
+    })
+
+    test("should prefer the API_URL query parameter over VITE_API_URL", async () => {
+      const mockUrl = new URL("https://example.com?API_URL=https://custom-api.example.com")
+
+      vi.stubGlobal("window", {
+        location: {
+          href: mockUrl.href,
+          search: mockUrl.search,
+          protocol: mockUrl.protocol,
+          host: mockUrl.host,
+        },
+        history: { replaceState: vi.fn() },
+      })
+
+      vi.stubEnv("VITE_API_URL", "https://env-api.example.com")
+
+      vi.resetModules()
+      const { apiConfiguration } = await import("~/services/ApiConfiguration")
+
+      expect(apiConfiguration.baseUrl).toBe("https://custom-api.example.com")
     })
 
     test("should use API_URL_MAPPINGS for known hosts", async () => {
@@ -98,6 +115,25 @@ describe("ApiConfiguration", () => {
       const { apiConfiguration } = await import("~/services/ApiConfiguration")
 
       expect(apiConfiguration.baseUrl).toBe("https://api.video.home.ruchij.com")
+    })
+
+    test("should use the staging API for branch hosts", async () => {
+      const mockUrl = new URL("https://my-feature.videos.ruchij.com")
+
+      vi.stubGlobal("window", {
+        location: {
+          href: mockUrl.href,
+          search: "",
+          protocol: "https:",
+          host: "my-feature.videos.ruchij.com",
+        },
+        history: { replaceState: vi.fn() },
+      })
+
+      vi.resetModules()
+      const { apiConfiguration } = await import("~/services/ApiConfiguration")
+
+      expect(apiConfiguration.baseUrl).toBe("https://api.staging.video.dev.ruchij.com")
     })
 
     test("should fallback to api.{host} for unknown hosts", async () => {
