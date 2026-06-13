@@ -20,21 +20,25 @@ const inferBaseApiUrl = (): string => {
     url.searchParams.delete(API_URL_QUERY_PARAMETER)
     window.history.replaceState({}, "", url.toString())
 
-    return apiUrlViaQueryParams
+    // Only honor the query parameter in development; in other environments it
+    // could be used to redirect credentials and API traffic to an attacker host
+    if (getEnvironment() === Environment.Development) {
+      return apiUrlViaQueryParams
+    }
+  }
+
+  const apiUrlViaEnv = import.meta.env.VITE_API_URL
+
+  if (apiUrlViaEnv) {
+    return apiUrlViaEnv
   } else {
-    const apiUrlViaEnv = import.meta.env.VITE_API_URL
+    const environment = getEnvironment()
 
-    if (apiUrlViaEnv) {
-      return apiUrlViaEnv
+    if (environment in API_URL_MAPPINGS) {
+      return `${location.protocol}//${API_URL_MAPPINGS[environment as NonLocalEnvironment]}`
     } else {
-      const environment = getEnvironment()
-
-      if (environment in API_URL_MAPPINGS) {
-        return `${location.protocol}//${API_URL_MAPPINGS[environment as NonLocalEnvironment]}`
-      } else {
-        const apiUrl = `${location.protocol}//api.${location.host}`
-        return apiUrl
-      }
+      const apiUrl = `${location.protocol}//api.${location.host}`
+      return apiUrl
     }
   }
 }
