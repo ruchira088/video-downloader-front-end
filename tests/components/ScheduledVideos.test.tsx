@@ -151,6 +151,30 @@ describe("ScheduledVideos", () => {
     })
   })
 
+  test("should log stream errors via the onError callback", async () => {
+    const { scheduledVideoDownloadStream } = await import("~/services/scheduling/SchedulingService")
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+    let onError: (event: Event) => void
+    vi.mocked(scheduledVideoDownloadStream).mockImplementation((_onProgress, _onUpdate, onStreamError) => {
+      onError = onStreamError
+      return () => {}
+    })
+
+    renderWithContext()
+
+    await waitFor(() => {
+      expect(scheduledVideoDownloadStream).toHaveBeenCalled()
+    })
+
+    const errorEvent = new Event("error")
+    onError!(errorEvent)
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith("Scheduled video download stream error", errorEvent)
+
+    consoleErrorSpy.mockRestore()
+  })
+
   test("should render video cards when videos are fetched", async () => {
     const { fetchScheduledVideos } = await import("~/services/scheduling/SchedulingService")
     vi.mocked(fetchScheduledVideos).mockResolvedValue([
