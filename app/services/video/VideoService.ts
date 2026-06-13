@@ -81,14 +81,23 @@ export const videoServiceSummary = async (): Promise<VideoServiceSummary> => {
 }
 
 export const deleteVideo = async (videoId: string, deleteFile: boolean): Promise<Video> => {
-  const response = await axiosClient.delete(`/videos/id/${videoId}?delete-video-file=${deleteFile}`)
+  const response = await axiosClient.delete(`/videos/id/${videoId}`, {
+    params: {
+      "delete-video-file": deleteFile,
+    },
+  })
   const video = zodParse(Video, response.data)
 
   return video
 }
 
 export const fetchDuplicateVideos = async (pageNumber: number, pageSize: number): Promise<DuplicateVideoGroups> => {
-  const response = await axiosClient.get(`/videos/duplicates?page-number=${pageNumber}&page-size=${pageSize}`)
+  const response = await axiosClient.get("/videos/duplicates", {
+    params: {
+      "page-number": pageNumber,
+      "page-size": pageSize,
+    },
+  })
   return zodParse(DuplicateVideoGroups, response.data)
 }
 

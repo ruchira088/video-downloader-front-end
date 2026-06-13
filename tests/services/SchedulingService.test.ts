@@ -224,7 +224,7 @@ describe("SchedulingService", () => {
         Ordering.Descending
       )
 
-      expect(mockAxiosGet).toHaveBeenCalledWith("/schedule/search?", {
+      expect(mockAxiosGet).toHaveBeenCalledWith("/schedule/search", {
         params: expect.objectContaining({
           "page-number": 0,
           "page-size": 20,
@@ -236,7 +236,7 @@ describe("SchedulingService", () => {
       expect(result).toHaveLength(1)
     })
 
-    test("should fetch with empty search term when None", async () => {
+    test("should send null search term when None so axios omits the param", async () => {
       mockAxiosGet.mockResolvedValue({ data: { results: [] } })
 
       await fetchScheduledVideos(
@@ -247,9 +247,9 @@ describe("SchedulingService", () => {
         Ordering.Ascending
       )
 
-      expect(mockAxiosGet).toHaveBeenCalledWith("/schedule/search?", {
+      expect(mockAxiosGet).toHaveBeenCalledWith("/schedule/search", {
         params: expect.objectContaining({
-          "search-term": "",
+          "search-term": null,
         }),
       })
     })

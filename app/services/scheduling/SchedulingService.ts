@@ -86,27 +86,23 @@ export const fetchScheduledVideos = async (
   sortBy: SortBy,
   ordering: Ordering
 ): Promise<ScheduledVideoDownload[]> => {
-  const response = await axiosClient
-    .get(
-      "/schedule/search?",
-      {
-        params: {
-          status: `${[
-            SchedulingStatus.Active,
-            SchedulingStatus.Error,
-            SchedulingStatus.Queued,
-            SchedulingStatus.Stale,
-            SchedulingStatus.Paused,
-            SchedulingStatus.WorkersPaused,
-          ].join(",")}`,
-          "page-number": pageNumber,
-          "page-size": pageSize,
-          "sort-by": sortBy,
-          order: ordering,
-          "search-term": searchTerm.getOrElse(() => ""),
-        }
-      }
-    )
+  const response = await axiosClient.get("/schedule/search", {
+    params: {
+      status: [
+        SchedulingStatus.Active,
+        SchedulingStatus.Error,
+        SchedulingStatus.Queued,
+        SchedulingStatus.Stale,
+        SchedulingStatus.Paused,
+        SchedulingStatus.WorkersPaused,
+      ].join(","),
+      "page-number": pageNumber,
+      "page-size": pageSize,
+      "sort-by": sortBy,
+      order: ordering,
+      "search-term": searchTerm.toNullable(),
+    },
+  })
 
   const scheduledVideoDownloads = zodParse(ListResponse(ScheduledVideoDownload), response.data).results
 
