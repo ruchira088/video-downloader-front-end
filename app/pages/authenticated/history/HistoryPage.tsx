@@ -45,8 +45,8 @@ const HistoryPage = () => {
       >
         {
           videoWatchHistories.map(
-            (videoWatchHistory, index) =>
-              <div key={index} className={styles.videoHistoryCard}>
+            (videoWatchHistory) =>
+              <div key={videoWatchHistory.video.videoMetadata.id} className={styles.videoHistoryCard}>
                   <Link to={`/video/${videoWatchHistory.video.videoMetadata.id}`}>
                     <VideoCard video={videoWatchHistory.video} lastWatched={videoWatchHistory.lastUpdatedAt}/>
                   </Link>

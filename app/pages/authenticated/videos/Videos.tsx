@@ -87,8 +87,8 @@ const Videos = () => {
         className={styles.videosList}>
         {
           videos.map(
-              (video, index) =>
-                <div key={index} className={styles.videoCard}>
+              (video) =>
+                <div key={video.videoMetadata.id} className={styles.videoCard}>
                     <Link to={`/video/${video.videoMetadata.id}`}>
                       <VideoCard video={video}/>
                     </Link>
