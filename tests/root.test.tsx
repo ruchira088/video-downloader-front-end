@@ -83,6 +83,14 @@ describe("root", () => {
       expect(screen.getByText("The requested page could not be found.")).toBeInTheDocument()
     })
 
+    test("should render a link back to home", () => {
+      mockIsRouteErrorResponse.mockReturnValue(false)
+
+      render(<ErrorBoundary error={new Error("Test error")} params={defaultParams} />)
+
+      expect(screen.getByRole("link", { name: "Back to Home" })).toHaveAttribute("href", "/")
+    })
+
     test("should render error status for other route errors", () => {
       const routeError = { status: 500, statusText: "Internal Server Error" }
       mockIsRouteErrorResponse.mockReturnValue(true)

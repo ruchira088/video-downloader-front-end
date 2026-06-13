@@ -16,6 +16,7 @@ export default [
   layout("pages/unauthenticated/UnauthenticatedLayout.tsx", [
     route("/sign-in", "pages/unauthenticated/login/LoginPage.tsx"),
     route("/sign-up", "pages/unauthenticated/signup/SignupPage.tsx")
-  ])
+  ]),
+  route("*", "pages/not-found/NotFoundPage.tsx")
 ] satisfies RouteConfig
 
