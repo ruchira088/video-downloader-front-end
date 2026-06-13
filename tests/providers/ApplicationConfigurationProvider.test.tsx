@@ -116,6 +116,26 @@ describe("ApplicationConfigurationProvider", () => {
     })
   })
 
+  test("should fall back to default config when loading the saved config fails", async () => {
+    mockGetApplicationConfiguration.mockRejectedValue(new Error("corrupted stored configuration"))
+    mockGetDefaultApplicationConfiguration.mockResolvedValue({
+      theme: Theme.Light,
+      safeMode: false,
+    })
+
+    render(
+      <ApplicationConfigurationProvider>
+        <TestConsumer />
+      </ApplicationConfigurationProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId("theme")).toHaveTextContent("light")
+      expect(screen.getByTestId("safeMode")).toHaveTextContent("false")
+    })
+    expect(mockGetDefaultApplicationConfiguration).toHaveBeenCalled()
+  })
+
   test("should set data-theme attribute on body", async () => {
     mockGetApplicationConfiguration.mockResolvedValue({
       isEmpty: () => true,

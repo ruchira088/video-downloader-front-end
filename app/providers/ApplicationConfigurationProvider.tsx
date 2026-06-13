@@ -40,6 +40,7 @@ export const ApplicationConfigurationProvider: FC<ApplicationConfigurationContex
           appConfig => Promise.resolve(appConfig)
         )
       )
+      .catch(() => localStorageConfigurationService.getDefaultApplicationConfiguration())
       .then(appConfig => setApplicationConfiguration(Some.of(appConfig)))
   }, [])
 
