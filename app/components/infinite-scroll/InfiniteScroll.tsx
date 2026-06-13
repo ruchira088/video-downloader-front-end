@@ -13,27 +13,27 @@ type InfiniteScrollProps = {
 const InfiniteScroll: FC<InfiniteScrollProps> = props => {
     const loadingTrigger = useRef<HTMLDivElement | null>(null)
     const hasMore = useRef<boolean>(props.hasMore)
+    const loadMore = useRef<() => void>(props.loadMore)
 
     hasMore.current = props.hasMore
+    loadMore.current = props.loadMore
 
     useEffect(() => {
-        if (loadingTrigger.current != null) {
+        const element = loadingTrigger.current
+
+        if (element != null) {
             const intersectionObserver = new IntersectionObserver(entries => {
                 if (entries.length > 0) {
                     const entry = entries[0]
                     if (entry.isIntersecting && hasMore.current) {
-                        props.loadMore()
+                        loadMore.current()
                     }
                 }
             })
 
-            intersectionObserver.observe(loadingTrigger.current)
+            intersectionObserver.observe(element)
 
-            return () => {
-                if (loadingTrigger.current != null) {
-                    intersectionObserver.unobserve(loadingTrigger.current)
-                }
-            }
+            return () => intersectionObserver.disconnect()
         }
     }, []);
 

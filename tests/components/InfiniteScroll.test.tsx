@@ -1,12 +1,13 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
-import { intersectionObserverCallbacks } from "../setup"
+import { intersectionObserverCallbacks, intersectionObserverInstances } from "../setup"
 
 describe("InfiniteScroll", () => {
   beforeEach(() => {
-    // Clear the callbacks array before each test
+    // Clear the callbacks and instances arrays before each test
     intersectionObserverCallbacks.length = 0
+    intersectionObserverInstances.length = 0
   })
 
   test("should render children", () => {
@@ -157,7 +158,7 @@ describe("InfiniteScroll", () => {
     expect(loadMore).not.toHaveBeenCalled()
   })
 
-  test("should call unobserve on cleanup when unmounted", () => {
+  test("should disconnect the observer on cleanup when unmounted", () => {
     const loadMore = vi.fn()
     const { unmount } = render(
       <InfiniteScroll loadMore={loadMore} hasMore={true}>
@@ -166,16 +167,18 @@ describe("InfiniteScroll", () => {
     )
 
     // Verify IntersectionObserver was created
-    expect(intersectionObserverCallbacks.length).toBeGreaterThan(0)
+    expect(intersectionObserverInstances.length).toBeGreaterThan(0)
+
+    const observer = intersectionObserverInstances[intersectionObserverInstances.length - 1]
+    expect(observer.disconnect).not.toHaveBeenCalled()
 
     // Unmount the component to trigger cleanup
     unmount()
 
-    // The cleanup function should have been called
-    // Note: The actual unobserve call is internal to the IntersectionObserver mock
+    expect(observer.disconnect).toHaveBeenCalledTimes(1)
   })
 
-  test("should cleanup properly when ref is still valid", () => {
+  test("should observe the loading trigger and disconnect it on unmount", () => {
     const loadMore = vi.fn()
     const { unmount, container } = render(
       <InfiniteScroll loadMore={loadMore} hasMore={true}>
@@ -183,10 +186,40 @@ describe("InfiniteScroll", () => {
       </InfiniteScroll>
     )
 
-    // Verify component rendered with trigger div
-    expect(container.querySelector("div > div")).toBeInTheDocument()
+    // The sentinel is the last child of the scroll container
+    const sentinel = container.firstChild?.lastChild
 
-    // Unmount should cleanup without errors
-    expect(() => unmount()).not.toThrow()
+    const observer = intersectionObserverInstances[intersectionObserverInstances.length - 1]
+    expect(observer.observe).toHaveBeenCalledTimes(1)
+    expect(observer.observe).toHaveBeenCalledWith(sentinel)
+
+    unmount()
+
+    expect(observer.disconnect).toHaveBeenCalledTimes(1)
+  })
+
+  test("should call the latest loadMore callback after a rerender", () => {
+    const initialLoadMore = vi.fn()
+    const updatedLoadMore = vi.fn()
+    const { rerender } = render(
+      <InfiniteScroll loadMore={initialLoadMore} hasMore={true}>
+        <div>Content</div>
+      </InfiniteScroll>
+    )
+
+    rerender(
+      <InfiniteScroll loadMore={updatedLoadMore} hasMore={true}>
+        <div>Content</div>
+      </InfiniteScroll>
+    )
+
+    const callback = intersectionObserverCallbacks[intersectionObserverCallbacks.length - 1]
+    const mockEntry: Partial<IntersectionObserverEntry> = {
+      isIntersecting: true,
+    }
+    callback([mockEntry as IntersectionObserverEntry], {} as IntersectionObserver)
+
+    expect(initialLoadMore).not.toHaveBeenCalled()
+    expect(updatedLoadMore).toHaveBeenCalledTimes(1)
   })
 })
