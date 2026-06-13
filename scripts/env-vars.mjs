@@ -3,22 +3,36 @@ import { writeFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { DateTime } from "luxon"
 
-const getEnvVariables = async () => {
-  const simpleGit = SimpleGit()
+const getGitInformation = async () => {
+  try {
+    const simpleGit = SimpleGit()
 
-  const gitBranch = await simpleGit.branch()
-  const gitCommitHash = await simpleGit.revparse(["--short", "HEAD"])
+    const gitBranch = await simpleGit.branch()
+    const gitCommitHash = await simpleGit.revparse(["--short", "HEAD"])
+
+    return { branch: gitBranch.current, commit: gitCommitHash }
+  } catch (error) {
+    console.warn(
+      `Unable to determine git branch/commit (${error.message ?? error}). Falling back to placeholder values.`
+    )
+
+    return { branch: "unknown", commit: "unknown" }
+  }
+}
+
+const getEnvVariables = async () => {
+  const { branch, commit } = await getGitInformation()
 
   const timestamp = DateTime.now().toISO()
 
   return [
     {
       name: "VITE_GIT_BRANCH",
-      value: gitBranch.current,
+      value: branch,
     },
     {
       name: "VITE_GIT_COMMIT",
-      value: gitCommitHash,
+      value: commit,
     },
     {
       name: "VITE_BUILD_TIMESTAMP",
@@ -39,4 +53,7 @@ const main = async () => {
   await writeToEnvFile(envVariables)
 }
 
-main()
+main().catch(error => {
+  console.error(`Failed to generate .env file: ${error.message ?? error}`)
+  process.exitCode = 1
+})
