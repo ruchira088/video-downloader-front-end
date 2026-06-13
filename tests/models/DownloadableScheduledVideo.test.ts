@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest"
+import type { DownloadableScheduledVideo } from "~/models/DownloadableScheduledVideo"
 import { Downloadable } from "~/models/DownloadableScheduledVideo"
+import { ScheduledVideoDownload } from "~/models/ScheduledVideoDownload"
 import { DateTime } from "luxon"
 
 describe("Downloadable", () => {
@@ -74,5 +76,47 @@ describe("Downloadable", () => {
     }
 
     expect(() => Downloadable.parse(data)).toThrow()
+  })
+})
+
+describe("DownloadableScheduledVideo", () => {
+  test("should be the intersection of Downloadable and ScheduledVideoDownload", () => {
+    const downloadable = Downloadable.parse({
+      downloadedBytes: 1024000,
+      lastUpdatedAt: "2023-10-15T10:30:00Z",
+      downloadHistory: [100, 200, 300],
+    })
+
+    const scheduledVideoDownload = ScheduledVideoDownload.parse({
+      lastUpdatedAt: "2023-10-15T10:30:00Z",
+      scheduledAt: "2023-10-15T10:00:00Z",
+      videoMetadata: {
+        url: "https://example.com/video",
+        id: "video-123",
+        videoSite: "youtube",
+        title: "Test Video",
+        duration: { length: 300, unit: "seconds" },
+        size: 1024000,
+        thumbnail: {
+          id: "thumb-123",
+          createdAt: "2023-10-15T09:00:00Z",
+          path: "/path/to/thumb",
+          mediaType: "image/jpeg",
+          size: 1024,
+        },
+      },
+      status: "Active",
+      downloadedBytes: 1024000,
+    })
+
+    const downloadableScheduledVideo: DownloadableScheduledVideo = {
+      ...scheduledVideoDownload,
+      ...downloadable,
+    }
+
+    expect(downloadableScheduledVideo.downloadHistory).toEqual([100, 200, 300])
+    expect(downloadableScheduledVideo.videoMetadata.id).toBe("video-123")
+    expect(downloadableScheduledVideo.lastUpdatedAt).toBeInstanceOf(DateTime)
+    expect(downloadableScheduledVideo.scheduledAt).toBeInstanceOf(DateTime)
   })
 })

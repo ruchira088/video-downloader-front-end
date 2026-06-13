@@ -1,4 +1,4 @@
-import {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
+import type {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
 import {z} from "zod/v4"
 import {ZodDateTime, ZodOptional} from "~/types/Zod"
 
@@ -11,6 +11,4 @@ export const Downloadable = z.object({
 
 export type Downloadable = z.infer<typeof Downloadable>
 
-export const DownloadableScheduledVideo = Downloadable.and(ScheduledVideoDownload)
-
-export type DownloadableScheduledVideo = z.infer<typeof DownloadableScheduledVideo>
+export type DownloadableScheduledVideo = Downloadable & ScheduledVideoDownload

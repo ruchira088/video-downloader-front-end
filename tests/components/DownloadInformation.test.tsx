@@ -40,8 +40,8 @@ describe("DownloadInformation", () => {
 
     render(<DownloadInformation downloadableScheduledVideo={video} />)
 
-    // The humanReadableSize function uses kB format and outputs in separate elements
-    expect(screen.getByText(/1000\.00 kB/)).toBeInTheDocument()
+    // 1,000,000 B/s is exactly the MB boundary
+    expect(screen.getByText(/1\.00 MB/)).toBeInTheDocument()
     expect(screen.getByText(/\/s/)).toBeInTheDocument()
   })
 
@@ -83,7 +83,8 @@ describe("DownloadInformation", () => {
 
     render(<DownloadInformation downloadableScheduledVideo={video} />)
 
-    expect(screen.getByText(/1000\.00 B/)).toBeInTheDocument()
+    // 1000 B/s is exactly the kB boundary
+    expect(screen.getByText(/1\.00 kB/)).toBeInTheDocument()
     expect(screen.getByText(/\/s/)).toBeInTheDocument()
   })
 

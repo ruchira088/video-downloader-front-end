@@ -13,7 +13,7 @@ export abstract class Either<L, R> {
     try {
       return Right.of(fn())
     } catch (e) {
-      return Left.of(e as Error)
+      return Left.of(e instanceof Error ? e : new Error(String(e)))
     }
   }
 }

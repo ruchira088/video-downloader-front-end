@@ -139,6 +139,19 @@ describe("stringToNumberDecoder", () => {
     expect(result).toBeInstanceOf(Right)
     expect((result as Right<Error, number>).value).toBe(3)
   })
+
+  test("should return Left for non-numeric strings", () => {
+    const result = stringToNumberDecoder.decode("not a number")
+    expect(result).toBeInstanceOf(Left)
+    expect((result as Left<Error, number>).value).toBeInstanceOf(Error)
+    expect((result as Left<Error, number>).value.message).toContain("not a number")
+  })
+
+  test("should return Left for empty strings", () => {
+    const result = stringToNumberDecoder.decode("")
+    expect(result).toBeInstanceOf(Left)
+    expect((result as Left<Error, number>).value).toBeInstanceOf(Error)
+  })
 })
 
 describe("encodeMap", () => {

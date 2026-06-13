@@ -73,6 +73,51 @@ describe("ScheduledVideoDownload", () => {
     expect(result.errorInfo?.message).toBe("Download failed")
   })
 
+  test("should split stack trace on backslash-escaped newlines", () => {
+    const data = {
+      ...createValidData(),
+      status: "Error",
+      errorInfo: {
+        message: "Download failed",
+        details: "Connection timeout\\\nRetry failed\\\nGiving up",
+      },
+    }
+
+    const result = ScheduledVideoDownload.parse(data)
+
+    expect(result.errorInfo?.stackTrace).toEqual(["Connection timeout", "Retry failed", "Giving up"])
+  })
+
+  test("should split stack trace on plain newlines", () => {
+    const data = {
+      ...createValidData(),
+      status: "Error",
+      errorInfo: {
+        message: "Download failed",
+        details: "Connection timeout\nRetry failed\nGiving up",
+      },
+    }
+
+    const result = ScheduledVideoDownload.parse(data)
+
+    expect(result.errorInfo?.stackTrace).toEqual(["Connection timeout", "Retry failed", "Giving up"])
+  })
+
+  test("should split stack trace on CRLF newlines", () => {
+    const data = {
+      ...createValidData(),
+      status: "Error",
+      errorInfo: {
+        message: "Download failed",
+        details: "Connection timeout\r\nRetry failed",
+      },
+    }
+
+    const result = ScheduledVideoDownload.parse(data)
+
+    expect(result.errorInfo?.stackTrace).toEqual(["Connection timeout", "Retry failed"])
+  })
+
   test("should handle all scheduling statuses", () => {
     const statuses = ["Queued", "Completed", "Downloaded", "WorkersPaused", "Error", "Active", "Stale", "Acquired", "Paused", "Deleted"]
 
