@@ -7,6 +7,12 @@ import { ApplicationConfigurationProvider } from "~/providers/ApplicationConfigu
 import smallLogo from "~/images/small-logo.svg"
 import { initSentry } from "~/services/Sentry"
 
+// Initialize at module scope so module-evaluation, hydration, and first-render errors are
+// captured. The production build runs an SSR prerender pass over this module, so skip on the server.
+if (typeof window !== "undefined") {
+  initSentry()
+}
+
 export function meta(_args: Route.MetaArgs) {
   return [
     {title: "Video Downloader"},
@@ -46,10 +52,6 @@ export function Layout({children}: { children: ReactNode }) {
 }
 
 export default function App() {
-  useEffect(() => {
-    initSentry()
-  }, [])
-
   return (
     <ApplicationConfigurationProvider>
       <Outlet />
@@ -90,7 +92,12 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     stack = error.stack;
   }
 
-  captureException(error)
+  useEffect(() => {
+    // 404s aren't exceptions; report everything else once per error
+    if (!(isRouteErrorResponse(error) && error.status === 404)) {
+      captureException(error)
+    }
+  }, [error])
 
   return (
     <main className="error-screen">
