@@ -187,7 +187,7 @@ describe("AuthenticatedLayout", () => {
 
     await waitFor(() => {
       expect(removeAuthenticationToken).toHaveBeenCalled()
-      expect(mockNavigate).toHaveBeenCalledWith("/sign-in?redirect=/videos")
+      expect(mockNavigate).toHaveBeenCalledWith("/sign-in?redirect=%2Fvideos")
     })
     expect(getAuthenticatedUser).not.toHaveBeenCalled()
   })
