@@ -1,7 +1,7 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import Schedule from "~/pages/authenticated/schedule/Schedule"
-import { DateTime, Duration } from "luxon"
+import { DateTime, type DateTimeMaybeValid, Duration } from "luxon"
 import { FileResourceType } from "~/models/FileResource"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
 import { None } from "~/types/Option"
@@ -32,7 +32,7 @@ const createMockScheduledVideoDownload = () => ({
   },
   status: SchedulingStatus.Queued,
   downloadedBytes: 0,
-  completedAt: None.of<DateTime>(),
+  completedAt: None.of<DateTimeMaybeValid>(),
   errorInfo: null,
 })
 

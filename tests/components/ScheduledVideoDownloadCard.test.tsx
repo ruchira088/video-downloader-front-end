@@ -1,7 +1,7 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import ScheduledVideoDownloadCard from "~/pages/authenticated/downloading/scheduled-video-download-card/ScheduledVideoDownloadCard"
-import { DateTime, Duration } from "luxon"
+import { DateTime, type DateTimeMaybeValid, Duration } from "luxon"
 import { None, Some } from "~/types/Option"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
@@ -43,7 +43,7 @@ const createMockDownloadableScheduledVideo = (status: SchedulingStatus = Schedul
   },
   status,
   downloadedBytes: 500000000,
-  completedAt: None.of<DateTime>(),
+  completedAt: None.of<DateTimeMaybeValid>(),
   errorInfo: status === SchedulingStatus.Error ? { message: "Download failed", stackTrace: ["Connection timeout"] } : null,
   downloadSpeed: Some.of(1000000),
   downloadHistory: [100000, 200000, 300000],

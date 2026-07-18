@@ -2,7 +2,7 @@ import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, waitFor, fireEvent, act } from "@testing-library/react"
 import ScheduledVideos from "~/pages/authenticated/downloading/ScheduledVideos"
 import { createMemoryRouter, RouterProvider } from "react-router"
-import { DateTime, Duration } from "luxon"
+import { DateTime, type DateTimeMaybeValid, Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some, None } from "~/types/Option"
@@ -56,7 +56,7 @@ const createMockScheduledVideo = (id: string) => ({
   },
   status: SchedulingStatus.Active,
   downloadedBytes: 500000000,
-  completedAt: None.of<DateTime>(),
+  completedAt: None.of<DateTimeMaybeValid>(),
   errorInfo: null,
 })
 

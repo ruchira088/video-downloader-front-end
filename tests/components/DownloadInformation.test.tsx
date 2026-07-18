@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest"
 import { render, screen } from "@testing-library/react"
 import DownloadInformation from "~/pages/authenticated/downloading/scheduled-video-download-card/DownloadInformation"
-import { DateTime, Duration } from "luxon"
+import { DateTime, type DateTimeMaybeValid, Duration } from "luxon"
 import { None, Some } from "~/types/Option"
 import { FileResourceType } from "~/models/FileResource"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
@@ -28,7 +28,7 @@ const createMockDownloadableScheduledVideo = (downloadSpeed: number | null) => (
   },
   status: SchedulingStatus.Active,
   downloadedBytes: 500000000, // 500MB downloaded
-  completedAt: None.of<DateTime>(),
+  completedAt: None.of<DateTimeMaybeValid>(),
   errorInfo: null,
   downloadSpeed: downloadSpeed !== null ? Some.of(downloadSpeed) : None.of<number>(),
   downloadHistory: [],
