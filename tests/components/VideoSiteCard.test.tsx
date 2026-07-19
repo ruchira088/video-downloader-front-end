@@ -5,6 +5,7 @@ import VideoSiteCard from "~/components/video/video-site-card/VideoSiteCard"
 describe("VideoSiteCard", () => {
   describe("known video sites", () => {
     const knownSites = [
+      "local",
       "pornhub",
       "spankbang",
       "pornone",

@@ -2,6 +2,7 @@ import React, {type FC} from "react"
 
 import styles from "./VideoSiteCard.module.css"
 
+import local from "~/images/site-logos/local.png"
 import pornhub from "~/images/site-logos/porn-hub.png"
 import pornone from "~/images/site-logos/porn-one.png"
 import spankbang from "~/images/site-logos/spankbang.png"
@@ -27,6 +28,7 @@ const VideoSiteCard: FC<VideoSiteCardProps> = props =>
   )
   
 const videoSiteLogos: Record<string, string> = {
+  local,
   pornhub,
   spankbang,
   sxyprn,
