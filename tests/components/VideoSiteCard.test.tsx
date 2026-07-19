@@ -11,6 +11,7 @@ describe("VideoSiteCard", () => {
       "eporner",
       "xfreehd",
       "xhamster",
+      "xhamster2",
       "youtube",
       "xnxx",
       "youporn",

@@ -34,6 +34,7 @@ const videoSiteLogos: Record<string, string> = {
   eporner,
   xfreehd,
   xhamster,
+  xhamster2: xhamster,
   youtube,
   xnxx,
   youporn,
