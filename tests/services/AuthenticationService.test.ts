@@ -130,7 +130,7 @@ describe("AuthenticationService", () => {
 
       await getAuthenticatedUser()
 
-      expect(mockAxiosGet).toHaveBeenCalledWith("/authentication/user")
+      expect(mockAxiosGet).toHaveBeenCalledWith("/authentication/user", { skipUnauthenticatedRedirect: true })
     })
 
     test("should return parsed user", async () => {

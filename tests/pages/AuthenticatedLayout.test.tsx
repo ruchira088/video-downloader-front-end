@@ -74,8 +74,37 @@ describe("AuthenticatedLayout", () => {
 
     render(<RouterProvider router={router} />)
 
-    expect(screen.getByTestId("header")).toBeInTheDocument()
-    expect(screen.getByTestId("child")).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByTestId("header")).toBeInTheDocument()
+      expect(screen.getByTestId("child")).toBeInTheDocument()
+    })
+  })
+
+  test("should show a loading indicator and no children while the session check is pending", async () => {
+    const { getAuthenticationToken, getAuthenticatedUser } = await import(
+      "~/services/authentication/AuthenticationService"
+    )
+    vi.mocked(getAuthenticationToken).mockReturnValue(Some.of(createMockToken()))
+    vi.mocked(getAuthenticatedUser).mockReturnValue(new Promise(() => {}))
+
+    const router = createMemoryRouter([
+      {
+        path: "/",
+        element: <AuthenticatedLayout />,
+        children: [
+          {
+            index: true,
+            element: <div data-testid="child">Child Content</div>,
+          },
+        ],
+      },
+    ])
+
+    render(<RouterProvider router={router} />)
+
+    expect(screen.getByRole("progressbar")).toBeInTheDocument()
+    expect(screen.queryByTestId("header")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("child")).not.toBeInTheDocument()
   })
 
   test("should redirect to sign-in when not authenticated", async () => {
@@ -91,7 +120,7 @@ describe("AuthenticatedLayout", () => {
         children: [
           {
             index: true,
-            element: <div>Child</div>,
+            element: <div data-testid="child">Child</div>,
           },
         ],
       },
@@ -102,6 +131,7 @@ describe("AuthenticatedLayout", () => {
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith("/sign-in?redirect=%2Fvideos")
     })
+    expect(screen.queryByTestId("child")).not.toBeInTheDocument()
   })
 
   test("should include the encoded query string in the sign-in redirect", async () => {
