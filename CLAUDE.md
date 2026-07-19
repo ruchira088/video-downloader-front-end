@@ -46,6 +46,26 @@ Requires Node 24 (`engines.node: ^24.0.0`) and npm.
 
 **Styling** is SCSS modules (`*.module.scss`, co-located with components) plus MUI/Emotion.
 
+## Environments & credentials
+
+| Environment | Front-end | API |
+|-------------|-----------|-----|
+| Production | https://videos.ruchij.com | https://api.video.home.ruchij.com |
+| Dev/staging | https://dev.video.dev.ruchij.com | https://api.staging.video.dev.ruchij.com |
+
+- Sign-in credentials are in 1Password, readable via the `op` CLI: `op item list` to find the item (e.g. "Video Downloader - Prod"), then `op item get <id-or-name> --format json --reveal`.
+- The APIs allow credentialed CORS requests from localhost, so a local front-end pointed at a remote API (`VITE_API_URL=https://api.video.home.ruchij.com`) can sign in for real.
+- The localStorage auth marker is stored under the key `Authentication-Token` (JSON with `expiresAt`/`issuedAt`/`renewals`; the session itself lives in a cookie).
+
+## Verifying changes in a browser
+
+To verify a change end-to-end, build the app against a real API and drive it with headless Chromium:
+
+1. `VITE_API_URL=https://api.video.home.ruchij.com npm run build`
+2. Serve `build/client` with any static server that falls back to `index.html` for unknown paths (SPA routing).
+3. Drive it with Playwright (`playwright-core` + the Chromium cached under `~/Library/Caches/ms-playwright/`), signing in with the 1Password credentials.
+4. To distinguish SPA navigation from hard reloads (e.g. when verifying auth-redirect behavior), count Playwright `page.on("load")` events — an SPA transition fires none.
+
 ## Gotchas
 
 - **MUI / `react-transition-group` ESM resolution (Vite 8 / Vitest 4).** Externalized MUI triggers Node's ESM resolver to reject MUI's directory import of `react-transition-group/TransitionGroupContext`. Both the build and the tests bundle these packages via `ssr.noExternal`; the list lives in one place — `bundled-dependencies.ts` — imported by both `vite.config.ts` and `vitest.config.ts`. A new dependency with the same kind of directory-import problem just gets appended to that array.
