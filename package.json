@@ -1,6 +1,6 @@
 {
   "name": "video-downloader-front-end",
-  "version": "1.4.47",
+  "version": "1.4.48",
   "private": true,
   "type": "module",
   "engines": {
@@ -59,7 +59,7 @@
     "env-vars": "node scripts/env-vars.mjs",
     "lint": "eslint app tests --ext .ts,.tsx",
     "lint:fix": "eslint app tests --ext .ts,.tsx --fix",
-    "prepare": "git config core.hooksPath .githooks",
+    "prepare": "git config core.hooksPath .githooks || true",
     "start": "npm run env-vars && VITE_API_URL=https://api.video.home.ruchij.com react-router dev --host 0.0.0.0",
     "start:dev": "react-router dev --host 0.0.0.0",
     "start:local": "npm run env-vars && VITE_API_URL=https://api.localhost react-router dev",
