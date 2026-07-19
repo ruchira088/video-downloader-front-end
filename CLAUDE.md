@@ -71,6 +71,7 @@ To verify a change end-to-end, build the app against a real API and drive it wit
 - **MUI / `react-transition-group` ESM resolution (Vite 8 / Vitest 4).** Externalized MUI triggers Node's ESM resolver to reject MUI's directory import of `react-transition-group/TransitionGroupContext`. Both the build and the tests bundle these packages via `ssr.noExternal`; the list lives in one place — `bundled-dependencies.ts` — imported by both `vite.config.ts` and `vitest.config.ts`. A new dependency with the same kind of directory-import problem just gets appended to that array.
 - **ESLint:** unused vars/args are errors unless prefixed with `_`; empty `catch` blocks are allowed.
 - **Tests** run on jsdom. `tests/setup.ts` mocks `matchMedia`, `ResizeObserver`, and `IntersectionObserver` — it exports `intersectionObserverCallbacks` so tests can fire intersection events to drive infinite scroll. Services are mocked per-suite with `vi.mock`.
+- **Every commit auto-bumps the patch version** in `package.json` and `package-lock.json` via the checked-in `.githooks/pre-commit` hook (activated by the npm `prepare` script). Version churn in commits is expected; a manually staged version change suppresses the auto-bump.
 
 ## Pull requests
 

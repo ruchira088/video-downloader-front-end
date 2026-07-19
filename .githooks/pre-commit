@@ -1,0 +1,14 @@
+#!/bin/sh
+# Auto-bump the patch version in package.json and package-lock.json on every commit.
+# Skipped when the commit already changes the version (manual minor/major bumps win).
+# Caveats: `git commit --amend` bumps again (use --no-verify to avoid); merges,
+# rebases, and cherry-picks don't run pre-commit, so they never bump.
+
+set -e
+
+if git diff --cached -- package.json | grep -q '^[+-].*"version"'; then
+  exit 0
+fi
+
+npm version patch --no-git-tag-version >/dev/null
+git add package.json package-lock.json
