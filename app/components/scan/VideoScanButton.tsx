@@ -2,7 +2,7 @@ import React, {type FC, useEffect, useState} from "react"
 import {ScanStatus, VideoScan} from "~/models/VideoScan"
 import {None, Option, Some} from "~/types/Option"
 import {fetchVideoScanStatus, scanForVideos} from "~/services/video/VideoService"
-import {Button} from "@mui/material"
+import {Button, CircularProgress} from "@mui/material"
 
 type VideoScanButtonProps = {
   readonly className?: string
@@ -49,7 +49,13 @@ const VideoScanButton: FC<VideoScanButtonProps> = props => {
   const label = isScanInProgress ? "Scanning..." : "Scan For Videos"
 
   return (
-    <Button variant="contained" disabled={isScanInProgress} onClick={onClick} className={props.className}>
+    <Button
+      variant="contained"
+      disabled={isScanInProgress}
+      onClick={onClick}
+      className={props.className}
+      startIcon={isScanInProgress ? <CircularProgress size={16} color="inherit" /> : undefined}
+    >
       {label}
     </Button>
   )
