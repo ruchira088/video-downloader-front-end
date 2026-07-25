@@ -1,6 +1,5 @@
 import { reactRouter } from "@react-router/dev/vite"
 import { defineConfig } from "vite"
-import { reactRouterDevTools } from "react-router-devtools"
 import { bundledDependencies } from "./bundled-dependencies"
 
 export default defineConfig({
@@ -9,5 +8,5 @@ export default defineConfig({
   // `optimizeDeps` pre-bundles the same list for the dev server, whose SSR module runner
   // otherwise evaluates react-transition-group's CJS files as ESM ("exports is not defined").
   ssr: { noExternal: bundledDependencies, optimizeDeps: { include: bundledDependencies } },
-  plugins: [reactRouterDevTools(), reactRouter()]
+  plugins: [reactRouter()]
 });
