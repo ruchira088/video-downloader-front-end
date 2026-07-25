@@ -71,47 +71,45 @@ const LoginForm: FC<LoginFormProps> = props => {
         <p className={styles.subtitle}>Sign in to your account</p>
       </div>
       <form className={styles.loginFormBody} onSubmit={onSubmit} noValidate>
-        <div>
-          <TextField
-            error={errors.email != null}
-            value={email}
-            onChange={onChange(setEmail)}
-            label="Email"
-            helperText={errors.email}
-            type="email"
-            name="email"
-            autoComplete="email"
-            className={styles.textField}
-            fullWidth
-          />
-          <TextField
-            error={errors.password != null}
-            value={password}
-            onChange={onChange(setPassword)}
-            helperText={errors.password}
-            label="Password"
-            type={showPassword ? "text" : "password"}
-            name="password"
-            autoComplete="current-password"
-            className={styles.textField}
-            fullWidth
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                )
-              }
-            }}
-          />
-        </div>
+        <TextField
+          error={errors.email != null}
+          value={email}
+          onChange={onChange(setEmail)}
+          label="Email"
+          helperText={errors.email}
+          type="email"
+          name="email"
+          autoComplete="email"
+          className={styles.textField}
+          fullWidth
+        />
+        <TextField
+          error={errors.password != null}
+          value={password}
+          onChange={onChange(setPassword)}
+          helperText={errors.password}
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          name="password"
+          autoComplete="current-password"
+          className={styles.textField}
+          fullWidth
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }
+          }}
+        />
         <div className={styles.loginButton}>
           <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>
             {isSubmitting ? "Logging In..." : "Login"}
