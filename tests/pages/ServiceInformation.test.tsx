@@ -257,7 +257,7 @@ describe("ServiceInformation", () => {
 
     expect(screen.getByText("Performing health checks...")).toBeInTheDocument()
 
-    vi.advanceTimersByTime(1000)
+    await act(async () => { vi.advanceTimersByTime(1000) })
 
     await waitFor(() => {
       expect(screen.queryByText("Performing health checks...")).not.toBeInTheDocument()

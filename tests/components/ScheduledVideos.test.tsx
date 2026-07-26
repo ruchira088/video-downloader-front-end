@@ -168,7 +168,7 @@ describe("ScheduledVideos", () => {
     })
 
     const errorEvent = new Event("error")
-    onError!(errorEvent)
+    await act(async () => { onError!(errorEvent) })
 
     expect(consoleErrorSpy).toHaveBeenCalledWith("Scheduled video download stream error", errorEvent)
 
@@ -249,10 +249,12 @@ describe("ScheduledVideos", () => {
     })
 
     // Simulate download progress update
-    onDownloadProgress!({
-      videoId: "video-1",
-      bytes: 600000000,
-      updatedAt: DateTime.now().plus({ seconds: 5 }),
+    await act(async () => {
+      onDownloadProgress!({
+        videoId: "video-1",
+        bytes: 600000000,
+        updatedAt: DateTime.now().plus({ seconds: 5 }),
+      })
     })
 
     // Component should update without error
@@ -281,10 +283,12 @@ describe("ScheduledVideos", () => {
 
     // Simulate download progress with older timestamp than the scheduled video's lastUpdatedAt
     // This should trigger the branch that returns existing downloadHistory (line 41)
-    onDownloadProgress!({
-      videoId: "video-1",
-      bytes: 400000000,
-      updatedAt: DateTime.fromISO("2023-10-14T10:00:00Z"), // Older than scheduledVideo
+    await act(async () => {
+      onDownloadProgress!({
+        videoId: "video-1",
+        bytes: 400000000,
+        updatedAt: DateTime.fromISO("2023-10-14T10:00:00Z"), // Older than scheduledVideo
+      })
     })
 
     // Component should still display without changes
@@ -313,10 +317,12 @@ describe("ScheduledVideos", () => {
 
     // Simulate download progress for a video that doesn't exist in state
     // This should trigger the None case (line 91)
-    onDownloadProgress!({
-      videoId: "non-existent-video",
-      bytes: 100000,
-      updatedAt: DateTime.now(),
+    await act(async () => {
+      onDownloadProgress!({
+        videoId: "non-existent-video",
+        bytes: 100000,
+        updatedAt: DateTime.now(),
+      })
     })
 
     // Component should still display the existing video
@@ -344,9 +350,11 @@ describe("ScheduledVideos", () => {
     })
 
     // Simulate video being removed when completed
-    onScheduledVideoDownloadUpdate!({
-      ...createMockScheduledVideo("video-1"),
-      status: SchedulingStatus.Completed,
+    await act(async () => {
+      onScheduledVideoDownloadUpdate!({
+        ...createMockScheduledVideo("video-1"),
+        status: SchedulingStatus.Completed,
+      })
     })
 
     await waitFor(() => {
@@ -477,9 +485,11 @@ describe("ScheduledVideos", () => {
     })
 
     // Simulate video being removed when deleted
-    onScheduledVideoDownloadUpdate!({
-      ...createMockScheduledVideo("video-1"),
-      status: SchedulingStatus.Deleted,
+    await act(async () => {
+      onScheduledVideoDownloadUpdate!({
+        ...createMockScheduledVideo("video-1"),
+        status: SchedulingStatus.Deleted,
+      })
     })
 
     await waitFor(() => {
@@ -512,9 +522,11 @@ describe("ScheduledVideos", () => {
     })
 
     // Simulate status update to Paused (non-terminal status)
-    onScheduledVideoDownloadUpdate!({
-      ...createMockScheduledVideo("video-1"),
-      status: SchedulingStatus.Paused,
+    await act(async () => {
+      onScheduledVideoDownloadUpdate!({
+        ...createMockScheduledVideo("video-1"),
+        status: SchedulingStatus.Paused,
+      })
     })
 
     await waitFor(() => {

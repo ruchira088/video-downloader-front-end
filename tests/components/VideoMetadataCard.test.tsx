@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import VideoMetadataCard from "~/components/video/video-metadata-card/VideoMetadataCard"
 import { DateTime, Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
@@ -178,6 +178,9 @@ describe("VideoMetadataCard", () => {
 
     fireEvent.mouseOver(container)
     fireEvent.mouseLeave(container)
+
+    // Hovering kicks off the snapshot fetch; flush it so its state update lands inside act().
+    await act(async () => {})
 
     // Component should reset without errors
     expect(thumbnail).toBeInTheDocument()

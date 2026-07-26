@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 import { z } from "zod/v4"
 import { DateTime, Duration } from "luxon"
 import { ZodDuration, ZodDateTime, ZodOptional, zodParse } from "~/types/Zod"
@@ -171,15 +171,24 @@ describe("zodParse", () => {
   })
 
   test("should throw on invalid data", () => {
+    // zodParse logs the error before rethrowing; silence it and assert it happened.
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
     const invalidInput = { id: 123, count: "not a number" }
 
     expect(() => zodParse(TestSchema, invalidInput)).toThrow()
+    expect(consoleError).toHaveBeenCalled()
+
+    consoleError.mockRestore()
   })
 
   test("should throw on missing fields", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
     const partialInput = { id: "abc123" }
 
     expect(() => zodParse(TestSchema, partialInput)).toThrow()
+    expect(consoleError).toHaveBeenCalled()
+
+    consoleError.mockRestore()
   })
 
   test("should work with primitive types", () => {

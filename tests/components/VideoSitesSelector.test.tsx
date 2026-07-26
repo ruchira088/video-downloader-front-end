@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import VideoSitesSelector from "~/pages/authenticated/videos/components/VideoSitesSelector"
 import React from "react"
 
@@ -15,8 +15,13 @@ describe("VideoSitesSelector", () => {
     vi.clearAllMocks()
   })
 
+  // The component fetches the available site list on mount; flush that promise so its state
+  // update is wrapped in act() rather than landing after the test ends.
+  const flushMountFetch = () => act(async () => {})
+
   test("should render with label", async () => {
     render(<VideoSitesSelector videoSites={[]} onChange={vi.fn()} />)
+    await flushMountFetch()
 
     expect(screen.getByLabelText("Sites")).toBeInTheDocument()
   })
@@ -33,6 +38,7 @@ describe("VideoSitesSelector", () => {
 
   test("should display selected sites as chips", async () => {
     render(<VideoSitesSelector videoSites={["youtube", "vimeo"]} onChange={vi.fn()} />)
+    await flushMountFetch()
 
     expect(screen.getByText("youtube")).toBeInTheDocument()
     expect(screen.getByText("vimeo")).toBeInTheDocument()
@@ -68,10 +74,11 @@ describe("VideoSitesSelector", () => {
     expect(onChange).toHaveBeenCalled()
   })
 
-  test("should apply custom className", () => {
+  test("should apply custom className", async () => {
     const { container } = render(
       <VideoSitesSelector videoSites={[]} onChange={vi.fn()} className="custom-class" />
     )
+    await flushMountFetch()
 
     expect(container.querySelector(".custom-class")).toBeInTheDocument()
   })

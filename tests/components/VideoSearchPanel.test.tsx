@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor, act } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import VideoSearchPanel from "~/pages/authenticated/playlists/components/VideoSearchPanel"
 import React from "react"
@@ -74,7 +74,7 @@ describe("VideoSearchPanel", () => {
         />
       )
 
-      vi.advanceTimersByTime(300)
+      await act(async () => { vi.advanceTimersByTime(300) })
 
       await waitFor(() => {
         expect(screen.getByRole("progressbar")).toBeInTheDocument()
@@ -101,7 +101,7 @@ describe("VideoSearchPanel", () => {
         />
       )
 
-      vi.advanceTimersByTime(300)
+      await act(async () => { vi.advanceTimersByTime(300) })
 
       await waitFor(() => {
         expect(screen.getByText("First Video")).toBeInTheDocument()
@@ -127,7 +127,7 @@ describe("VideoSearchPanel", () => {
         />
       )
 
-      vi.advanceTimersByTime(300)
+      await act(async () => { vi.advanceTimersByTime(300) })
 
       await waitFor(() => {
         expect(screen.queryByText("First Video")).not.toBeInTheDocument()
@@ -152,7 +152,7 @@ describe("VideoSearchPanel", () => {
         />
       )
 
-      vi.advanceTimersByTime(300)
+      await act(async () => { vi.advanceTimersByTime(300) })
 
       await waitFor(() => {
         expect(screen.getByText("All videos already in playlist")).toBeInTheDocument()
@@ -176,7 +176,7 @@ describe("VideoSearchPanel", () => {
         />
       )
 
-      vi.advanceTimersByTime(300)
+      await act(async () => { vi.advanceTimersByTime(300) })
 
       await waitFor(() => {
         expect(screen.getByText("Click + to add videos to playlist")).toBeInTheDocument()
@@ -230,7 +230,7 @@ describe("VideoSearchPanel", () => {
         />
       )
 
-      vi.advanceTimersByTime(300)
+      await act(async () => { vi.advanceTimersByTime(300) })
 
       await waitFor(() => {
         expect(consoleSpy).toHaveBeenCalled()

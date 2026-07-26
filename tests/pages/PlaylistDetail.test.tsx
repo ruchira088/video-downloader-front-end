@@ -128,6 +128,9 @@ describe("PlaylistDetail", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.spyOn(window, "confirm").mockReturnValue(true)
+    // The Add Videos panel paginates through searchVideos as soon as it mounts; without a
+    // default the mock returns undefined and the panel's `.then` on it throws.
+    mockSearchVideos.mockResolvedValue({ results: [], pageNumber: 0, pageSize: 50, searchTerm: None.of() })
   })
 
   describe("Loading State", () => {
@@ -917,6 +920,11 @@ describe("PlaylistDetail", () => {
       })
 
       resolveUpload!(createMockPlaylist())
+
+      // Await the post-upload state so the resulting update happens inside act().
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /add album art/i })).toBeInTheDocument()
+      })
     })
   })
 

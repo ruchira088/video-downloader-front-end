@@ -61,7 +61,11 @@ describe("root", () => {
 
   describe("Layout", () => {
     test("should render children within layout structure", () => {
-      // Layout renders <html> which can't be a child of <div>, so we just test it renders
+      // Layout renders <html>, which React cannot legally nest inside the <div> container that
+      // Testing Library mounts into, so it logs an invalid-nesting error. Swallow that one
+      // message rather than let it pollute the suite output, and fail on anything else.
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+
       render(
         <Layout>
           <div data-testid="child">Child Content</div>
@@ -70,6 +74,13 @@ describe("root", () => {
 
       // The Layout should render without error, children should appear
       expect(screen.getByTestId("child")).toBeInTheDocument()
+
+      const unexpectedErrors = consoleError.mock.calls.filter(
+        ([message]) => typeof message !== "string" || !message.includes("cannot be a child of")
+      )
+      expect(unexpectedErrors).toStrictEqual([])
+
+      consoleError.mockRestore()
     })
   })
 
