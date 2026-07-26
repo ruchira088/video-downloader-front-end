@@ -1,4 +1,4 @@
-import { type DependencyList, useEffect, useRef, useState } from "react"
+import { useCallback, type DependencyList, useEffect, useRef, useState } from "react"
 
 interface PaginatedFetch {
   readonly isLoading: boolean
@@ -50,12 +50,12 @@ export function usePaginatedFetch<T>(
   fetchPageRef.current = fetchPage
   onResultsRef.current = onResults
 
-  const setLoading = (value: boolean) => {
+  const setLoading = useCallback((value: boolean) => {
     isLoadingRef.current = value
     setIsLoading(value)
-  }
+  }, [])
 
-  const loadPage = async (page: number) => {
+  const loadPage = useCallback(async (page: number) => {
     if (fetchedPages.current.has(page)) return
 
     // Capture the controller and page set used for this request so that, after
@@ -92,9 +92,16 @@ export function usePaginatedFetch<T>(
         setLoading(false)
       }
     }
-  }
+  }, [pageSize, setLoading])
 
   // Initial load, and reset whenever the reset dependencies change.
+  //
+  // `resetDeps` is supplied by the caller, so it cannot be an array literal here and the
+  // dependencies cannot be verified statically — the same limitation applies to any hook that
+  // forwards a DependencyList. The effect deliberately re-runs only on the caller's reset keys;
+  // `loadPage` and `setLoading` are stable (useCallback) and the setState calls below are
+  // guarded by the abort-controller identity check, so they cannot chain updates.
+  /* oxlint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     abortController.current.abort()
     const controller = new AbortController()
@@ -112,11 +119,12 @@ export function usePaginatedFetch<T>(
 
     return () => controller.abort()
   }, resetDeps)
+  /* oxlint-enable react-hooks/exhaustive-deps */
 
   // Load the next page whenever the page number advances.
   useEffect(() => {
     void loadPage(pageNumber)
-  }, [pageNumber])
+  }, [pageNumber, loadPage])
 
   const loadMore = () => {
     if (!isLoadingRef.current && hasMoreRef.current) {

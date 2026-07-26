@@ -132,12 +132,14 @@ const VideoWatch: FC<VideoWatchProps> = props => {
   const { safeMode } = useApplicationConfiguration()
   const navigate = useNavigate()
 
+  const timestampSeconds = props.timestamp.as("seconds")
+
   useEffect(() => {
     void Option.fromNullable(videoPlayer.current)
       .forEach((videoElement: HTMLVideoElement) => {
-        videoElement.currentTime = props.timestamp.as("seconds")
+        videoElement.currentTime = timestampSeconds
     })
-  }, [props.timestamp.as("seconds")])
+  }, [timestampSeconds])
 
   const handleLoadedMetadata = () => {
     void Option.fromNullable(videoPlayer.current)

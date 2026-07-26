@@ -49,10 +49,7 @@ export const ApplicationConfigurationProvider: FC<ApplicationConfigurationContex
       document.body.setAttribute("data-theme", appConfig.theme)
       void localStorageConfigurationService.setApplicationConfiguration(appConfig)
     })
-  }, [
-    applicationConfiguration.map(({ safeMode }) => safeMode).toNullable(),
-    applicationConfiguration.map(({ theme }) => theme).toNullable()
-  ])
+  }, [applicationConfiguration])
 
   if (applicationConfiguration.isEmpty()) {
     return null

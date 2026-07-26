@@ -81,7 +81,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     })
   )
 
-  const loadPlaylist = async () => {
+  const loadPlaylist = useCallback(async () => {
     setIsLoading(true)
     try {
       const data = await fetchPlaylistById(playlistId)
@@ -89,11 +89,11 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [playlistId])
 
   useEffect(() => {
     void loadPlaylist()
-  }, [playlistId])
+  }, [loadPlaylist])
 
   const displayedVideos = playlist
     .map(p => (isShuffled ? shuffledVideos : p.videos))

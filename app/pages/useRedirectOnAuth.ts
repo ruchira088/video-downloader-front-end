@@ -65,7 +65,7 @@ export const useRedirectOnAuth = (redirectWhenAuthenticated: boolean): boolean =
         }
       )
     }
-  }, [])
+  }, [navigate, redirectWhenAuthenticated])
 
   return isVerified
 }

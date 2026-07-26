@@ -42,7 +42,7 @@ const Preview: FC<PreviewProps> = props => {
       cancelled = true
       clearTimeout(timeoutId)
     }
-  }, [props.url])
+  }, [props.url, isEmptyUrl])
 
   return (
     <div>
