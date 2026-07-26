@@ -133,14 +133,14 @@ const VideoWatch: FC<VideoWatchProps> = props => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    Option.fromNullable(videoPlayer.current)
+    void Option.fromNullable(videoPlayer.current)
       .forEach((videoElement: HTMLVideoElement) => {
         videoElement.currentTime = props.timestamp.as("seconds")
     })
   }, [props.timestamp.as("seconds")])
 
   const handleLoadedMetadata = () => {
-    Option.fromNullable(videoPlayer.current)
+    void Option.fromNullable(videoPlayer.current)
       .forEach((videoElement: HTMLVideoElement) => {
         setResolution({
           width: videoElement.videoWidth,
@@ -157,7 +157,7 @@ const VideoWatch: FC<VideoWatchProps> = props => {
   const onDeleteVideo = async (deleteFile: boolean): Promise<void> => {
     await deleteVideo(props.video.videoMetadata.id, deleteFile)
     setDeleteDialogVisibility(false)
-    navigate("/")
+    void navigate("/")
   }
 
   const title = translate(props.video.videoMetadata.title, safeMode)

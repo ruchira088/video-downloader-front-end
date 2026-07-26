@@ -1,0 +1,44 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "react"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "no-empty": ["error", { "allowEmptyCatch": true }],
+    "no-empty-pattern": "warn",
+    "typescript/no-explicit-any": "error",
+    "typescript/prefer-as-const": "warn",
+    // Static methods carry no `this` binding risk, so passing `Option.fromNullable` or
+    // Luxon's `DateTime.fromISO` as a callback is safe.
+    "typescript/unbound-method": ["error", { "ignoreStatic": true }],
+    "typescript/explicit-module-boundary-types": "off",
+    "typescript/ban-types": "off",
+    "typescript/no-empty-object-type": "off",
+    "react/rules-of-hooks": "error",
+    // The codebase intentionally uses []-deps effects and ref-based workarounds in places;
+    // keep this as a warning rather than mass-editing effect dependencies.
+    "react/exhaustive-deps": "warn",
+    // React 19 with the automatic JSX runtime ("jsx": "react-jsx"), so React need not be in scope.
+    "react/react-in-jsx-scope": "off",
+    // The hand-rolled Option/Either types expose `.map`, which returns a single element rather
+    // than a list, so every hit in this codebase is a false positive.
+    "react/jsx-key": "off"
+  },
+  "ignorePatterns": ["node_modules", "build", "cdk-deploy", ".react-router"],
+  "overrides": [
+    {
+      "files": ["tests/**/*.ts", "tests/**/*.tsx"],
+      "rules": {
+        "typescript/no-explicit-any": "off",
+        "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+        // Tests deliberately exercise the `children` prop as an API surface.
+        "react/no-children-prop": "off",
+        // `vi.mocked(obj.method)` is a type-level helper that never invokes the method, so the
+        // usual unbound-`this` hazard does not apply.
+        "typescript/unbound-method": "off"
+      }
+    }
+  ]
+}

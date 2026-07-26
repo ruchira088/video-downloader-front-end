@@ -39,7 +39,7 @@ export function encodeMap<A, B, C>(encoder: Encoder<A, B>, f: (value: B) => C): 
 export function simpleStringEncoder<A>(): Encoder<A, string> {
   return {
     encode(value: A): string {
-      return `${value}`
+      return String(value)
     },
   }
 }

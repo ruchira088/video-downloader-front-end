@@ -57,8 +57,8 @@ const VideoPage = (props: Route.ComponentProps) => {
       }
     }
 
-    fetchVideo()
-    fetchVideoSnapshots()
+    void fetchVideo()
+    void fetchVideoSnapshots()
 
     return () => {
       cancelled = true

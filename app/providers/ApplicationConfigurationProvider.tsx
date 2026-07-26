@@ -33,7 +33,7 @@ export const ApplicationConfigurationProvider: FC<ApplicationConfigurationContex
   })
 
   useEffect(() => {
-    localStorageConfigurationService.getApplicationConfiguration()
+    void localStorageConfigurationService.getApplicationConfiguration()
       .then(applicationConfiguration =>
         applicationConfiguration.fold<Promise<ApplicationConfiguration>>(
           () => localStorageConfigurationService.getDefaultApplicationConfiguration(),
@@ -45,9 +45,9 @@ export const ApplicationConfigurationProvider: FC<ApplicationConfigurationContex
   }, [])
 
   useEffect(() => {
-    applicationConfiguration.forEach(appConfig => {
+    void applicationConfiguration.forEach(appConfig => {
       document.body.setAttribute("data-theme", appConfig.theme)
-      localStorageConfigurationService.setApplicationConfiguration(appConfig)
+      void localStorageConfigurationService.setApplicationConfiguration(appConfig)
     })
   }, [
     applicationConfiguration.map(({ safeMode }) => safeMode).toNullable(),

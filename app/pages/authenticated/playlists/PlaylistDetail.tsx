@@ -92,7 +92,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
   }
 
   useEffect(() => {
-    loadPlaylist()
+    void loadPlaylist()
   }, [playlistId])
 
   const displayedVideos = playlist
@@ -130,7 +130,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
         newVideos.map(v => v.videoMetadata.id)
       )
     } catch {
-      loadPlaylist()
+      void loadPlaylist()
     }
   }
 
@@ -147,7 +147,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     if (window.confirm("Are you sure you want to delete this playlist?")) {
       try {
         await deletePlaylist(playlistId)
-        navigate("/playlists")
+        void navigate("/playlists")
       } catch (error) {
         console.error("Failed to delete playlist", error)
       }
@@ -177,7 +177,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
       const updatedPlaylist = await addVideoToPlaylist(currentPlaylist, videoId)
       setPlaylist(Some.of(updatedPlaylist))
       if (isShuffled) {
-        Option.fromNullable(
+        void Option.fromNullable(
           updatedPlaylist.videos.find(v => v.videoMetadata.id === videoId)
         ).forEach(addedVideo => setShuffledVideos(prev => [...prev, addedVideo]))
       }

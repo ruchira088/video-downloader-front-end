@@ -13,7 +13,7 @@ const LogoutButton = () => {
       // The local session is cleared even when the server-side logout fails
       console.error("Server-side logout failed", error)
     } finally {
-      navigate("/sign-in")
+      void navigate("/sign-in")
     }
   }
 

@@ -105,7 +105,7 @@ export function usePaginatedFetch<T>(
     setLoading(false)
 
     if (pageNumber === 0) {
-      loadPage(0)
+      void loadPage(0)
     } else {
       setPageNumber(0)
     }
@@ -115,7 +115,7 @@ export function usePaginatedFetch<T>(
 
   // Load the next page whenever the page number advances.
   useEffect(() => {
-    loadPage(pageNumber)
+    void loadPage(pageNumber)
   }, [pageNumber])
 
   const loadMore = () => {

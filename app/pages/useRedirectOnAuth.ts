@@ -36,10 +36,10 @@ export const useRedirectOnAuth = (redirectWhenAuthenticated: boolean): boolean =
     }
 
     if (redirectWhenAuthenticated) {
-      maybeUnexpiredToken.forEach(async () => {
+      void maybeUnexpiredToken.forEach(async () => {
         try {
           await getAuthenticatedUser()
-          navigate("/")
+          void navigate("/")
         } catch {
           // User not authenticated, stay on the current public page.
         }
@@ -51,7 +51,7 @@ export const useRedirectOnAuth = (redirectWhenAuthenticated: boolean): boolean =
       maybeUnexpiredToken.fold(
         () => {
           console.debug("Redirecting to sign-in page.")
-          navigate(redirectUrl)
+          void navigate(redirectUrl)
         },
         async () => {
           try {
@@ -60,7 +60,7 @@ export const useRedirectOnAuth = (redirectWhenAuthenticated: boolean): boolean =
           } catch {
             removeAuthenticationToken()
             console.debug("Removing authentication token and redirecting to sign-in page.")
-            navigate(redirectUrl)
+            void navigate(redirectUrl)
           }
         }
       )

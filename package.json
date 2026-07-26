@@ -1,13 +1,12 @@
 {
   "name": "video-downloader-front-end",
-  "version": "1.4.55",
+  "version": "1.4.56",
   "private": true,
   "type": "module",
   "engines": {
     "node": "^24.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@react-router/dev": "^8.3.0",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.1",
@@ -17,14 +16,12 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitest/coverage-v8": "^4.1.5",
-    "eslint": "^10.2.1",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react-hooks": "^7.1.1",
     "jsdom": "^29.0.2",
+    "oxlint": "^1.75.0",
+    "oxlint-tsgolint": "^7.0.2001",
     "sass-embedded": "^1.89.2",
     "simple-git": "^3.28.0",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.53.0",
+    "typescript": "^7.0.2",
     "vite": "^8.0.11",
     "vitest": "^4.1.5"
   },
@@ -51,8 +48,8 @@
     "build": "npm run env-vars && react-router build",
     "ci:checks": "npm run typecheck && npm run lint && npm run test:coverage",
     "env-vars": "node scripts/env-vars.mjs",
-    "lint": "eslint app tests --ext .ts,.tsx",
-    "lint:fix": "eslint app tests --ext .ts,.tsx --fix",
+    "lint": "oxlint app tests --type-aware",
+    "lint:fix": "oxlint app tests --type-aware --fix",
     "prepare": "git config core.hooksPath .githooks || true",
     "start": "npm run env-vars && VITE_API_URL=https://api.video.home.ruchij.com react-router dev --host 0.0.0.0",
     "start:dev": "react-router dev --host 0.0.0.0",

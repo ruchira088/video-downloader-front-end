@@ -51,7 +51,7 @@ const Videos = () => {
   function onChangeSearchParams<A, B extends VideoSearchParamName>(
     videoSearchParameter: VideoSearchParameter<A, B>,
   ): (value: A) => void {
-    return onChange(videoSearchParameter.name, videoSearchParameter.encoder.encode)
+    return onChange(videoSearchParameter.name, value => videoSearchParameter.encoder.encode(value))
   }
 
   function onChange<A>(name: string, encoder: (value: A) => string): (value: A) => void {

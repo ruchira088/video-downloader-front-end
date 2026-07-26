@@ -242,7 +242,7 @@ const ServiceInformation = () => {
   }
 
   useEffect(() => {
-    fetchHealthCheckDetails()
+    void fetchHealthCheckDetails()
     const intervalId = setInterval(fetchHealthCheckDetails, 30_000)
 
     return () => clearInterval(intervalId)

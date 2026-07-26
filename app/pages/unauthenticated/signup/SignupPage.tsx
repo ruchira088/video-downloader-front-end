@@ -9,7 +9,7 @@ const SignupPage = () => {
   const navigate = useNavigate()
 
   const onSignup = () => {
-    navigate("/")
+    void navigate("/")
   }
 
   return (

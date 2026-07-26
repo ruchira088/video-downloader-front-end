@@ -53,7 +53,7 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
   }
 
   const onMouseLeave = () => {
-    intervalTimeoutRef.current.forEach(clearInterval)
+    void intervalTimeoutRef.current.forEach(clearInterval)
     intervalTimeoutRef.current = None.of()
     setIsHovering(false)
     setIndex(0)
@@ -61,7 +61,7 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
 
   useEffect(() => {
     return () => {
-      intervalTimeoutRef.current.forEach(clearInterval)
+      void intervalTimeoutRef.current.forEach(clearInterval)
     }
   }, [])
 

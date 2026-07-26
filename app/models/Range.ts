@@ -12,7 +12,7 @@ export const Range = <A>(type: z.ZodType<A>) => z.object({
 export type Range<A> = z.infer<ReturnType<typeof Range<A>>>
 
 export function toNumberArray<A>(range: Range<A>, maximum: A, encoder: Encoder<A, number>): number[] {
-  return [encoder.encode(range.min), range.max.map(encoder.encode).getOrElse(() => encoder.encode(maximum))]
+  return [encoder.encode(range.min), range.max.map(value => encoder.encode(value)).getOrElse(() => encoder.encode(maximum))]
 }
 
 export function fromNumberArray<A>(
@@ -45,7 +45,7 @@ export function rangeDecoder<A>(decoder: Decoder<string, A>): Decoder<string, Ra
       const eitherMin: Either<Error, A> = decoder.decode(minString)
 
       const maybeEitherMax: Option<Either<Error, A>> =
-        Option.fromNullable(maxString).map(value => value.trim()).filter(value => value !== "").map(decoder.decode)
+        Option.fromNullable(maxString).map(value => value.trim()).filter(value => value !== "").map(value => decoder.decode(value))
 
       return eitherMin.flatMap(min =>
         maybeEitherMax.fold<Either<Error, Range<A>>>(

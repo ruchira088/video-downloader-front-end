@@ -12,7 +12,7 @@ const VideoScanButton: FC<VideoScanButtonProps> = props => {
   const [scanStatus, setScanStatus] = useState<Option<ScanStatus>>(None.of())
 
   useEffect(() => {
-    retrieveScanStatus()
+    void retrieveScanStatus()
   }, [])
 
   const isScanInProgress = scanStatus.map((status) => status === ScanStatus.InProgress).getOrElse(() => false)

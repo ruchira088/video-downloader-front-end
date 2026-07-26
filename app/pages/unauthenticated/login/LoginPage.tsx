@@ -15,7 +15,7 @@ const LoginPage = () => {
   const onAuthenticate = () => {
     const redirect: Option<string> = Option.fromNullable(searchParams.get(REDIRECT_QUERY_PARAMETER))
 
-    navigate(safeRedirectPath(redirect))
+    void navigate(safeRedirectPath(redirect))
   }
 
   return (

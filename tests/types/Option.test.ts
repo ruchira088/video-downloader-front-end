@@ -118,7 +118,7 @@ describe("Some", () => {
   describe("forEach", () => {
     test("should execute the function with the value", () => {
       let captured: number | null = null
-      someValue.forEach((x) => {
+      void someValue.forEach((x) => {
         captured = x
       })
       expect(captured).toBe(42)
@@ -217,7 +217,7 @@ describe("None", () => {
   describe("forEach", () => {
     test("should not execute the function", () => {
       let called = false
-      noneValue.forEach(async () => {
+      void noneValue.forEach(async () => {
         called = true
         return 100
       })

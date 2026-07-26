@@ -61,13 +61,13 @@ describe("SchedulingStatus", () => {
       test("should return 'Pause' when transitioning to Paused from Active", () => {
         const result = getActionName(SchedulingStatus.Active, SchedulingStatus.Paused)
         expect(result).toBeInstanceOf(Some)
-        result.forEach((name) => expect(name).toBe("Pause"))
+        void result.forEach((name) => expect(name).toBe("Pause"))
       })
 
       test("should return 'Pause' when transitioning to Paused from Queued", () => {
         const result = getActionName(SchedulingStatus.Queued, SchedulingStatus.Paused)
         expect(result).toBeInstanceOf(Some)
-        result.forEach((name) => expect(name).toBe("Pause"))
+        void result.forEach((name) => expect(name).toBe("Pause"))
       })
     })
 
@@ -75,7 +75,7 @@ describe("SchedulingStatus", () => {
       test("should return 'Retry' when transitioning from Error to Queued", () => {
         const result = getActionName(SchedulingStatus.Error, SchedulingStatus.Queued)
         expect(result).toBeInstanceOf(Some)
-        result.forEach((name) => expect(name).toBe("Retry"))
+        void result.forEach((name) => expect(name).toBe("Retry"))
       })
     })
 
@@ -83,13 +83,13 @@ describe("SchedulingStatus", () => {
       test("should return 'Resume' when transitioning from Paused to Queued", () => {
         const result = getActionName(SchedulingStatus.Paused, SchedulingStatus.Queued)
         expect(result).toBeInstanceOf(Some)
-        result.forEach((name) => expect(name).toBe("Resume"))
+        void result.forEach((name) => expect(name).toBe("Resume"))
       })
 
       test("should return 'Resume' for any non-Error to Queued transition", () => {
         const result = getActionName(SchedulingStatus.Active, SchedulingStatus.Queued)
         expect(result).toBeInstanceOf(Some)
-        result.forEach((name) => expect(name).toBe("Resume"))
+        void result.forEach((name) => expect(name).toBe("Resume"))
       })
     })
 

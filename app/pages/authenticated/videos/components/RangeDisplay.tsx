@@ -30,7 +30,7 @@ function RangeDisplay<A>(props: RangeDisplayProps<A>) {
     <div className={props.className}>
       <span>{props.printer.print(props.range.min)}</span>
       <span> - </span>
-      <span>{props.range.max.map(props.printer.print).getOrElse(() => "Max")}</span>
+      <span>{props.range.max.map(value => props.printer.print(value)).getOrElse(() => "Max")}</span>
     </div>
   )
 }

@@ -70,7 +70,7 @@ describe("ConfigurationService", () => {
       const result = await service.getApplicationConfiguration()
 
       expect(result.isEmpty()).toBe(false)
-      result.forEach(config => {
+      void result.forEach(config => {
         expect(config.theme).toBe(Theme.Dark)
         expect(config.safeMode).toBe(true)
       })
