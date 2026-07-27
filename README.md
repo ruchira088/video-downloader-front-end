@@ -20,8 +20,8 @@ A modern, full-featured React web application for downloading and managing video
 
 | Category | Technologies |
 |----------|-------------|
-| **Framework** | React 19, React Router 7 (SPA mode) |
-| **Language** | TypeScript 6 |
+| **Framework** | React 19, React Router 8 (SPA mode) |
+| **Language** | TypeScript 7 |
 | **Build Tool** | Vite 8 |
 | **UI Library** | Material-UI (MUI) 9 |
 | **Styling** | Sass/SCSS, Emotion |
@@ -30,8 +30,9 @@ A modern, full-featured React web application for downloading and managing video
 | **Date/Time** | Luxon |
 | **Drag & Drop** | dnd-kit |
 | **Error Monitoring** | Sentry |
-| **Testing** | Vitest, jsdom |
-| **Deployment** | Docker, AWS CDK |
+| **Linting** | oxlint (type-aware, via tsgolint) |
+| **Testing** | Vitest 4, jsdom |
+| **Deployment** | Docker, AWS CDK 2 |
 
 ## Prerequisites
 
@@ -134,6 +135,9 @@ video-downloader-front-end/
 ├── scripts/                # Build scripts
 ├── vite.config.ts          # Vite configuration
 ├── vitest.config.ts        # Vitest configuration
+├── react-router.config.ts  # React Router configuration (ssr: false)
+├── bundled-dependencies.ts # Packages bundled by both Vite and Vitest
+├── .oxlintrc.json          # oxlint rules
 └── tsconfig.json           # TypeScript configuration
 ```
 
@@ -197,9 +201,13 @@ Infrastructure is managed via AWS CDK in the `cdk-deploy/` directory.
 
 ```bash
 cd cdk-deploy
-npm install
-npm run cdk deploy
+npm ci
+npm run deploy
 ```
+
+The CDK app is also written in TypeScript 7. It has no `ts-node` dependency — `cdk.json`
+runs `bin/cdk-deploy.ts` through Node 24's native type stripping, so Node 24 is required here
+too. See [`cdk-deploy/README.md`](cdk-deploy/README.md) for the available scripts.
 
 ## Architecture
 

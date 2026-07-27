@@ -26,7 +26,7 @@ Requires Node 24 (`engines.node: ^24.0.0`) and npm.
 
 ## Architecture
 
-**SPA on React Router 7 framework mode.** `react-router.config.ts` sets `ssr: false`, so this builds as a client-side SPA (the build still runs an SSR pass to prerender `index.html`). Routes are declared explicitly in `app/routes.ts` (not file-based) under two layout groups — `AuthenticatedLayout` and `UnauthenticatedLayout`. `app/root.tsx` wraps the app in `ApplicationConfigurationProvider` and initializes Sentry. Path alias `~/*` maps to `app/*`.
+**SPA on React Router 8 framework mode.** `react-router.config.ts` sets `ssr: false`, so this builds as a client-side SPA (the build still runs an SSR pass to prerender `index.html`). Routes are declared explicitly in `app/routes.ts` (not file-based) under two layout groups — `AuthenticatedLayout` and `UnauthenticatedLayout`. `app/root.tsx` wraps the app in `ApplicationConfigurationProvider` and initializes Sentry. Path alias `~/*` maps to `app/*`.
 
 **Functional `Option`/`Either` types are pervasive and hand-rolled** (`app/types/Option.ts`, `app/types/Either.ts`) — not a library. Nullable values are wrapped with `Option.fromNullable` / `Some.of` / `None.of` and consumed via `.map`/`.fold`/`.flatMap`/`.getOrElse`/`.toNullable`/`.forEach`. Match this style rather than introducing raw null checks.
 
@@ -72,6 +72,16 @@ To verify a change end-to-end, build the app against a real API and drive it wit
 - **Linting is oxlint** (`.oxlintrc.json`), not ESLint — TypeScript 7 ships no JS compiler API, so typescript-eslint cannot run at all. Unused vars/args are errors unless prefixed with `_`; empty `catch` blocks are allowed. `react/jsx-key` and `react/react-in-jsx-scope` are off deliberately (the `Option.map` idiom returns one element rather than a list, and the automatic JSX runtime is in use). Type-aware rules are **on** — `npm run lint` passes `--type-aware`, which runs tsgolint (the tsgo-based type checker) and so needs `oxlint-tsgolint` installed; it costs ~0.7s versus ~0.05s without. `no-floating-promises` is the rule this trips most: `Option.forEach` is typed `Promise<A | void> | A` regardless of whether the callback is async, so deliberate fire-and-forget statements — `Option.forEach(...)`, `navigate(...)`, async loaders in effects — carry an explicit `void` prefix. `typescript/unbound-method` uses `ignoreStatic` and is off for `tests/**`, where `vi.mocked(obj.method)` is the standard mocking idiom. `npm run lint` is currently at **zero findings** — `react/exhaustive-deps` is satisfied everywhere except the reset effect in `usePaginatedFetch`, which forwards a caller-supplied `DependencyList` and so is locally disabled with an explanation.
 - **Tests** run on jsdom. `tests/setup.ts` mocks `matchMedia`, `ResizeObserver`, and `IntersectionObserver` — it exports `intersectionObserverCallbacks` so tests can fire intersection events to drive infinite scroll. Services are mocked per-suite with `vi.mock`.
 - **Every commit auto-bumps the patch version** in `package.json` and `package-lock.json` via the checked-in `.githooks/pre-commit` hook (activated by the npm `prepare` script). Version churn in commits is expected; a manually staged version change suppresses the auto-bump.
+
+## Documentation
+
+- **Whenever a dependency version changes, update the README files in the same change.** Both
+  `README.md` (Tech Stack table, Prerequisites, AWS Deployment) and `cdk-deploy/README.md`
+  (Requirements table) state versions explicitly, so a major upgrade, a Node bump, or a tool swap
+  leaves them wrong unless they are edited alongside `package.json`. The same applies to version
+  and tooling claims in this file. Take the numbers from what is actually installed
+  (`node -p "require('./node_modules/<pkg>/package.json').version"`) rather than from the
+  semver range in `package.json`.
 
 ## Pull requests
 
