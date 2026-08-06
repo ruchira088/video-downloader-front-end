@@ -1,6 +1,6 @@
 import { reactRouter } from "@react-router/dev/vite"
 import { defineConfig } from "vite"
-import { bundledDependencies } from "./bundled-dependencies"
+import { bundledDependencies } from "./bundled-dependencies.ts"
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },

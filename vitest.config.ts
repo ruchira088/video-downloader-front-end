@@ -1,5 +1,5 @@
 import { defineConfig } from "vitest/config"
-import { bundledDependencies } from "./bundled-dependencies"
+import { bundledDependencies } from "./bundled-dependencies.ts"
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
