@@ -43,6 +43,8 @@ const VideoPage = (props: Route.ComponentProps) => {
       }
     }
 
+    // Snapshots are supplementary: a failure here leaves the gallery empty rather than
+    // taking down a video that loaded perfectly well.
     const fetchVideoSnapshots = async () => {
       try {
         const snapshots = await fetchVideoSnapshotsByVideoId(videoId)
@@ -50,10 +52,8 @@ const VideoPage = (props: Route.ComponentProps) => {
         if (!cancelled) {
           setVideoSnapshots(snapshots)
         }
-      } catch {
-        if (!cancelled) {
-          setHasError(true)
-        }
+      } catch (error) {
+        console.error("Failed to load video snapshots", error)
       }
     }
 

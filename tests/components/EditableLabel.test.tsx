@@ -107,7 +107,7 @@ describe("EditableLabel", () => {
       })
     })
 
-    test("should stay in edit mode and log the error when save fails", async () => {
+    test("should stay in edit mode and report the error when save fails", async () => {
       const user = userEvent.setup()
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
       const saveError = new Error("Save failed")
@@ -119,7 +119,7 @@ describe("EditableLabel", () => {
       await user.click(screen.getByRole("button", { name: /save/i }))
 
       await waitFor(() => {
-        expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to update text", saveError)
+        expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to save the new title", saveError)
       })
       expect(screen.getByRole("textbox")).toBeInTheDocument()
       expect(screen.getByRole("textbox")).toHaveValue("Test Title")

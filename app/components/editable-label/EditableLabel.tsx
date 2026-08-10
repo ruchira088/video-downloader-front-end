@@ -1,6 +1,7 @@
 import React, { useState } from "react"
 import styles from "./EditableLabel.module.css"
 import { TextField } from "@mui/material"
+import { useNotification } from "~/providers/NotificationProvider"
 
 const ReadModeLabel = ({ textValue, enabledEditMode }: { textValue: string; enabledEditMode: () => void }) => (
   <div className={styles.readModeLabel}>
@@ -30,6 +31,7 @@ const EditableTextField = ({
 const EditableLabel = ({ textValue, onUpdateText }: { textValue: string; onUpdateText: (text: string) => Promise<void> }) => {
   const [draftText, setDraftText] = useState<string>("")
   const [editMode, setEditMode] = useState(false)
+  const { notifyError } = useNotification()
 
   const enableEditMode = () => {
     setDraftText(textValue)
@@ -41,7 +43,7 @@ const EditableLabel = ({ textValue, onUpdateText }: { textValue: string; onUpdat
   const onSaveClick = (updatedText: string) =>
     onUpdateText(updatedText)
       .then(() => setEditMode(false))
-      .catch((error) => console.error("Failed to update text", error))
+      .catch((error) => notifyError("Failed to save the new title", error))
 
   return (
     <>

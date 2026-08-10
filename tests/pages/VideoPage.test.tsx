@@ -110,15 +110,20 @@ describe("VideoPage", () => {
     expect(screen.queryByTestId("video-watch")).not.toBeInTheDocument()
   })
 
-  test("shows an error message when the snapshots fetch fails", async () => {
+  test("still renders the video when only the snapshots fetch fails", async () => {
     mockFetchVideoById.mockResolvedValue(buildVideo("video-123", "My Video"))
     mockFetchVideoSnapshots.mockRejectedValue(new Error("snapshots failed"))
 
     renderVideoPage("video-123", "/video/video-123")
 
     await waitFor(() => {
-      expect(screen.getByText("Unable to load video")).toBeInTheDocument()
+      expect(screen.getByTestId("video-watch")).toBeInTheDocument()
     })
+
+    // Snapshots are supplementary, so their failure must not take down a video that loaded.
+    expect(screen.getByTestId("title")).toHaveTextContent("My Video")
+    expect(screen.getByTestId("snapshot-count")).toHaveTextContent("0")
+    expect(screen.queryByText("Unable to load video")).not.toBeInTheDocument()
   })
 
   test("resets and shows fresh data when the videoId changes", async () => {

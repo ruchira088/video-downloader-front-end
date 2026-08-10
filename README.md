@@ -28,6 +28,7 @@ A modern, full-featured React web application for downloading and managing video
 | **HTTP Client** | Axios |
 | **Validation** | Zod 4 |
 | **Date/Time** | Luxon |
+| **Immutable Data** | Immutable.js 5 |
 | **Drag & Drop** | dnd-kit |
 | **Error Monitoring** | Sentry |
 | **Linting** | oxlint (type-aware, via tsgolint) |

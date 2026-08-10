@@ -81,7 +81,7 @@ const renderWithRouter = () => {
     },
   ])
 
-  return render(<RouterProvider router={router} />)
+  return { router, ...render(<RouterProvider router={router} />) }
 }
 
 describe("Videos", () => {
@@ -263,6 +263,101 @@ describe("Videos", () => {
     await waitFor(() => {
       // Verify searchVideos was called after the initial mount and after the change
       expect(searchVideos).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  test("should issue a single search for a burst of keystrokes", async () => {
+    const { searchVideos } = await import("~/services/video/VideoService")
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(searchVideos).toHaveBeenCalledTimes(1)
+    })
+
+    const searchInput = screen.getByLabelText("Search videos")
+
+    // Typing must not cost one request per keystroke; only the settled term is searched.
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: "h" } })
+      fireEvent.change(searchInput, { target: { value: "ho" } })
+      fireEvent.change(searchInput, { target: { value: "holi" } })
+    })
+
+    await waitFor(() => {
+      expect(searchVideos).toHaveBeenCalledTimes(2)
+    })
+
+    const searchTermArgument = vi.mocked(searchVideos).mock.calls[1][0]
+    expect(searchTermArgument.getOrElse(() => "")).toBe("holi")
+  })
+
+  test("should show typed text immediately, before the search is issued", async () => {
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Search videos")).toBeInTheDocument()
+    })
+
+    const searchInput = screen.getByLabelText("Search videos")
+
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: "holiday" } })
+    })
+
+    expect(searchInput).toHaveValue("holiday")
+  })
+
+  test("should replace rather than push history entries while searching", async () => {
+    const { searchVideos } = await import("~/services/video/VideoService")
+    const { router } = renderWithRouter()
+
+    await waitFor(() => {
+      expect(searchVideos).toHaveBeenCalledTimes(1)
+    })
+
+    const searchInput = screen.getByLabelText("Search videos")
+
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: "holiday" } })
+    })
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe("?search-term=holiday")
+    })
+
+    // Going back must not merely undo one keystroke's worth of query string: the search
+    // replaced the entry, so there is nothing behind it to return to.
+    await act(async () => {
+      await router.navigate(-1)
+    })
+
+    expect(router.state.location.search).toBe("?search-term=holiday")
+  })
+
+  test("should drop the query parameter when the search is cleared", async () => {
+    const { router } = renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Search videos")).toBeInTheDocument()
+    })
+
+    const searchInput = screen.getByLabelText("Search videos")
+
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: "holiday" } })
+    })
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe("?search-term=holiday")
+    })
+
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: "" } })
+    })
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe("")
     })
   })
 

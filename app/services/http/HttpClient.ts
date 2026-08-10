@@ -1,6 +1,14 @@
 import axios, { type AxiosInstance } from "axios"
 import { apiConfiguration } from "~/services/ApiConfiguration"
 import { removeAuthenticationToken } from "../authentication/AuthenticationService"
+import { None, Option } from "~/types/Option"
+
+/**
+ * The HTTP status carried by a rejected request, when there is one. `None` covers both
+ * non-HTTP failures (network, timeout, cancellation) and non-axios errors.
+ */
+export const httpStatusCode = (error: unknown): Option<number> =>
+  axios.isAxiosError(error) ? Option.fromNullable(error.response?.status) : None.of()
 
 declare module "axios" {
   export interface AxiosRequestConfig {

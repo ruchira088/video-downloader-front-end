@@ -7,6 +7,7 @@ import VideoCard from "~/components/video/video-card/VideoCard"
 import Helmet from "~/components/helmet/Helmet"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
 import { usePaginatedFetch } from "~/components/infinite-scroll/usePaginatedFetch"
+import { useNotification } from "~/providers/NotificationProvider"
 
 import styles from "./Duplicates.module.scss"
 
@@ -18,6 +19,7 @@ type DuplicateGroupEntry = {
 }
 
 const Duplicates = () => {
+  const { notifyError } = useNotification()
   const [groups, setGroups] = useState<DuplicateGroupEntry[]>([])
   const loadedGroupIds = useRef(new Set<string>())
 
@@ -47,7 +49,7 @@ const Duplicates = () => {
     try {
       await deleteVideo(videoId, true)
     } catch (error) {
-      console.error(error)
+      notifyError("Failed to delete the video", error)
       return
     }
 

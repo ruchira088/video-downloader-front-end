@@ -36,7 +36,9 @@ import {
   removeAlbumArt
 } from "~/services/playlist/PlaylistService"
 import { imageUrl } from "~/services/asset/AssetService"
+import { httpStatusCode } from "~/services/http/HttpClient"
 import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
+import { useNotification } from "~/providers/NotificationProvider"
 import Helmet from "~/components/helmet/Helmet"
 import EditableLabel from "~/components/editable-label/EditableLabel"
 import PlaylistVideoCard from "./components/PlaylistVideoCard"
@@ -45,6 +47,8 @@ import PlaylistPlayer from "./components/PlaylistPlayer"
 import type { Route } from "./+types/PlaylistDetail"
 
 import styles from "./PlaylistDetail.module.scss"
+
+type LoadFailure = "not-found" | "error"
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const shuffled = [...array]
@@ -58,11 +62,13 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 const PlaylistDetail = (props: Route.ComponentProps) => {
   const navigate = useNavigate()
   const { safeMode } = useApplicationConfiguration()
+  const { notifyError } = useNotification()
   const playlistId = props.params.playlistId
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [playlist, setPlaylist] = useState<Option<Playlist>>(None.of())
   const [isLoading, setIsLoading] = useState(true)
+  const [loadFailure, setLoadFailure] = useState<Option<LoadFailure>>(None.of())
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isShuffled, setIsShuffled] = useState(false)
@@ -83,21 +89,48 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
 
   const loadPlaylist = useCallback(async () => {
     setIsLoading(true)
+    setLoadFailure(None.of())
     try {
       const data = await fetchPlaylistById(playlistId)
       setPlaylist(Some.of(data))
+    } catch (error) {
+      // Without this the promise rejects unhandled and the fallback below claims "not found"
+      // for what may well be a network or server failure. A 404 really is "not found" and is
+      // reported inline; anything else is a failure worth a notification and a retry.
+      const isNotFound = !httpStatusCode(error).filter(status => status === 404).isEmpty()
+
+      setLoadFailure(Some.of(isNotFound ? "not-found" : "error"))
+
+      if (!isNotFound) {
+        notifyError("Failed to load the playlist", error)
+      }
     } finally {
       setIsLoading(false)
     }
-  }, [playlistId])
+  }, [playlistId, notifyError])
 
   useEffect(() => {
     void loadPlaylist()
   }, [loadPlaylist])
 
+  // Playback order: the shuffled order when shuffling, otherwise the playlist order.
+  // The card list below always renders the playlist order, so the two are only the same
+  // list when unshuffled — anything tying a card to the player must go via video id.
   const displayedVideos = playlist
     .map(p => (isShuffled ? shuffledVideos : p.videos))
     .getOrElse(() => [])
+
+  const currentlyPlayingVideoId: Option<string> = isPlaying
+    ? Option.fromNullable(displayedVideos[currentIndex]).map(video => video.videoMetadata.id)
+    : None.of()
+
+  const playVideo = (videoId: string) => {
+    const index = displayedVideos.findIndex(video => video.videoMetadata.id === videoId)
+
+    if (index !== -1) {
+      handlePlayFromIndex(index)
+    }
+  }
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
@@ -129,7 +162,8 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
         playlistId,
         newVideos.map(v => v.videoMetadata.id)
       )
-    } catch {
+    } catch (error) {
+      notifyError("Failed to reorder the playlist", error)
       void loadPlaylist()
     }
   }
@@ -139,7 +173,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
       await updatePlaylist(playlistId, title)
       setPlaylist(prev => prev.map(p => ({ ...p, title })))
     } catch (error) {
-      console.error("Failed to update playlist title", error)
+      notifyError("Failed to rename the playlist", error)
     }
   }
 
@@ -149,7 +183,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
         await deletePlaylist(playlistId)
         void navigate("/playlists")
       } catch (error) {
-        console.error("Failed to delete playlist", error)
+        notifyError("Failed to delete the playlist", error)
       }
     }
   }
@@ -165,7 +199,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
         setShuffledVideos(prev => prev.filter(v => v.videoMetadata.id !== videoId))
       }
     } catch (error) {
-      console.error("Failed to remove video from playlist", error)
+      notifyError("Failed to remove the video from the playlist", error)
     }
   }
 
@@ -182,7 +216,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
         ).forEach(addedVideo => setShuffledVideos(prev => [...prev, addedVideo]))
       }
     } catch (error) {
-      console.error("Failed to add video to playlist", error)
+      notifyError("Failed to add the video to the playlist", error)
     }
   }
 
@@ -195,7 +229,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
       const updatedPlaylist = await uploadAlbumArt(playlistId, file)
       setPlaylist(Some.of(updatedPlaylist))
     } catch (error) {
-      console.error("Failed to upload album art", error)
+      notifyError("Failed to upload the album art", error)
     } finally {
       setIsUploadingAlbumArt(false)
       if (fileInputRef.current) fileInputRef.current.value = ""
@@ -207,7 +241,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
       const updatedPlaylist = await removeAlbumArt(playlistId)
       setPlaylist(Some.of(updatedPlaylist))
     } catch (error) {
-      console.error("Failed to remove album art", error)
+      notifyError("Failed to remove the album art", error)
     }
   }
 
@@ -219,15 +253,20 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
   }
 
   const handleShuffle = () => {
-    if (isShuffled) {
-      setIsShuffled(false)
-      setShuffledVideos([])
-    } else {
-      const videos = playlist.map(p => p.videos).getOrElse(() => [])
-      setIsShuffled(true)
-      setShuffledVideos(shuffleArray(videos))
-    }
-    setCurrentIndex(0)
+    const videos = playlist.map(p => p.videos).getOrElse(() => [])
+    const nextPlaybackOrder = isShuffled ? videos : shuffleArray(videos)
+
+    setIsShuffled(!isShuffled)
+    setShuffledVideos(isShuffled ? [] : nextPlaybackOrder)
+
+    // Toggling shuffle re-indexes the playback order, so follow the video that is
+    // playing into its new position instead of jumping back to the top.
+    setCurrentIndex(
+      currentlyPlayingVideoId
+        .map(videoId => nextPlaybackOrder.findIndex(video => video.videoMetadata.id === videoId))
+        .filter(index => index !== -1)
+        .getOrElse(() => 0)
+    )
   }
 
   const handlePlayFromIndex = useCallback((index: number) => {
@@ -377,8 +416,10 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
                         video={video}
                         index={index}
                         onRemove={() => handleRemoveVideo(video.videoMetadata.id)}
-                        onPlay={() => handlePlayFromIndex(index)}
-                        isCurrentlyPlaying={isPlaying && currentIndex === index}
+                        onPlay={() => playVideo(video.videoMetadata.id)}
+                        isCurrentlyPlaying={
+                          currentlyPlayingVideoId.toDefined() === video.videoMetadata.id
+                        }
                       />
                     ))}
                   </div>
@@ -414,7 +455,8 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     ))
     .getOrElse(() => (
       <div className={styles.errorContainer}>
-        <p>Playlist not found</p>
+        <p>{loadFailure.toDefined() === "error" ? "Unable to load this playlist" : "Playlist not found"}</p>
+        {loadFailure.toDefined() === "error" && <Button onClick={() => void loadPlaylist()}>Retry</Button>}
         <Button onClick={() => navigate("/playlists")}>
           Back to Playlists
         </Button>

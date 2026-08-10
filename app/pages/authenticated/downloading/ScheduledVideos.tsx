@@ -21,6 +21,7 @@ import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVid
 import {SchedulingStatus} from "~/models/SchedulingStatus"
 import {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
 import Helmet from "~/components/helmet/Helmet"
+import {useNotification} from "~/providers/NotificationProvider"
 
 const DOWNLOAD_HISTORY_SIZE = 10
 const PAGE_SIZE = 50
@@ -44,6 +45,8 @@ const gatherDownloadHistory =
   }
 
 const ScheduledVideos = () => {
+  const {notifyError} = useNotification()
+
   const [downloadableScheduledVideos, setDownloadableScheduledVideos] =
     useState(Map<string, DownloadableScheduledVideo>())
 
@@ -120,24 +123,36 @@ const ScheduledVideos = () => {
     try {
       await retryFailedScheduledVideos()
     } catch (error) {
-      console.error(error)
+      notifyError("Failed to retry the failed downloads", error)
     } finally {
       setDisableRetry(false)
     }
   }
 
-  const onDelete = (videoId: string) => () => deleteScheduledVideoById(videoId)
+  // Both handlers absorb their own failures: the card wires some of them straight to an
+  // onClick, so an uncaught rejection would otherwise be invisible to the user.
+  const onDelete = (videoId: string) => async () => {
+    try {
+      await deleteScheduledVideoById(videoId)
+    } catch (error) {
+      notifyError("Failed to delete the scheduled download", error)
+    }
+  }
 
   const onUpdateStatus = (videoId: string) => async (schedulingStatus: SchedulingStatus) => {
-    const scheduledVideoDownload = await updateSchedulingStatus(videoId, schedulingStatus)
+    try {
+      const scheduledVideoDownload = await updateSchedulingStatus(videoId, schedulingStatus)
 
-    setDownloadableScheduledVideos((downloadableScheduledVideos) =>
-      downloadableScheduledVideos.set(videoId, {
-        ...scheduledVideoDownload,
-        downloadSpeed: None.of(),
-        downloadHistory: []
-      })
-    )
+      setDownloadableScheduledVideos((downloadableScheduledVideos) =>
+        downloadableScheduledVideos.set(videoId, {
+          ...scheduledVideoDownload,
+          downloadSpeed: None.of(),
+          downloadHistory: []
+        })
+      )
+    } catch (error) {
+      notifyError("Failed to update the download status", error)
+    }
   }
 
 

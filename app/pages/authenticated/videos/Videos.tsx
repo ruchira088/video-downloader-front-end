@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { searchVideos } from "~/services/video/VideoService"
 import { Video } from "~/models/Video"
 import { type SortBy } from "~/models/SortBy"
@@ -16,8 +16,10 @@ import {
   VideoSitesSearchParam
 } from "./components/VideoSearchParams"
 import { Range } from "~/models/Range"
-import { Link, useSearchParams } from "react-router"
+import { Link, type NavigateOptions, useSearchParams } from "react-router"
 import type { Option } from "~/types/Option"
+import { maybeString } from "~/utils/StringUtils"
+import { useDebouncedValue } from "~/hooks/useDebouncedValue"
 import VideoCard from "~/components/video/video-card/VideoCard"
 
 import styles from "./Videos.module.scss"
@@ -27,6 +29,7 @@ import type { Ordering } from "~/models/Ordering"
 import Helmet from "~/components/helmet/Helmet"
 
 const PAGE_SIZE = 50
+const SEARCH_DEBOUNCE_MS = 350
 
 const Videos = () => {
   const [queryParams, setQueryParams] = useSearchParams()
@@ -39,6 +42,17 @@ const Videos = () => {
   const sizeRange: Range<number> = useParsedSearchParam(queryParams, SizeRangeSearchParam)
   const ordering: Ordering = useParsedSearchParam(queryParams, OrderingSearchParam)
 
+  // The text field is driven locally and only written to the URL once typing settles, so a
+  // search costs one request and one history entry instead of one of each per keystroke.
+  const searchTermValue = searchTerm.getOrElse(() => "")
+  const [searchInput, setSearchInput] = useState(searchTermValue)
+  const debouncedSearchInput = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS)
+
+  // Adopt the URL's value when it changes from outside the field (back/forward, a shared link).
+  useEffect(() => {
+    setSearchInput(searchTermValue)
+  }, [searchTermValue])
+
   const { isLoading, hasMore, loadMore } = usePaginatedFetch<Video>(
     (pageNumber, signal) =>
       searchVideos(searchTerm, durationRange, sizeRange, videoSites, pageNumber, PAGE_SIZE, sortBy, ordering, signal)
@@ -50,24 +64,55 @@ const Videos = () => {
 
   function onChangeSearchParams<A, B extends VideoSearchParamName>(
     videoSearchParameter: VideoSearchParameter<A, B>,
+    navigateOptions?: NavigateOptions
   ): (value: A) => void {
-    return onChange(videoSearchParameter.name, value => videoSearchParameter.encoder.encode(value))
+    return onChange(
+      videoSearchParameter.name,
+      value => videoSearchParameter.encoder.encode(value),
+      navigateOptions
+    )
   }
 
-  function onChange<A>(name: string, encoder: (value: A) => string): (value: A) => void {
+  function onChange<A>(
+    name: string,
+    encoder: (value: A) => string,
+    navigateOptions?: NavigateOptions
+  ): (value: A) => void {
     return (value: A) => {
-      queryParams.set(name, encoder(value))
-      setQueryParams(queryParams)
+      // Copy rather than mutate: `queryParams` is router-owned state, and the parsed values
+      // above are memoised on its identity, so mutating it in place hides the change.
+      const updatedQueryParams = new URLSearchParams(queryParams)
+      const encodedValue = encoder(value)
+
+      if (encodedValue === "") {
+        updatedQueryParams.delete(name)
+      } else {
+        updatedQueryParams.set(name, encodedValue)
+      }
+
+      setQueryParams(updatedQueryParams, navigateOptions)
     }
   }
+
+  // Searching replaces the current entry: typing a query should not bury the previous page
+  // under one history entry per settled keystroke.
+  const onSearchTermChange = onChangeSearchParams(SearchTermSearchParam, { replace: true })
+
+  useEffect(() => {
+    if (debouncedSearchInput !== searchTermValue) {
+      onSearchTermChange(maybeString(debouncedSearchInput))
+    }
+    // Guarded by the equality check above, so re-running on an unstable `onSearchTermChange`
+    // identity is a no-op rather than a loop.
+  }, [debouncedSearchInput, searchTermValue, onSearchTermChange])
 
   return (
     <div className={styles.videosPage}>
       <Helmet title="Videos"/>
       <VideoSearch
         videoTitles={videos.map((video) => video.videoMetadata.title).slice(0, 10)}
-        searchTerm={searchTerm}
-        onSearchTermChange={onChangeSearchParams(SearchTermSearchParam)}
+        searchTerm={maybeString(searchInput)}
+        onSearchTermChange={(value: Option<string>) => setSearchInput(value.getOrElse(() => ""))}
         sortBy={sortBy}
         onSortByChange={onChangeSearchParams(SortBySearchParam)}
         durationRange={durationRange}

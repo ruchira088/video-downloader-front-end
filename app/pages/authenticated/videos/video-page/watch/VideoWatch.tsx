@@ -19,6 +19,7 @@ import { Option } from "~/types/Option"
 import { translate } from "~/services/sanitize/SanitizationService"
 import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
 import { useNavigate } from "react-router"
+import { useNotification } from "~/providers/NotificationProvider"
 
 type VideoDeleteDialogProps = {
   readonly isVisible: boolean
@@ -29,6 +30,7 @@ type VideoDeleteDialogProps = {
 
 const VideoDeleteDialog: FC<VideoDeleteDialogProps> = props => {
   const [deleteFile, setDeleteFile] = useState<boolean>(false)
+  const { notifyError } = useNotification()
 
   return (
     <Dialog open={props.isVisible} onClose={props.onClose}>
@@ -46,7 +48,7 @@ const VideoDeleteDialog: FC<VideoDeleteDialogProps> = props => {
           onClick={() =>
             props.onDelete(deleteFile)
               .then(() => setDeleteFile(false))
-              .catch((error) => console.error(error))
+              .catch((error) => notifyError("Failed to delete the video", error))
           }
         >
           Delete

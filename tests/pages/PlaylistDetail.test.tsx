@@ -7,6 +7,7 @@ import React from "react"
 import { DateTime, Duration } from "luxon"
 import { FileResourceType, type FileResource } from "~/models/FileResource"
 import { None } from "~/types/Option"
+import { NotificationProvider } from "~/providers/NotificationProvider"
 
 vi.mock("~/services/playlist/PlaylistService", () => ({
   fetchPlaylistById: vi.fn(),
@@ -87,6 +88,11 @@ const createMockVideo = (id: string, title: string) => ({
   watchTime: Duration.fromObject({ minutes: 0 }),
 })
 
+// PlaylistDetail distinguishes a genuine 404 from a failed request, so shape the rejection
+// the way axios does.
+const notFoundError = () =>
+  Object.assign(new Error("Not found"), { isAxiosError: true, response: { status: 404 } })
+
 const createMockPlaylist = (videoCount: number = 2) => ({
   id: "playlist-123",
   userId: "user-123",
@@ -103,7 +109,11 @@ const renderWithRouter = (playlistId: string = "playlist-123") => {
   const routes = [
     {
       path: "/playlists/:playlistId",
-      element: <PlaylistDetail {...{ params: { playlistId }, matches: [] } as any} />,
+      element: (
+        <NotificationProvider>
+          <PlaylistDetail {...{ params: { playlistId }, matches: [] } as any} />
+        </NotificationProvider>
+      ),
     },
     {
       path: "/playlists",
@@ -932,20 +942,8 @@ describe("PlaylistDetail", () => {
     // The component's loadPlaylist does not catch fetch errors, so a rejected
     // fetch produces an unhandled rejection on the microtask queue. Swallow it
     // for these two tests so vitest doesn't flag spurious "unhandled errors".
-    const rejectionHandler = (event: any) => event.preventDefault?.()
-    let originalListeners: any[] = []
-    beforeEach(() => {
-      originalListeners = process.listeners("unhandledRejection")
-      originalListeners.forEach(l => process.removeListener("unhandledRejection", l))
-      process.on("unhandledRejection", rejectionHandler)
-    })
-    afterEach(() => {
-      process.removeListener("unhandledRejection", rejectionHandler)
-      originalListeners.forEach(l => process.on("unhandledRejection", l as any))
-    })
-
-    test("should display the not-found fallback when fetch fails", async () => {
-      mockFetchPlaylistById.mockRejectedValue(new Error("Not found"))
+    test("should display the not-found fallback for a 404", async () => {
+      mockFetchPlaylistById.mockRejectedValue(notFoundError())
 
       renderWithRouter()
 
@@ -954,11 +952,32 @@ describe("PlaylistDetail", () => {
       })
 
       expect(screen.getByRole("button", { name: /back to playlists/i })).toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: /retry/i })).not.toBeInTheDocument()
+    })
+
+    test("should offer a retry, not a not-found message, when the load fails", async () => {
+      const user = userEvent.setup()
+      mockFetchPlaylistById.mockRejectedValue(new Error("Network down"))
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByText("Unable to load this playlist")).toBeInTheDocument()
+      })
+
+      expect(screen.queryByText("Playlist not found")).not.toBeInTheDocument()
+
+      mockFetchPlaylistById.mockResolvedValue(createMockPlaylist())
+      await user.click(screen.getByRole("button", { name: /retry/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText("Test Playlist")).toBeInTheDocument()
+      })
     })
 
     test("should navigate back to playlists from the fallback", async () => {
       const user = userEvent.setup()
-      mockFetchPlaylistById.mockRejectedValue(new Error("Not found"))
+      mockFetchPlaylistById.mockRejectedValue(notFoundError())
 
       renderWithRouter()
 
@@ -975,7 +994,7 @@ describe("PlaylistDetail", () => {
   })
 
   describe("Shuffle Display Order", () => {
-    test("should reset to first video when toggling shuffle off", async () => {
+    test("should keep playing the same video when shuffle is toggled", async () => {
       const user = userEvent.setup()
       mockFetchPlaylistById.mockResolvedValue(createMockPlaylist(3))
 
@@ -991,26 +1010,28 @@ describe("PlaylistDetail", () => {
         expect(screen.getByText("1 / 3")).toBeInTheDocument()
       })
 
-      // Move forward, then shuffle on, then off — should snap back to "1 / 3"
+      // Advance to "Video 2", then toggle shuffle on and back off. Toggling re-indexes the
+      // playback order, so the player must follow the video rather than the index.
       const nextButton = screen.getByTestId("SkipNextIcon").closest("button")!
       await user.click(nextButton)
 
       await waitFor(() => {
-        expect(screen.getByText("2 / 3")).toBeInTheDocument()
+        expect(screen.getByRole("heading", { name: "Video 2" })).toBeInTheDocument()
       })
 
       const shuffleButton = screen.getByTestId("ShuffleIcon").closest("button")!
       await user.click(shuffleButton)
 
       await waitFor(() => {
-        expect(screen.getByText("1 / 3")).toBeInTheDocument()
+        expect(screen.getByRole("heading", { name: "Video 2" })).toBeInTheDocument()
       })
 
       await user.click(shuffleButton)
 
       await waitFor(() => {
-        expect(screen.getByText("1 / 3")).toBeInTheDocument()
+        expect(screen.getByRole("heading", { name: "Video 2" })).toBeInTheDocument()
       })
+      expect(screen.getByText("2 / 3")).toBeInTheDocument()
     })
   })
 
@@ -1154,6 +1175,52 @@ describe("PlaylistDetail", () => {
       expect(screen.getByText("Video 1")).toBeInTheDocument()
       expect(screen.getByText("2 videos")).toBeInTheDocument()
       expect(consoleErrorSpy).toHaveBeenCalled()
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    test("should tell the user when removal fails rather than failing silently", async () => {
+      const user = userEvent.setup()
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      mockFetchPlaylistById.mockResolvedValue(createMockPlaylist(2))
+      mockRemoveVideoFromPlaylist.mockRejectedValue(new Error("Remove failed"))
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByText("Video 1")).toBeInTheDocument()
+      })
+
+      const deleteIcons = screen.getAllByTestId("DeleteIcon")
+      await user.click(deleteIcons[1].closest("button")!)
+
+      await waitFor(() => {
+        expect(screen.getByRole("alert")).toHaveTextContent(
+          "Failed to remove the video from the playlist"
+        )
+      })
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    test("should tell the user when renaming fails", async () => {
+      const user = userEvent.setup()
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      mockFetchPlaylistById.mockResolvedValue(createMockPlaylist(1))
+      mockUpdatePlaylist.mockRejectedValue(new Error("Rename failed"))
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByText("Test Playlist")).toBeInTheDocument()
+      })
+
+      await user.click(screen.getByRole("button", { name: /edit/i }))
+      await user.click(screen.getByRole("button", { name: /save/i }))
+
+      await waitFor(() => {
+        expect(screen.getByRole("alert")).toHaveTextContent("Failed to rename the playlist")
+      })
 
       consoleErrorSpy.mockRestore()
     })

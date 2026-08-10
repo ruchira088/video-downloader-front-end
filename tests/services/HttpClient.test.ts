@@ -227,4 +227,35 @@ describe("HttpClient", () => {
       expect(mockRemoveAuthenticationToken).not.toHaveBeenCalled()
     })
   })
+
+  describe("httpStatusCode", () => {
+    const axiosError = (status: number) =>
+      Object.assign(new Error("Request failed"), { isAxiosError: true, response: { status } })
+
+    test("should return the status of a failed response", async () => {
+      const { httpStatusCode } = await import("~/services/http/HttpClient")
+
+      expect(httpStatusCode(axiosError(404))).toEqual(Some.of(404))
+      expect(httpStatusCode(axiosError(500))).toEqual(Some.of(500))
+    })
+
+    test("should return None for a request that never got a response", async () => {
+      const { httpStatusCode } = await import("~/services/http/HttpClient")
+
+      const networkError = Object.assign(new Error("Network Error"), {
+        isAxiosError: true,
+        response: undefined,
+      })
+
+      expect(httpStatusCode(networkError)).toEqual(None.of())
+    })
+
+    test("should return None for errors that did not come from axios", async () => {
+      const { httpStatusCode } = await import("~/services/http/HttpClient")
+
+      expect(httpStatusCode(new Error("boom"))).toEqual(None.of())
+      expect(httpStatusCode("not an error")).toEqual(None.of())
+      expect(httpStatusCode(null)).toEqual(None.of())
+    })
+  })
 })

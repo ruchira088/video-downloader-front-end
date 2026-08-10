@@ -4,6 +4,7 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration }
 import type { Route } from "./+types/root"
 import "./index.scss"
 import { ApplicationConfigurationProvider } from "~/providers/ApplicationConfigurationProvider"
+import { NotificationProvider } from "~/providers/NotificationProvider"
 import smallLogo from "~/images/small-logo.svg"
 import { initSentry } from "~/services/Sentry"
 
@@ -54,7 +55,9 @@ export function Layout({children}: { children: ReactNode }) {
 export default function App() {
   return (
     <ApplicationConfigurationProvider>
-      <Outlet />
+      <NotificationProvider>
+        <Outlet />
+      </NotificationProvider>
     </ApplicationConfigurationProvider>
   )
 }
