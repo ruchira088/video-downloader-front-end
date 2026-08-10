@@ -116,6 +116,8 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
           src={thumbnail(safeMode)}
           onLoad={lockImageDimensions}
           alt="video thumbnail"
+          loading="lazy"
+          decoding="async"
           style={imageDimensions.map(({height}) => ({height: `${height}px`})).toDefined()}
           className={styles.thumbnail}
         />

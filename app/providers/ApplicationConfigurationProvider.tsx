@@ -1,4 +1,4 @@
-import React, { type FC, useEffect, useState } from "react"
+import React, { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { None, Option, Some } from "~/types/Option"
 import { localStorageConfigurationService } from "~/services/config/ConfigurationService"
 import { type ApplicationConfiguration, Theme } from "~/models/ApplicationConfiguration"
@@ -21,16 +21,29 @@ export const ApplicationConfigurationContext =
 export const ApplicationConfigurationProvider: FC<ApplicationConfigurationContextProps> = props => {
   const [applicationConfiguration, setApplicationConfiguration] = useState<Option<ApplicationConfiguration>>(None.of())
 
-  const setSafeMode = (safeMode: boolean) => setApplicationConfiguration((prev) => prev.map(config => ({
+  const setSafeMode = useCallback((safeMode: boolean) => setApplicationConfiguration((prev) => prev.map(config => ({
     ...config,
     safeMode
-  })))
+  }))), [])
 
-  const setTheme = (theme: Theme) => setApplicationConfiguration((prev) => prev.map(config => ({ ...config, theme })))
+  const setTheme = useCallback(
+    (theme: Theme) => setApplicationConfiguration((prev) => prev.map(config => ({ ...config, theme }))),
+    []
+  )
 
-  const theme = createTheme({
-    colorSchemes: applicationConfiguration.map(({theme}) => ({dark: theme === Theme.Dark})).toDefined()
-  })
+  // Rebuilding the MUI theme, and the context value, on every render would re-render every
+  // consumer of either for changes that have nothing to do with configuration.
+  const theme = useMemo(
+    () => createTheme({
+      colorSchemes: applicationConfiguration.map(({theme}) => ({dark: theme === Theme.Dark})).toDefined()
+    }),
+    [applicationConfiguration]
+  )
+
+  const configurationContext = useMemo(
+    () => applicationConfiguration.map(config => ({ ...config, setSafeMode, setTheme })),
+    [applicationConfiguration, setSafeMode, setTheme]
+  )
 
   useEffect(() => {
     void localStorageConfigurationService.getApplicationConfiguration()
@@ -55,8 +68,7 @@ export const ApplicationConfigurationProvider: FC<ApplicationConfigurationContex
     return null
   } else {
     return (
-      <ApplicationConfigurationContext.Provider
-        value={applicationConfiguration.map(config => ({ ...config, setSafeMode, setTheme }))}>
+      <ApplicationConfigurationContext.Provider value={configurationContext}>
         <ThemeProvider theme={theme}>
           {props.children}
         </ThemeProvider>
@@ -67,10 +79,6 @@ export const ApplicationConfigurationProvider: FC<ApplicationConfigurationContex
 
 export const useApplicationConfiguration = (): ApplicationConfigurationContext => {
   const applicationConfigurationContext = React.useContext(ApplicationConfigurationContext)
-
-  if (applicationConfigurationContext == null) {
-    throw new Error("useApplicationConfiguration must be used within an ApplicationConfigurationProvider")
-  }
 
   return applicationConfigurationContext.getOrElse(() => {
       throw new Error("ApplicationConfigurationContext is not initialized")

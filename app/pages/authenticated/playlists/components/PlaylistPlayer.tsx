@@ -126,7 +126,7 @@ const PlaylistPlayer: FC<PlaylistPlayerProps> = ({
                     onClick={() => onIndexChange(actualIndex)}
                   >
                     <div className={styles.upNextThumbnail}>
-                      <img src={videoThumbnail} alt={videoTitle} />
+                      <img src={videoThumbnail} alt={videoTitle} loading="lazy" decoding="async" />
                       <span className={styles.upNextDuration}>
                         {shortHumanReadableDuration(video.videoMetadata.duration)}
                       </span>

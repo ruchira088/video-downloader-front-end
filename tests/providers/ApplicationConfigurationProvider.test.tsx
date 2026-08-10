@@ -6,6 +6,7 @@ import {
   useApplicationConfiguration,
 } from "~/providers/ApplicationConfigurationProvider"
 import { Theme } from "~/models/ApplicationConfiguration"
+import { Some } from "~/types/Option"
 import React from "react"
 
 vi.mock("~/services/config/ConfigurationService", () => ({
@@ -196,5 +197,45 @@ describe("useApplicationConfiguration", () => {
     }).toThrow("ApplicationConfigurationContext is not initialized")
 
     consoleError.mockRestore()
+  })
+  describe("Referential stability", () => {
+    test("should keep the context value and setters stable across unrelated re-renders", async () => {
+      mockGetApplicationConfiguration.mockResolvedValue(
+        Some.of({ safeMode: false, theme: Theme.Light })
+      )
+
+      const seen: { setTheme: unknown; setSafeMode: unknown }[] = []
+
+      const Recorder = () => {
+        const { setTheme, setSafeMode } = useApplicationConfiguration()
+        seen.push({ setTheme, setSafeMode })
+        return <span data-testid="recorder">recorded</span>
+      }
+
+      const { rerender } = render(
+        <ApplicationConfigurationProvider>
+          <Recorder />
+        </ApplicationConfigurationProvider>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recorder")).toBeInTheDocument()
+      })
+
+      const before = seen.length
+      rerender(
+        <ApplicationConfigurationProvider>
+          <Recorder />
+        </ApplicationConfigurationProvider>
+      )
+
+      await waitFor(() => {
+        expect(seen.length).toBeGreaterThan(before)
+      })
+
+      // Recreating the setters each render would re-render every consumer of the context.
+      expect(seen[seen.length - 1].setTheme).toBe(seen[0].setTheme)
+      expect(seen[seen.length - 1].setSafeMode).toBe(seen[0].setSafeMode)
+    })
   })
 })

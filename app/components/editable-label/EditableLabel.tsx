@@ -22,7 +22,22 @@ const EditableTextField = ({
   onSaveClick: (text: string) => void
 }) => (
   <>
-    <TextField label="Title" value={textValue} onChange={(event) => onTextChange(event.target.value)} />
+    <TextField
+      label="Title"
+      value={textValue}
+      autoFocus
+      onChange={(event) => onTextChange(event.target.value)}
+      // Enter and Escape are what people reach for in a single-field inline editor.
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          event.preventDefault()
+          onSaveClick(textValue)
+        } else if (event.key === "Escape") {
+          event.preventDefault()
+          onCancel()
+        }
+      }}
+    />
     <button onClick={() => onSaveClick(textValue)}>Save</button>
     <button onClick={onCancel}>Cancel</button>
   </>

@@ -3,6 +3,7 @@ import { Link } from "react-router"
 import { Button } from "@mui/material"
 import { deleteVideo, fetchDuplicateVideos, fetchVideoById } from "~/services/video/VideoService"
 import { Video } from "~/models/Video"
+import { None, Option, Some } from "~/types/Option"
 import VideoCard from "~/components/video/video-card/VideoCard"
 import Helmet from "~/components/helmet/Helmet"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
@@ -23,7 +24,12 @@ const Duplicates = () => {
   const [groups, setGroups] = useState<DuplicateGroupEntry[]>([])
   const loadedGroupIds = useRef(new Set<string>())
 
-  const { isLoading, hasMore, loadMore } = usePaginatedFetch(
+  // The duplicates endpoint returns ids only, so each video costs a request. Cache the in-flight
+  // request (not just the result) so a video appearing in more than one group of the same page
+  // is fetched once rather than once per group.
+  const videoRequests = useRef(new Map<string, Promise<Option<Video>>>())
+
+  const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch(
     async page => Object.entries(await fetchDuplicateVideos(page, PAGE_SIZE)),
     async groupEntries => {
       const unseenEntries = groupEntries.filter(([groupId]) => !loadedGroupIds.current.has(groupId))
@@ -32,18 +38,38 @@ const Duplicates = () => {
       const newGroups: DuplicateGroupEntry[] = await Promise.all(
         unseenEntries.map(async ([groupId, duplicates]) => {
           const videos = await Promise.all(
-            duplicates.map(duplicate => fetchVideoById(duplicate.videoId))
+            duplicates.map(duplicate => loadVideo(duplicate.videoId))
           )
-          return { groupId, videos }
+          return { groupId, videos: videos.flatMap(video => video.toList()) }
         })
       )
 
-      if (newGroups.length > 0) {
-        setGroups(prev => prev.concat(newGroups))
+      // A group needs at least two members to be a duplicate; one that lost videos to failed
+      // fetches is not worth showing. Previously a single bad id rejected the whole page.
+      const populatedGroups = newGroups.filter(group => group.videos.length > 1)
+
+      if (populatedGroups.length > 0) {
+        setGroups(prev => prev.concat(populatedGroups))
       }
     },
     { pageSize: PAGE_SIZE }
   )
+
+  const loadVideo = (videoId: string): Promise<Option<Video>> =>
+    Option.fromNullable(videoRequests.current.get(videoId)).getOrElse(() => {
+      const request: Promise<Option<Video>> = fetchVideoById(videoId)
+        .then((video) => Some.of(video))
+        .catch((error: unknown) => {
+          console.error(`Failed to load duplicate video ${videoId}`, error)
+          // Failures are not cached, so a later page or retry can fetch the video again.
+          videoRequests.current.delete(videoId)
+          return None.of<Video>()
+        })
+
+      videoRequests.current.set(videoId, request)
+
+      return request
+    })
 
   const onDeleteVideo = async (videoId: string) => {
     try {
@@ -74,6 +100,10 @@ const Duplicates = () => {
       <InfiniteScroll
         loadMore={loadMore}
         hasMore={hasMore}
+        isLoading={isLoading}
+        hasError={hasError}
+        onRetry={retry}
+        endMessage={groups.length > 0 ? "No more duplicates" : undefined}
         className={styles.duplicateGroups}
       >
         {groups.map(group => (

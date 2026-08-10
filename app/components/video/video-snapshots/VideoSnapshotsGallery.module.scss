@@ -1,14 +1,7 @@
 .videoSnapshotsGallery {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.75em;
-  justify-content: center;
-}
-
-.videoSnapshotContainer {
-  flex: 0 0 auto;
-  width: calc(25% - 0.75em);
-  min-width: 10em;
 }
 
 .videoSnapshot {
@@ -42,13 +35,13 @@
 }
 
 @media (width <= 60em) {
-  .videoSnapshotContainer {
-    width: calc(33.33% - 0.75em);
+  .videoSnapshotsGallery {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (width <= 40em) {
-  .videoSnapshotContainer {
-    width: calc(50% - 0.75em);
+  .videoSnapshotsGallery {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

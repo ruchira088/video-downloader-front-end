@@ -1,5 +1,6 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
 import { intersectionObserverCallbacks, intersectionObserverInstances } from "../setup"
 
@@ -132,15 +133,19 @@ describe("InfiniteScroll", () => {
     expect(loadMore).toHaveBeenCalledTimes(1) // Still 1, not called again
   })
 
-  test("should apply custom className", () => {
+  test("should apply custom className to the list container", () => {
     const loadMore = vi.fn()
     const { container } = render(
       <InfiniteScroll loadMore={loadMore} hasMore={true} className="custom-scroll">
-        <div>Content</div>
+        <div data-testid="child">Content</div>
       </InfiniteScroll>
     )
 
-    expect(container.firstChild).toHaveClass("custom-scroll")
+    // The caller's className lays out the list itself, so it belongs on the element wrapping
+    // the children rather than on the outer scroll container which also holds the status row.
+    const listContainer = container.querySelector(".custom-scroll")
+    expect(listContainer).toBeInTheDocument()
+    expect(listContainer).toContainElement(screen.getByTestId("child"))
   })
 
   test("should handle empty entries array", () => {
@@ -196,6 +201,87 @@ describe("InfiniteScroll", () => {
     unmount()
 
     expect(observer.disconnect).toHaveBeenCalledTimes(1)
+  })
+
+  describe("status", () => {
+    test("should show nothing extra by default", () => {
+      render(
+        <InfiniteScroll loadMore={vi.fn()} hasMore={true}>
+          <div>Content</div>
+        </InfiniteScroll>
+      )
+
+      expect(screen.queryByRole("progressbar")).not.toBeInTheDocument()
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+    })
+
+    test("should show a spinner while loading", () => {
+      render(
+        <InfiniteScroll loadMore={vi.fn()} hasMore={true} isLoading>
+          <div>Content</div>
+        </InfiniteScroll>
+      )
+
+      expect(screen.getByRole("progressbar")).toBeInTheDocument()
+    })
+
+    test("should offer a retry when loading failed", async () => {
+      const onRetry = vi.fn()
+      const user = userEvent.setup()
+
+      render(
+        <InfiniteScroll loadMore={vi.fn()} hasMore={true} isLoading hasError onRetry={onRetry}>
+          <div>Content</div>
+        </InfiniteScroll>
+      )
+
+      // The error takes precedence over the spinner: a stalled list must offer a way out.
+      expect(screen.getByRole("alert")).toBeInTheDocument()
+      expect(screen.queryByRole("progressbar")).not.toBeInTheDocument()
+
+      await user.click(screen.getByRole("button", { name: /retry/i }))
+
+      expect(onRetry).toHaveBeenCalledTimes(1)
+    })
+
+    test("should not show a retry when the caller supplies no handler", () => {
+      render(
+        <InfiniteScroll loadMore={vi.fn()} hasMore={true} hasError>
+          <div>Content</div>
+        </InfiniteScroll>
+      )
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+    })
+
+    test("should show the end message only once everything is loaded", () => {
+      const { rerender } = render(
+        <InfiniteScroll loadMore={vi.fn()} hasMore={true} endMessage="No more videos">
+          <div>Content</div>
+        </InfiniteScroll>
+      )
+
+      expect(screen.queryByText("No more videos")).not.toBeInTheDocument()
+
+      rerender(
+        <InfiniteScroll loadMore={vi.fn()} hasMore={false} endMessage="No more videos">
+          <div>Content</div>
+        </InfiniteScroll>
+      )
+
+      expect(screen.getByText("No more videos")).toBeInTheDocument()
+    })
+
+    test("should prefer the spinner over the end message while loading", () => {
+      render(
+        <InfiniteScroll loadMore={vi.fn()} hasMore={false} isLoading endMessage="No more videos">
+          <div>Content</div>
+        </InfiniteScroll>
+      )
+
+      expect(screen.getByRole("progressbar")).toBeInTheDocument()
+      expect(screen.queryByText("No more videos")).not.toBeInTheDocument()
+    })
   })
 
   test("should call the latest loadMore callback after a rerender", () => {

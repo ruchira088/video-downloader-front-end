@@ -15,7 +15,7 @@ const HistoryPage = () => {
   const [videoWatchHistories, setVideoWatchHistories] = useState<VideoWatchHistory[]>([])
   const videoIds = useRef<Set<string>>(new Set())
 
-  const { hasMore, loadMore } = usePaginatedFetch<VideoWatchHistory>(
+  const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch<VideoWatchHistory>(
     pageNumber => getVideoHistory(pageNumber, PAGE_SIZE),
     videoHistories => {
       const newVideoHistories = videoHistories.reduce<VideoWatchHistory[]>(
@@ -41,6 +41,10 @@ const HistoryPage = () => {
       <InfiniteScroll
         loadMore={loadMore}
         hasMore={hasMore}
+        isLoading={isLoading}
+        hasError={hasError}
+        onRetry={retry}
+        endMessage={videoWatchHistories.length > 0 ? "No more history" : "Nothing watched yet"}
         className={styles.videoHistoryGallery}
       >
         {

@@ -128,6 +128,42 @@ describe("EditableLabel", () => {
     })
   })
 
+  describe("Keyboard", () => {
+    test("should save when Enter is pressed", async () => {
+      const user = userEvent.setup()
+      const onUpdateText = vi.fn().mockResolvedValue(undefined)
+      render(<EditableLabel textValue="Test Title" onUpdateText={onUpdateText} />)
+
+      await enterEditMode(user)
+
+      await user.clear(screen.getByRole("textbox"))
+      await user.type(screen.getByRole("textbox"), "Renamed{Enter}")
+
+      await waitFor(() => {
+        expect(onUpdateText).toHaveBeenCalledWith("Renamed")
+      })
+      await waitFor(() => {
+        expect(screen.queryByRole("textbox")).not.toBeInTheDocument()
+      })
+    })
+
+    test("should cancel without saving when Escape is pressed", async () => {
+      const user = userEvent.setup()
+      const onUpdateText = vi.fn().mockResolvedValue(undefined)
+      render(<EditableLabel textValue="Test Title" onUpdateText={onUpdateText} />)
+
+      await enterEditMode(user)
+
+      await user.type(screen.getByRole("textbox"), "Renamed{Escape}")
+
+      await waitFor(() => {
+        expect(screen.queryByRole("textbox")).not.toBeInTheDocument()
+      })
+      expect(onUpdateText).not.toHaveBeenCalled()
+      expect(screen.getByText("Test Title")).toBeInTheDocument()
+    })
+  })
+
   describe("Cancel Action", () => {
     test("should restore original text when Cancel is clicked", async () => {
       const user = userEvent.setup()

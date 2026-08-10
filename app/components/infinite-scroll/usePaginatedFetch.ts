@@ -4,6 +4,9 @@ interface PaginatedFetch {
   readonly isLoading: boolean
   readonly hasMore: boolean
   readonly loadMore: () => void
+  // True when the last attempted page failed. The page stays retryable via `retry`.
+  readonly hasError: boolean
+  readonly retry: () => void
 }
 
 interface PaginatedFetchOptions {
@@ -37,6 +40,7 @@ export function usePaginatedFetch<T>(
   const [pageNumber, setPageNumber] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
+  const [hasError, setHasError] = useState(false)
 
   const isLoadingRef = useRef(false)
   const hasMoreRef = useRef(true)
@@ -64,6 +68,7 @@ export function usePaginatedFetch<T>(
     const pages = fetchedPages.current
     pages.add(page)
     setLoading(true)
+    setHasError(false)
 
     try {
       const results = await fetchPageRef.current(page, controller.signal)
@@ -84,6 +89,13 @@ export function usePaginatedFetch<T>(
 
       if (!isAbortError(error)) {
         console.error(error)
+
+        // Surfaced so the caller can offer a retry. Without one the list silently stalls:
+        // the sentinel may already be in view, and IntersectionObserver only fires on a
+        // transition, so nothing will ask for this page again.
+        if (controller === abortController.current) {
+          setHasError(true)
+        }
       }
     } finally {
       // Only the request owning the current controller may flip the loading
@@ -110,6 +122,7 @@ export function usePaginatedFetch<T>(
     hasMoreRef.current = true
     setHasMore(true)
     setLoading(false)
+    setHasError(false)
 
     if (pageNumber === 0) {
       void loadPage(0)
@@ -132,5 +145,12 @@ export function usePaginatedFetch<T>(
     }
   }
 
-  return { isLoading, hasMore, loadMore }
+  // Re-attempts the page that failed; `loadPage` forgot it, so this is not a no-op.
+  const retry = useCallback(() => {
+    if (!isLoadingRef.current) {
+      void loadPage(pageNumber)
+    }
+  }, [loadPage, pageNumber])
+
+  return { isLoading, hasMore, loadMore, hasError, retry }
 }

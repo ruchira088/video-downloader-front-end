@@ -28,7 +28,7 @@ const DraggableSearchVideoCard: FC<DraggableSearchVideoCardProps> = ({
   return (
     <div className={styles.card}>
       <div className={styles.thumbnail}>
-        <img src={thumbnailUrl} alt={title} />
+        <img src={thumbnailUrl} alt={title} loading="lazy" decoding="async" />
         <span className={styles.duration}>
           {shortHumanReadableDuration(video.videoMetadata.duration)}
         </span>

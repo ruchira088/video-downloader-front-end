@@ -52,7 +52,7 @@ const ScheduledVideos = () => {
 
   const [disableRetry, setDisableRetry] = useState(false)
 
-  const { hasMore, loadMore } = usePaginatedFetch(
+  const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch(
     pageNumber => fetchScheduledVideos(None.of(), pageNumber, PAGE_SIZE, SortBy.Date, Ordering.Ascending),
     scheduledVideos => {
       const downloadableScheduledVideoMap: Map<string, DownloadableScheduledVideo> = Map(
@@ -173,6 +173,10 @@ const ScheduledVideos = () => {
       <InfiniteScroll
         loadMore={loadMore}
         hasMore={hasMore}
+        isLoading={isLoading}
+        hasError={hasError}
+        onRetry={retry}
+        endMessage={downloadableScheduledVideos.isEmpty() ? "Nothing is downloading" : undefined}
         className={styles.scheduledVideoGallery}
       >
         {

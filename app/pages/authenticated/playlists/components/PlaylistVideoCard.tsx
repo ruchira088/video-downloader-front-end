@@ -58,7 +58,7 @@ const PlaylistVideoCard: FC<PlaylistVideoCardProps> = ({
       </div>
       <span className={styles.index}>{index + 1}</span>
       <div className={styles.thumbnail}>
-        <img src={thumbnailUrl} alt={title} />
+        <img src={thumbnailUrl} alt={title} loading="lazy" decoding="async" />
         <span className={styles.duration}>
           {shortHumanReadableDuration(video.videoMetadata.duration)}
         </span>
@@ -72,10 +72,11 @@ const PlaylistVideoCard: FC<PlaylistVideoCardProps> = ({
           onClick={onPlay}
           size="small"
           color={isCurrentlyPlaying ? "primary" : "default"}
+          aria-label={`Play ${title}`}
         >
           <PlayArrow />
         </IconButton>
-        <IconButton onClick={onRemove} size="small" color="error">
+        <IconButton onClick={onRemove} size="small" color="error" aria-label={`Remove ${title}`}>
           <Delete />
         </IconButton>
       </div>

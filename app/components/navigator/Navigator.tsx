@@ -2,7 +2,6 @@ import React from "react"
 import { Link, type UIMatch, useMatches } from "react-router"
 import styles from "./Navigator.module.scss"
 import classNames from "classnames"
-import { type Option, Some } from "~/types/Option"
 
 type NavigationTab = {
   readonly label: string
@@ -19,7 +18,7 @@ const navigationTabs: NavigationTab[] = [
   { label: "Information", path: "/information" }
 ]
 
-const getActiveTab = (matches: UIMatch[]): Option<NavigationTab> => {
+const activeTabPath = (matches: UIMatch[]): string => {
   const currentPath = matches[matches.length - 1]?.pathname ?? "/"
 
   // Find the tab with the longest matching path prefix (excluding root)
@@ -28,28 +27,28 @@ const getActiveTab = (matches: UIMatch[]): Option<NavigationTab> => {
     .sort((a, b) => b.path.length - a.path.length)[0]
 
   // If no specific tab matches, default to Videos (root tab)
-  return Some.of(matchingTab ?? navigationTabs[0])
+  return (matchingTab ?? navigationTabs[0]).path
 }
 
 const Navigator = () => {
   const matches = useMatches()
-  const activeTab: Option<string> = getActiveTab(matches).map(tab => tab.path)
+  const activePath = activeTabPath(matches)
 
   return (
     <div className={styles.navigator}>
       <div className={styles.navigatorTabs}>
       {
-        navigationTabs.map((navigationTab, index) => (
+        navigationTabs.map((navigationTab) => (
             <Link
               to={navigationTab.path}
               prefetch="intent"
               className={
                 classNames(
                   styles.navigatorTab,
-                  { [styles.isActive]: activeTab.toDefined() === navigationTab.path }
+                  { [styles.isActive]: activePath === navigationTab.path }
                 )
               }
-              key={index}>
+              key={navigationTab.path}>
               {navigationTab.label}
             </Link>
           )

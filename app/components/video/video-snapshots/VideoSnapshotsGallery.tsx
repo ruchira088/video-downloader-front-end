@@ -38,12 +38,9 @@ type VideoSnapshotsProps = {
 
 const VideoSnapshotsGallery: FC<VideoSnapshotsProps> = props => (
   <div className={styles.videoSnapshotsGallery}>
-    {[...props.snapshots].sort(videoSnapshotSortFn).concat(Array(5).fill(null))
-      .map((snapshot, index) =>
-        <div key={index} className={styles.videoSnapshotContainer}>
-          {snapshot !== null && <VideoSnapshot snapshot={snapshot}/>}
-        </div>
-      )}
+    {[...props.snapshots].sort(videoSnapshotSortFn).map((snapshot) =>
+      <VideoSnapshot key={snapshot.fileResource.id} snapshot={snapshot}/>
+    )}
   </div>
 )
 

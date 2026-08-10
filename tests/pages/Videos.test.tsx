@@ -20,6 +20,10 @@ const triggerIntersection = async () => {
   })
 }
 
+// The search debounce is wall-clock, so these waits must tolerate a heavily loaded suite.
+// waitFor polls, so a passing assertion still returns as soon as it holds.
+const DEBOUNCE_TIMEOUT_MS = 10_000
+
 const buildVideo = (id: string, title: string) => ({
   videoMetadata: {
     url: `https://example.com/video/${id}`,
@@ -62,7 +66,7 @@ vi.mock("~/components/helmet/Helmet", () => ({
   default: ({ title }: { title: string }) => <title>{title}</title>,
 }))
 
-const renderWithRouter = () => {
+const renderWithRouter = (initialEntry: string = "/") => {
   const contextValue = {
     safeMode: false,
     theme: Theme.Light,
@@ -70,16 +74,19 @@ const renderWithRouter = () => {
     setTheme: vi.fn(),
   }
 
-  const router = createMemoryRouter([
-    {
-      path: "/",
-      element: (
-        <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-          <Videos />
-        </ApplicationConfigurationContext.Provider>
-      ),
-    },
-  ])
+  const router = createMemoryRouter(
+    [
+      {
+        path: "/",
+        element: (
+          <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
+            <Videos />
+          </ApplicationConfigurationContext.Provider>
+        ),
+      },
+    ],
+    { initialEntries: [initialEntry] }
+  )
 
   return { router, ...render(<RouterProvider router={router} />) }
 }
@@ -286,7 +293,7 @@ describe("Videos", () => {
 
     await waitFor(() => {
       expect(searchVideos).toHaveBeenCalledTimes(2)
-    })
+    }, { timeout: DEBOUNCE_TIMEOUT_MS })
 
     const searchTermArgument = vi.mocked(searchVideos).mock.calls[1][0]
     expect(searchTermArgument.getOrElse(() => "")).toBe("holi")
@@ -324,7 +331,7 @@ describe("Videos", () => {
 
     await waitFor(() => {
       expect(router.state.location.search).toBe("?search-term=holiday")
-    })
+    }, { timeout: DEBOUNCE_TIMEOUT_MS })
 
     // Going back must not merely undo one keystroke's worth of query string: the search
     // replaced the entry, so there is nothing behind it to return to.
@@ -336,29 +343,33 @@ describe("Videos", () => {
   })
 
   test("should drop the query parameter when the search is cleared", async () => {
-    const { router } = renderWithRouter()
+    const { router } = renderWithRouter("/?search-term=holiday")
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Search videos")).toBeInTheDocument()
-    })
-
-    const searchInput = screen.getByLabelText("Search videos")
-
-    await act(async () => {
-      fireEvent.change(searchInput, { target: { value: "holiday" } })
-    })
-
-    await waitFor(() => {
-      expect(router.state.location.search).toBe("?search-term=holiday")
+      expect(screen.getByLabelText("Search videos")).toHaveValue("holiday")
     })
 
     await act(async () => {
-      fireEvent.change(searchInput, { target: { value: "" } })
+      fireEvent.change(screen.getByLabelText("Search videos"), { target: { value: "" } })
     })
 
+    // Cleared means the parameter is gone, not present-but-empty.
     await waitFor(() => {
       expect(router.state.location.search).toBe("")
+    }, { timeout: DEBOUNCE_TIMEOUT_MS })
+  })
+
+  test("should search the term given in the URL on first load", async () => {
+    const { searchVideos } = await import("~/services/video/VideoService")
+
+    renderWithRouter("/?search-term=holiday")
+
+    await waitFor(() => {
+      expect(searchVideos).toHaveBeenCalled()
     })
+
+    expect(vi.mocked(searchVideos).mock.calls[0][0].getOrElse(() => "")).toBe("holiday")
+    expect(screen.getByLabelText("Search videos")).toHaveValue("holiday")
   })
 
   test("should update query params when sort by changes", async () => {

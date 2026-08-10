@@ -7,4 +7,24 @@
     height: 1px;
     width: 1px;
   }
+
+  .status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75em;
+    padding: 1.5em 0;
+    font-size: 0.9em;
+    color: var(--text-color);
+    opacity: 0.7;
+  }
+
+  .error {
+    color: #d32f2f;
+    opacity: 1;
+  }
+
+  .endMessage {
+    font-style: italic;
+  }
 }

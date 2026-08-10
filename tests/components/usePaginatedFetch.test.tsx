@@ -147,6 +147,61 @@ describe("usePaginatedFetch", () => {
     expect(fetchPage).toHaveBeenCalledTimes(2)
   })
 
+  test("should report a failed page and clear the error once a retry succeeds", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined)
+    const error = new Error("network down")
+    const fetchPage = vi.fn().mockRejectedValueOnce(error).mockResolvedValue(["a", "b"])
+    const onResults = vi.fn()
+
+    const { result } = renderHook(() => usePaginatedFetch(fetchPage, onResults, { pageSize: 2 }))
+
+    await waitFor(() => expect(result.current.hasError).toBe(true))
+    expect(onResults).not.toHaveBeenCalled()
+
+    // Without retry the list silently stalls: the sentinel may already be in view, so
+    // IntersectionObserver will never fire again to ask for this page.
+    act(() => result.current.retry())
+
+    await waitFor(() => expect(onResults).toHaveBeenCalledWith(["a", "b"], 0))
+    expect(result.current.hasError).toBe(false)
+    expect(fetchPage).toHaveBeenCalledTimes(2)
+    expect(consoleError).toHaveBeenCalledWith(error)
+  })
+
+  test("should retry the page that failed rather than restarting from page 0", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
+    const fetchPage = vi
+      .fn()
+      .mockResolvedValueOnce(["a", "b"])
+      .mockRejectedValueOnce(new Error("network down"))
+      .mockResolvedValue(["c", "d"])
+    const onResults = vi.fn()
+
+    const { result } = renderHook(() => usePaginatedFetch(fetchPage, onResults, { pageSize: 2 }))
+
+    await waitFor(() => expect(onResults).toHaveBeenCalledWith(["a", "b"], 0))
+
+    act(() => result.current.loadMore())
+
+    await waitFor(() => expect(result.current.hasError).toBe(true))
+
+    act(() => result.current.retry())
+
+    await waitFor(() => expect(onResults).toHaveBeenCalledWith(["c", "d"], 1))
+    expect(fetchPage).toHaveBeenLastCalledWith(1, expect.anything())
+  })
+
+  test("should not report an error for an aborted request", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
+    const abortError = new DOMException("The operation was aborted", "AbortError")
+    const fetchPage = vi.fn().mockRejectedValue(abortError)
+
+    const { result } = renderHook(() => usePaginatedFetch(fetchPage, vi.fn(), { pageSize: 2 }))
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    expect(result.current.hasError).toBe(false)
+  })
+
   test.each([
     ["AbortError", new DOMException("The operation was aborted", "AbortError")],
     ["CanceledError", Object.assign(new Error("canceled"), { name: "CanceledError" })]

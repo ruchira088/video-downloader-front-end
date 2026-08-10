@@ -306,14 +306,14 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
         <Helmet title={p.title} />
 
         <div className={styles.header}>
-          <IconButton onClick={() => navigate("/playlists")} size="small">
+          <IconButton onClick={() => navigate("/playlists")} size="small" aria-label="Back to playlists">
             <ArrowBack />
           </IconButton>
           <div className={styles.titleContainer}>
             <EditableLabel textValue={p.title} onUpdateText={handleUpdateTitle} />
           </div>
           <div className={styles.headerActions}>
-            <IconButton onClick={handleDelete} color="error" size="small">
+            <IconButton onClick={handleDelete} color="error" size="small" aria-label="Delete playlist">
               <Delete />
             </IconButton>
           </div>
@@ -347,7 +347,12 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
                   >
                     Change
                   </Button>
-                  <IconButton size="small" color="error" onClick={handleRemoveAlbumArt}>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={handleRemoveAlbumArt}
+                    aria-label="Remove album art"
+                  >
                     <Delete fontSize="small" />
                   </IconButton>
                 </div>

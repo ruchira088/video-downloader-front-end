@@ -53,7 +53,7 @@ const Videos = () => {
     setSearchInput(searchTermValue)
   }, [searchTermValue])
 
-  const { isLoading, hasMore, loadMore } = usePaginatedFetch<Video>(
+  const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch<Video>(
     (pageNumber, signal) =>
       searchVideos(searchTerm, durationRange, sizeRange, videoSites, pageNumber, PAGE_SIZE, sortBy, ordering, signal)
         .then(result => result.results),
@@ -129,6 +129,10 @@ const Videos = () => {
       <InfiniteScroll
         loadMore={loadMore}
         hasMore={hasMore}
+        isLoading={isLoading}
+        hasError={hasError}
+        onRetry={retry}
+        endMessage={videos.length > 0 ? "No more videos" : "No videos found"}
         className={styles.videosList}>
         {
           videos.map(

@@ -1,6 +1,7 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import Schedule from "~/pages/authenticated/schedule/Schedule"
+import { NotificationProvider } from "~/providers/NotificationProvider"
 import { DateTime, Duration } from "luxon"
 import { FileResourceType } from "~/models/FileResource"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
@@ -120,6 +121,84 @@ describe("Schedule", () => {
     })
   })
 
+  test("should submit when Enter is pressed in the URL field", async () => {
+    const { scheduleVideo } = await import("~/services/scheduling/SchedulingService")
+
+    const { container } = render(<Schedule />)
+
+    fireEvent.change(screen.getByLabelText("Website URL"), {
+      target: { value: "https://example.com/video" },
+    })
+
+    // Enter in a single-field form submits it; previously the button was the only way in.
+    fireEvent.submit(container.querySelector("form")!)
+
+    await waitFor(() => {
+      expect(scheduleVideo).toHaveBeenCalledWith("https://example.com/video")
+    })
+  })
+
+  test("should reject a URL that is not http(s) without calling the API", async () => {
+    const { scheduleVideo } = await import("~/services/scheduling/SchedulingService")
+
+    render(<Schedule />)
+
+    fireEvent.change(screen.getByLabelText("Website URL"), { target: { value: "not a url" } })
+    fireEvent.click(screen.getByRole("button", { name: "Schedule Download" }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Enter a valid http:// or https:// URL")).toBeInTheDocument()
+    })
+
+    expect(scheduleVideo).not.toHaveBeenCalled()
+  })
+
+  test("should trim the URL before scheduling", async () => {
+    const { scheduleVideo } = await import("~/services/scheduling/SchedulingService")
+
+    render(<Schedule />)
+
+    fireEvent.change(screen.getByLabelText("Website URL"), {
+      target: { value: "  https://example.com/video  " },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Schedule Download" }))
+
+    await waitFor(() => {
+      expect(scheduleVideo).toHaveBeenCalledWith("https://example.com/video")
+    })
+  })
+
+  test("should confirm to the user that the download was scheduled", async () => {
+    render(
+      <NotificationProvider>
+        <Schedule />
+      </NotificationProvider>
+    )
+
+    fireEvent.change(screen.getByLabelText("Website URL"), {
+      target: { value: "https://example.com/video" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Schedule Download" }))
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent("Download scheduled")
+    })
+  })
+
+  test("should keep the button disabled until a URL is entered", () => {
+    render(<Schedule />)
+
+    expect(screen.getByRole("button", { name: "Schedule Download" })).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText("Website URL"), { target: { value: "  " } })
+    expect(screen.getByRole("button", { name: "Schedule Download" })).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText("Website URL"), {
+      target: { value: "https://example.com/video" },
+    })
+    expect(screen.getByRole("button", { name: "Schedule Download" })).toBeEnabled()
+  })
+
   test("should disable the schedule button while scheduling is in flight", async () => {
     const { scheduleVideo } = await import("~/services/scheduling/SchedulingService")
     let resolveSchedule: () => void
@@ -138,9 +217,15 @@ describe("Schedule", () => {
 
     resolveSchedule!()
 
+    // Success clears the URL, so the button stays disabled until there is something to submit.
     await waitFor(() => {
-      expect(button).toBeEnabled()
+      expect(screen.getByLabelText("Website URL")).toHaveValue("")
     })
+    expect(button).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText("Website URL"), { target: { value: "https://example.com/other" } })
+
+    expect(button).toBeEnabled()
   })
 
   test("should hide progress bar, show an error and keep the URL when scheduling fails", async () => {

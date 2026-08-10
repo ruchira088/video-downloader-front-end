@@ -1,4 +1,4 @@
-import { describe, expect, test, vi, beforeEach, beforeAll, afterEach } from "vitest"
+import { describe, expect, test, vi, beforeEach, beforeAll } from "vitest"
 import { render, screen, waitFor, fireEvent } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import PlaylistDetail from "~/pages/authenticated/playlists/PlaylistDetail"
@@ -223,7 +223,7 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
     })
 
@@ -233,7 +233,7 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeDisabled()
+        expect(screen.getByRole("button", { name: "Play" })).toBeDisabled()
       })
     })
 
@@ -330,7 +330,7 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).not.toBeDisabled()
+        expect(screen.getByRole("button", { name: "Play" })).not.toBeDisabled()
       })
     })
   })
@@ -383,10 +383,10 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 2")).toBeInTheDocument()
@@ -400,10 +400,10 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("Up Next")).toBeInTheDocument()
@@ -505,10 +505,10 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 3")).toBeInTheDocument()
@@ -532,10 +532,10 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 3")).toBeInTheDocument()
@@ -567,10 +567,10 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 2")).toBeInTheDocument()
@@ -597,10 +597,10 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 3")).toBeInTheDocument()
@@ -1001,10 +1001,10 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 3")).toBeInTheDocument()
@@ -1048,11 +1048,11 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
 
       // Start playing and enable shuffle
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 3")).toBeInTheDocument()
@@ -1080,7 +1080,7 @@ describe("PlaylistDetail", () => {
       })
 
       // Replaying while shuffled should use a queue without the removed video
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 2")).toBeInTheDocument()
@@ -1107,11 +1107,11 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
 
       // Start playing and enable shuffle
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 2")).toBeInTheDocument()
@@ -1144,7 +1144,7 @@ describe("PlaylistDetail", () => {
       })
 
       // Replaying while shuffled should include the newly added video in the queue
-      await user.click(screen.getByRole("button", { name: /^play$/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 3")).toBeInTheDocument()
@@ -1234,10 +1234,10 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 2")).toBeInTheDocument()
@@ -1265,10 +1265,10 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 2")).toBeInTheDocument()
@@ -1289,11 +1289,11 @@ describe("PlaylistDetail", () => {
       renderWithRouter()
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /play/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
       })
 
       // Start playing the single video
-      await user.click(screen.getByRole("button", { name: /play/i }))
+      await user.click(screen.getByRole("button", { name: "Play" }))
 
       await waitFor(() => {
         expect(screen.getByText("1 / 1")).toBeInTheDocument()

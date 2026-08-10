@@ -338,4 +338,85 @@ describe("Duplicates", () => {
     const finalFetchCount = mockFetchVideoById.mock.calls.length
     expect(finalFetchCount - initialFetchCount).toBe(2)
   })
+  describe("Video loading", () => {
+    test("should still show a group when one of its videos fails to load", async () => {
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+      mockFetchDuplicateVideos.mockResolvedValue({
+        "group-1": [
+          { videoId: "video-1", duplicateGroupId: "group-1", createdAt: DateTime.now() },
+          { videoId: "video-2", duplicateGroupId: "group-1", createdAt: DateTime.now() },
+          { videoId: "video-3", duplicateGroupId: "group-1", createdAt: DateTime.now() },
+        ],
+      })
+      mockFetchVideoById.mockImplementation((videoId: string) =>
+        videoId === "video-2"
+          ? Promise.reject(new Error("gone"))
+          : Promise.resolve(createMockVideo(videoId))
+      )
+
+      renderPage()
+
+      // One bad id used to reject the whole page, leaving the list empty.
+      await waitFor(() => {
+        expect(screen.getByText("Title video-1")).toBeInTheDocument()
+      })
+      expect(screen.getByText("Title video-3")).toBeInTheDocument()
+      expect(screen.getByText("2 duplicate videos")).toBeInTheDocument()
+
+      consoleError.mockRestore()
+    })
+
+    test("should drop a group left with fewer than two loadable videos", async () => {
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+      mockFetchDuplicateVideos.mockResolvedValue({
+        "group-1": [
+          { videoId: "video-1", duplicateGroupId: "group-1", createdAt: DateTime.now() },
+          { videoId: "video-2", duplicateGroupId: "group-1", createdAt: DateTime.now() },
+        ],
+      })
+      mockFetchVideoById.mockImplementation((videoId: string) =>
+        videoId === "video-2"
+          ? Promise.reject(new Error("gone"))
+          : Promise.resolve(createMockVideo(videoId))
+      )
+
+      renderPage()
+
+      await waitFor(() => {
+        expect(screen.getByText("No duplicate videos found")).toBeInTheDocument()
+      })
+      expect(screen.queryByText("Title video-1")).not.toBeInTheDocument()
+
+      consoleError.mockRestore()
+    })
+
+    test("should fetch a video once when it appears in more than one group", async () => {
+      mockFetchDuplicateVideos.mockResolvedValue({
+        "group-1": [
+          { videoId: "video-1", duplicateGroupId: "group-1", createdAt: DateTime.now() },
+          { videoId: "shared", duplicateGroupId: "group-1", createdAt: DateTime.now() },
+        ],
+        "group-2": [
+          { videoId: "video-2", duplicateGroupId: "group-2", createdAt: DateTime.now() },
+          { videoId: "shared", duplicateGroupId: "group-2", createdAt: DateTime.now() },
+        ],
+      })
+      mockFetchVideoById.mockImplementation((videoId: string) =>
+        Promise.resolve(createMockVideo(videoId))
+      )
+
+      renderPage()
+
+      await waitFor(() => {
+        expect(screen.getByText("Title video-1")).toBeInTheDocument()
+      })
+      await waitFor(() => {
+        expect(screen.getByText("Title video-2")).toBeInTheDocument()
+      })
+
+      // Each duplicate costs a request, so the shared video must not be fetched twice.
+      const sharedFetches = mockFetchVideoById.mock.calls.filter(([id]) => id === "shared")
+      expect(sharedFetches).toHaveLength(1)
+    })
+  })
 })

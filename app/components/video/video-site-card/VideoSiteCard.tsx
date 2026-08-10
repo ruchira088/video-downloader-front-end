@@ -24,7 +24,7 @@ const VideoSiteCard: FC<VideoSiteCardProps> = props =>
   Option.fromNullable(videoSiteLogos[props.videoSite])
     .fold(
       () => <div className={styles.siteName}>{props.videoSite}</div>,
-      logo => <img className={styles.videoSiteLogo} src={logo} alt={`${props.videoSite} logo`} />
+      logo => <img className={styles.videoSiteLogo} src={logo} alt={`${props.videoSite} logo`} loading="lazy" decoding="async" />
   )
   
 const videoSiteLogos: Record<string, string> = {
