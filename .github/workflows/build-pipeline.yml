@@ -141,7 +141,7 @@ jobs:
     if: github.ref != 'refs/heads/main'
 
     concurrency:
-      group: pipeline-${{ github.ref }}
+      group: deploy-to-${{ github.ref }}
       cancel-in-progress: false
 
     permissions:
@@ -185,7 +185,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     concurrency:
-      group: pipeline-main
+      group: deploy-to-staging
       cancel-in-progress: false
 
     permissions:
@@ -229,7 +229,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     concurrency:
-      group: pipeline-main
+      group: deploy-to-production
       cancel-in-progress: false
 
     permissions:
