@@ -110,6 +110,8 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
   }, [playlistId, notifyError])
 
   useEffect(() => {
+    // `loadPlaylist` setStates after an await, so this is an async load, not a cascading render.
+    // oxlint-disable-next-line react/set-state-in-effect
     void loadPlaylist()
   }, [loadPlaylist])
 

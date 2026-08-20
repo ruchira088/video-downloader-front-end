@@ -35,6 +35,9 @@ const Preview: FC<PreviewProps> = props => {
       }
     }, 500)
 
+    // Clearing the previous URL's preview is part of starting the new fetch, not a render the
+    // effect could have avoided — without it the old preview shows while the new one loads.
+    // oxlint-disable-next-line react/set-state-in-effect
     setMaybeVideoMetadata(None.of())
     setHasError(false)
 

@@ -21,8 +21,14 @@ const InfiniteScroll: FC<InfiniteScrollProps> = props => {
     const hasMore = useRef<boolean>(props.hasMore)
     const loadMore = useRef<() => void>(props.loadMore)
 
-    hasMore.current = props.hasMore
-    loadMore.current = props.loadMore
+    // The observer is created once on mount, so it reads the newest props through refs rather
+    // than being torn down and rebuilt on every render. Writing them in an effect (rather than
+    // during render) keeps the render pass side-effect free; the refs are seeded with the first
+    // render's props above, and this effect runs before any intersection callback can fire.
+    useEffect(() => {
+        hasMore.current = props.hasMore
+        loadMore.current = props.loadMore
+    })
 
     useEffect(() => {
         const element = loadingTrigger.current

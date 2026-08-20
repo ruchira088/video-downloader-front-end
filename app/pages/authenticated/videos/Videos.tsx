@@ -49,9 +49,13 @@ const Videos = () => {
   const debouncedSearchInput = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS)
 
   // Adopt the URL's value when it changes from outside the field (back/forward, a shared link).
-  useEffect(() => {
+  // Adjusting during render re-renders before paint, so the field never flashes the stale term.
+  const [urlSearchTerm, setUrlSearchTerm] = useState(searchTermValue)
+
+  if (searchTermValue !== urlSearchTerm) {
+    setUrlSearchTerm(searchTermValue)
     setSearchInput(searchTermValue)
-  }, [searchTermValue])
+  }
 
   const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch<Video>(
     (pageNumber, signal) =>
@@ -99,12 +103,16 @@ const Videos = () => {
   const onSearchTermChange = onChangeSearchParams(SearchTermSearchParam, { replace: true })
 
   useEffect(() => {
-    if (debouncedSearchInput !== searchTermValue) {
+    // Only write back once the debounce has caught up with the field. A term adopted from the URL
+    // (back/forward, a shared link) lands in `searchInput` immediately while `debouncedSearchInput`
+    // still holds the previous term, and writing that stale value would navigate straight back to
+    // the term the user just left.
+    if (debouncedSearchInput === searchInput && debouncedSearchInput !== searchTermValue) {
       onSearchTermChange(maybeString(debouncedSearchInput))
     }
-    // Guarded by the equality check above, so re-running on an unstable `onSearchTermChange`
+    // Guarded by the equality checks above, so re-running on an unstable `onSearchTermChange`
     // identity is a no-op rather than a loop.
-  }, [debouncedSearchInput, searchTermValue, onSearchTermChange])
+  }, [debouncedSearchInput, searchInput, searchTermValue, onSearchTermChange])
 
   return (
     <div className={styles.videosPage}>

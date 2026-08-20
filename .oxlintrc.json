@@ -19,6 +19,16 @@
     "react/rules-of-hooks": "error",
     // Currently clean; kept at warn so a new violation does not block a build.
     "react/exhaustive-deps": "warn",
+    // React Compiler rules added to the `correctness` category in oxlint 1.79. `set-state-in-effect`
+    // cannot see through an `await`, so it flags every effect that kicks off an async load; those
+    // six sites carry a local disable with the reason. The remaining rules are clean.
+    "react/set-state-in-effect": "error",
+    "react/refs": "error",
+    "react/immutability": "error",
+    // React Compiler is not part of this build (no babel-plugin-react-compiler in the Vite config),
+    // so "memoization could not be preserved" reports nothing that affects the shipped bundle. It
+    // fires on `shuffleArray` in PlaylistDetail, which mutates a local copy before returning it.
+    "react/preserve-manual-memoization": "off",
     // React 19 with the automatic JSX runtime ("jsx": "react-jsx"), so React need not be in scope.
     "react/react-in-jsx-scope": "off",
     // The hand-rolled Option/Either types expose `.map`, which returns a single element rather

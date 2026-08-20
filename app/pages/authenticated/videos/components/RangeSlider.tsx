@@ -1,4 +1,4 @@
-import React, { type JSX, useEffect, useState } from "react"
+import React, { type JSX, useState } from "react"
 import { Slider } from "@mui/material"
 import classNames from "classnames"
 import { fromNumberArray, type Range, toNumberArray } from "~/models/Range"
@@ -17,11 +17,17 @@ type RangeSliderProps<A> = {
 }
 
 function RangeSlider<A>(props: RangeSliderProps<A>): JSX.Element {
+  // The slider drives `transientRange` while dragging and only commits on release, so the
+  // committed prop has to be adopted whenever it changes from outside the slider. Adjusting
+  // during render (React's documented pattern) re-renders before the browser paints, whereas an
+  // effect would paint the stale range first.
   const [transientRange, setTransientRange] = useState(props.range)
+  const [committedRange, setCommittedRange] = useState(props.range)
 
-  useEffect(() => {
+  if (props.range !== committedRange) {
+    setCommittedRange(props.range)
     setTransientRange(props.range)
-  }, [props.range])
+  }
 
   const toRange = (values: number | number[]): Range<A> =>
     fromNumberArray(

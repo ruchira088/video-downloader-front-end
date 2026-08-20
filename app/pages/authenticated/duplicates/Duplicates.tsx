@@ -29,6 +29,22 @@ const Duplicates = () => {
   // is fetched once rather than once per group.
   const videoRequests = useRef(new Map<string, Promise<Option<Video>>>())
 
+  const loadVideo = (videoId: string): Promise<Option<Video>> =>
+    Option.fromNullable(videoRequests.current.get(videoId)).getOrElse(() => {
+      const request: Promise<Option<Video>> = fetchVideoById(videoId)
+        .then((video) => Some.of(video))
+        .catch((error: unknown) => {
+          console.error(`Failed to load duplicate video ${videoId}`, error)
+          // Failures are not cached, so a later page or retry can fetch the video again.
+          videoRequests.current.delete(videoId)
+          return None.of<Video>()
+        })
+
+      videoRequests.current.set(videoId, request)
+
+      return request
+    })
+
   const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch(
     async page => Object.entries(await fetchDuplicateVideos(page, PAGE_SIZE)),
     async groupEntries => {
@@ -54,22 +70,6 @@ const Duplicates = () => {
     },
     { pageSize: PAGE_SIZE }
   )
-
-  const loadVideo = (videoId: string): Promise<Option<Video>> =>
-    Option.fromNullable(videoRequests.current.get(videoId)).getOrElse(() => {
-      const request: Promise<Option<Video>> = fetchVideoById(videoId)
-        .then((video) => Some.of(video))
-        .catch((error: unknown) => {
-          console.error(`Failed to load duplicate video ${videoId}`, error)
-          // Failures are not cached, so a later page or retry can fetch the video again.
-          videoRequests.current.delete(videoId)
-          return None.of<Video>()
-        })
-
-      videoRequests.current.set(videoId, request)
-
-      return request
-    })
 
   const onDeleteVideo = async (videoId: string) => {
     try {

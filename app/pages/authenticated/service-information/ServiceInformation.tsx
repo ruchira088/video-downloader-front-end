@@ -242,6 +242,8 @@ const ServiceInformation = () => {
   }
 
   useEffect(() => {
+    // Both setStates happen after an await, so these are async polls rather than cascading renders.
+    // oxlint-disable-next-line react/set-state-in-effect
     void fetchHealthCheckDetails()
     const intervalId = setInterval(fetchHealthCheckDetails, 30_000)
 
@@ -249,6 +251,7 @@ const ServiceInformation = () => {
   }, [])
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
     fetchBackendInformation()
       .catch((error) => console.error("Failed to retrieve backend service information", error))
   }, [])

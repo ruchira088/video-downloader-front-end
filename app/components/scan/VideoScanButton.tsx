@@ -11,7 +11,18 @@ type VideoScanButtonProps = {
 const VideoScanButton: FC<VideoScanButtonProps> = props => {
   const [scanStatus, setScanStatus] = useState<Option<ScanStatus>>(None.of())
 
+  const retrieveScanStatus = async () => {
+    try {
+      const videoScan: VideoScan = await fetchVideoScanStatus()
+      setScanStatus(Some.of(videoScan.scanStatus))
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   useEffect(() => {
+    // The setState happens after an await, so this is an async load rather than a cascading render.
+    // oxlint-disable-next-line react/set-state-in-effect
     void retrieveScanStatus()
   }, [])
 
@@ -32,15 +43,6 @@ const VideoScanButton: FC<VideoScanButtonProps> = props => {
 
     try {
       await scanForVideos()
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const retrieveScanStatus = async () => {
-    try {
-      const videoScan: VideoScan = await fetchVideoScanStatus()
-      setScanStatus(Some.of(videoScan.scanStatus))
     } catch (error) {
       console.error(error)
     }

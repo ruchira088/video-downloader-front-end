@@ -346,4 +346,35 @@ describe("RangeSlider", () => {
       expect(screen.getByText("50")).toBeInTheDocument()
     })
   })
+
+  // The slider keeps a transient range while dragging and only calls onChange on release, so it
+  // has to adopt a committed range that changes from outside without discarding a drag in flight.
+  describe("Committed range synchronisation", () => {
+    test("should adopt a range prop that changes from outside", () => {
+      const props = createDefaultProps()
+      const { rerender } = render(<RangeSlider {...props} />)
+
+      expect(screen.getByText("50")).toBeInTheDocument()
+
+      rerender(<RangeSlider {...props} range={{ min: 20, max: Some.of(80) } as Range<number>} />)
+
+      expect(screen.getByText("20")).toBeInTheDocument()
+      expect(screen.getByText("80")).toBeInTheDocument()
+    })
+
+    test("should settle rather than re-render forever when the range prop is unchanged", () => {
+      // The committed range is adopted during render, so a comparison that never converges would
+      // spin. Re-render with the same prop and assert the output is stable.
+      const props = createDefaultProps()
+      const { rerender } = render(<RangeSlider {...props} />)
+
+      for (let i = 0; i < 5; i++) {
+        rerender(<RangeSlider {...props} />)
+      }
+
+      expect(screen.getByText("0")).toBeInTheDocument()
+      expect(screen.getByText("50")).toBeInTheDocument()
+      expect(props.onChange).not.toHaveBeenCalled()
+    })
+  })
 })

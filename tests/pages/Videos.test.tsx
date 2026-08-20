@@ -342,6 +342,24 @@ describe("Videos", () => {
     expect(router.state.location.search).toBe("?search-term=holiday")
   })
 
+  test("should adopt a search term that changes in the URL after mount", async () => {
+    // The text field is driven locally between keystrokes, so a term arriving from outside the
+    // field — back/forward, or a link — has to be pulled back into it.
+    const { router } = renderWithRouter("/?search-term=holiday")
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Search videos")).toHaveValue("holiday")
+    })
+
+    await act(async () => {
+      await router.navigate("/?search-term=cooking")
+    })
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Search videos")).toHaveValue("cooking")
+    })
+  })
+
   test("should drop the query parameter when the search is cleared", async () => {
     const { router } = renderWithRouter("/?search-term=holiday")
 

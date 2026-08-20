@@ -25,6 +25,9 @@ const VideoPage = (props: Route.ComponentProps) => {
   useEffect(() => {
     let cancelled = false
 
+    // Clearing the previous video's data is part of starting the fetch for a new `videoId`, not a
+    // render the effect could have avoided — without it the old video shows while the new one loads.
+    // oxlint-disable-next-line react/set-state-in-effect
     setVideo(None.of())
     setVideoSnapshots([])
     setHasError(false)
