@@ -354,16 +354,11 @@ describe("VideoWatch", () => {
     renderWithContext(createMockVideo(), Duration.fromObject({ seconds: 0 }), updateVideo)
 
     // Find and click the edit button on the editable label
-    const editButtons = screen.getAllByRole("button")
-    const editButton = editButtons.find(button => button.getAttribute("aria-label")?.includes("Edit"))
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }))
 
-    if (editButton) {
-      fireEvent.click(editButton)
-    }
-
-    // updateVideoTitle should be callable through the component
+    // The current title is loaded into the editor
     await waitFor(() => {
-      expect(screen.getByText("Test Video Title")).toBeInTheDocument()
+      expect(screen.getByRole("textbox")).toHaveValue("Test Video Title")
     })
   })
 

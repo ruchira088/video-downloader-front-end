@@ -694,9 +694,9 @@ describe("PlaylistDetail", () => {
 
       // Wait for the Edit button to appear and click it
       await waitFor(() => {
-        expect(screen.getByText("Edit")).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument()
       })
-      await user.click(screen.getByText("Edit"))
+      await user.click(screen.getByRole("button", { name: "Edit" }))
 
       // Find the input and change the value
       const input = screen.getByRole("textbox")
@@ -704,7 +704,7 @@ describe("PlaylistDetail", () => {
       await user.type(input, "New Title")
 
       // Click Save button
-      const saveButton = screen.getByText("Save")
+      const saveButton = screen.getByRole("button", { name: "Save" })
       await user.click(saveButton)
 
       await waitFor(() => {

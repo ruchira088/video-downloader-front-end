@@ -1,13 +1,20 @@
-import React, { useState } from "react"
-import styles from "./EditableLabel.module.css"
-import { TextField } from "@mui/material"
+import { useState } from "react"
+import styles from "./EditableLabel.module.scss"
+import { IconButton, TextField, Tooltip } from "@mui/material"
+import EditIcon from "@mui/icons-material/Edit"
+import CheckIcon from "@mui/icons-material/Check"
+import CloseIcon from "@mui/icons-material/Close"
 import { useNotification } from "~/providers/NotificationProvider"
 
 const ReadModeLabel = ({ textValue, enabledEditMode }: { textValue: string; enabledEditMode: () => void }) => (
-  <div className={styles.readModeLabel}>
+  <span className={styles.readModeLabel}>
     {textValue}
-    <button className={styles.editButton} onClick={enabledEditMode}>Edit</button>
-  </div>
+    <Tooltip title="Edit title">
+      <IconButton className={styles.editButton} size="small" aria-label="Edit" onClick={enabledEditMode}>
+        <EditIcon fontSize="inherit" />
+      </IconButton>
+    </Tooltip>
+  </span>
 )
 
 const EditableTextField = ({
@@ -21,11 +28,13 @@ const EditableTextField = ({
   onCancel: () => void
   onSaveClick: (text: string) => void
 }) => (
-  <>
+  <span className={styles.editMode}>
     <TextField
-      label="Title"
+      className={styles.textField}
       value={textValue}
       autoFocus
+      size="small"
+      slotProps={{ htmlInput: { "aria-label": "Title" } }}
       onChange={(event) => onTextChange(event.target.value)}
       // Enter and Escape are what people reach for in a single-field inline editor.
       onKeyDown={(event) => {
@@ -38,9 +47,17 @@ const EditableTextField = ({
         }
       }}
     />
-    <button onClick={() => onSaveClick(textValue)}>Save</button>
-    <button onClick={onCancel}>Cancel</button>
-  </>
+    <Tooltip title="Save">
+      <IconButton className={styles.actionButton} size="small" color="primary" aria-label="Save" onClick={() => onSaveClick(textValue)}>
+        <CheckIcon fontSize="inherit" />
+      </IconButton>
+    </Tooltip>
+    <Tooltip title="Cancel">
+      <IconButton className={styles.actionButton} size="small" aria-label="Cancel" onClick={onCancel}>
+        <CloseIcon fontSize="inherit" />
+      </IconButton>
+    </Tooltip>
+  </span>
 )
 
 const EditableLabel = ({ textValue, onUpdateText }: { textValue: string; onUpdateText: (text: string) => Promise<void> }) => {

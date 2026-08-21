@@ -1,8 +1,0 @@
-.readModeLabel .editButton {
-  opacity: 0;
-}
-
-.readModeLabel:hover .editButton,
-.readModeLabel:focus-within .editButton {
-  opacity: 1;
-}

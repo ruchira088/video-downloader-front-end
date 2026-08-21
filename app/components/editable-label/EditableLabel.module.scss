@@ -1,0 +1,56 @@
+.readModeLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.editButton {
+  // Scales the icon button with whatever font size the label is rendered at.
+  flex: none;
+  font-size: 0.65em;
+  color: inherit;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.readModeLabel:hover .editButton,
+.readModeLabel:focus-within .editButton {
+  opacity: 0.7;
+}
+
+.readModeLabel .editButton:hover,
+.readModeLabel .editButton:focus-visible {
+  opacity: 1;
+}
+
+.editMode {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  width: 100%;
+}
+
+.textField {
+  flex: 1;
+  min-width: 0;
+
+  // Keep the input at the same size and weight as the label it replaces.
+  :global(.MuiInputBase-root) {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+}
+
+.actionButton {
+  flex: none;
+  font-size: 0.65em;
+}
+
+// Without hover there is no way to reveal the button, so keep it visible.
+@media (hover: none) {
+  .editButton {
+    opacity: 0.7;
+  }
+}
