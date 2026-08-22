@@ -1,12 +1,20 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import VideoWatch from "~/pages/authenticated/videos/video-page/watch/VideoWatch"
-import { DateTime, Duration } from "luxon"
+import { Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some } from "~/types/Option"
-import { FileResourceType } from "~/models/FileResource"
 import React from "react"
+import { buildVideo, type Json } from "../fixtures"
+
+const createMockVideo = (overrides: Json = {}) =>
+  buildVideo({
+    title: "Test Video Title",
+    createdAt: "2023-10-15T10:30:00+00:00",
+    videoMetadata: { url: "https://example.com/video" },
+    ...overrides
+  })
 
 const mockNavigate = vi.fn()
 
@@ -24,34 +32,7 @@ vi.mock("~/services/asset/AssetService", () => ({
 }))
 
 vi.mock("~/services/video/VideoService", () => ({
-  updateVideoTitle: vi.fn().mockResolvedValue({
-    videoMetadata: {
-      id: "video-123",
-      title: "Updated Title",
-      videoSite: "youtube",
-      url: "https://example.com/video",
-      duration: { toMillis: () => 330000, as: () => 330 },
-      size: 1024000000,
-      thumbnail: {
-        id: "thumb-123",
-        type: "thumbnail",
-        createdAt: { toISO: () => "2023-10-15T10:00:00Z" },
-        path: "/path/to/thumb",
-        mediaType: "image/jpeg",
-        size: 1024,
-      },
-    },
-    fileResource: {
-      id: "file-123",
-      type: "video",
-      createdAt: { toISO: () => "2023-10-15T10:00:00Z" },
-      path: "/path/to/video",
-      mediaType: "video/mp4",
-      size: 1024000000,
-    },
-    createdAt: { toISO: () => "2023-10-15T10:00:00Z" },
-    watchTime: { toMillis: () => 120000 },
-  }),
+  updateVideoTitle: vi.fn(),
   deleteVideo: vi.fn().mockResolvedValue(undefined),
   fetchVideoSnapshotsByVideoId: vi.fn().mockResolvedValue([]),
 }))
@@ -67,35 +48,6 @@ vi.mock("~/components/helmet/Helmet", () => ({
 vi.mock("~/components/video/video-snapshots/VideoSnapshotsGallery", () => ({
   default: () => <div data-testid="snapshots-gallery">Snapshots</div>,
 }))
-
-const createMockVideo = () => ({
-  videoMetadata: {
-    url: "https://example.com/video",
-    id: "video-123",
-    videoSite: "youtube",
-    title: "Test Video Title",
-    duration: Duration.fromObject({ minutes: 5, seconds: 30 }),
-    size: 1024000000,
-    thumbnail: {
-      id: "thumb-123",
-      type: FileResourceType.Thumbnail as const,
-      createdAt: DateTime.now(),
-      path: "/path/to/thumb",
-      mediaType: "image/jpeg",
-      size: 1024,
-    },
-  },
-  fileResource: {
-    id: "file-123",
-    type: FileResourceType.Video as const,
-    createdAt: DateTime.now(),
-    path: "/path/to/video",
-    mediaType: "video/mp4",
-    size: 1024000000,
-  },
-  createdAt: DateTime.fromISO("2023-10-15T10:30:00Z"),
-  watchTime: Duration.fromObject({ minutes: 2 }),
-})
 
 const renderWithContext = (
   video = createMockVideo(),
@@ -123,8 +75,13 @@ const renderWithContext = (
 }
 
 describe("VideoWatch", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+
+    // Set here rather than in the vi.mock factory so the resolved value is a real parsed
+    // Video rather than a hand-rolled stand-in.
+    const { updateVideoTitle } = await import("~/services/video/VideoService")
+    vi.mocked(updateVideoTitle).mockResolvedValue(createMockVideo({ title: "Updated Title" }))
   })
 
   test("should render video player", () => {

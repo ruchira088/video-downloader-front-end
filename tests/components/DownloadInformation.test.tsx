@@ -1,38 +1,22 @@
 import { describe, expect, test } from "vitest"
 import { render, screen } from "@testing-library/react"
 import DownloadInformation from "~/pages/authenticated/downloading/scheduled-video-download-card/DownloadInformation"
-import { DateTime, Duration } from "luxon"
-import { None, Some } from "~/types/Option"
-import { FileResourceType } from "~/models/FileResource"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
 import React from "react"
+import { buildDownloadableScheduledVideo, durationJson } from "../fixtures"
 
-const createMockDownloadableScheduledVideo = (downloadSpeed: number | null) => ({
-  lastUpdatedAt: DateTime.now(),
-  scheduledAt: DateTime.now(),
-  videoMetadata: {
-    url: "https://example.com/video",
-    id: "video-123",
-    videoSite: "youtube",
-    title: "Test Video",
-    duration: Duration.fromObject({ minutes: 5 }),
-    size: 1000000000, // 1GB
-    thumbnail: {
-      id: "thumb-123",
-      type: FileResourceType.Thumbnail as const,
-      createdAt: DateTime.now(),
-      path: "/path/to/thumb",
-      mediaType: "image/jpeg",
-      size: 1024,
-    },
-  },
-  status: SchedulingStatus.Active,
-  downloadedBytes: 500000000, // 500MB downloaded
-  completedAt: None.of<DateTime>(),
-  errorInfo: null,
-  downloadSpeed: downloadSpeed !== null ? Some.of(downloadSpeed) : None.of<number>(),
-  downloadHistory: [],
-})
+const createMockDownloadableScheduledVideo = (downloadSpeed: number | null) =>
+  buildDownloadableScheduledVideo({
+    status: SchedulingStatus.Active,
+    // 500MB of a 1GB download, so "remaining" arithmetic is easy to read in assertions.
+    downloadedBytes: 500000000,
+    downloadSpeed,
+    videoMetadata: {
+      url: "https://example.com/video",
+      duration: durationJson(300),
+      size: 1000000000
+    }
+  })
 
 describe("DownloadInformation", () => {
   test("should render download speed when available", () => {
@@ -90,14 +74,12 @@ describe("DownloadInformation", () => {
 
   test("should calculate remaining time correctly", () => {
     // 100MB remaining at 10MB/s = 10 seconds
-    const video = {
-      ...createMockDownloadableScheduledVideo(10000000), // 10MB/s
-      videoMetadata: {
-        ...createMockDownloadableScheduledVideo(10000000).videoMetadata,
-        size: 200000000, // 200MB total
-      },
+    const video = buildDownloadableScheduledVideo({
+      status: SchedulingStatus.Active,
+      downloadSpeed: 10000000, // 10MB/s
       downloadedBytes: 100000000, // 100MB downloaded
-    }
+      videoMetadata: { size: 200000000 } // 200MB total
+    })
 
     render(<DownloadInformation downloadableScheduledVideo={video} />)
 

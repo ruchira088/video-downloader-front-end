@@ -16,55 +16,21 @@ import {
   fetchPlaylistById,
   updatePlaylist,
   deletePlaylist,
-  reorderPlaylistVideos
+  reorderPlaylistVideos,
+  addVideoToPlaylist,
+  removeVideoFromPlaylist,
+  uploadAlbumArt,
+  removeAlbumArt
 } from "~/services/playlist/PlaylistService"
 import { PlaylistSortBy } from "~/models/PlaylistSortBy"
 import { PlaylistOrdering } from "~/models/PlaylistOrdering"
 import { None } from "~/types/Option"
+import { buildPlaylist, fileResourceJson, playlistJson, videoJson } from "../fixtures"
 
 const mockAxiosGet = vi.mocked(axiosClient.get)
 const mockAxiosPost = vi.mocked(axiosClient.post)
 const mockAxiosPut = vi.mocked(axiosClient.put)
 const mockAxiosDelete = vi.mocked(axiosClient.delete)
-
-const createMockFileResource = (id: string) => ({
-  id,
-  createdAt: "2024-01-15T10:00:00+00:00",
-  path: `/files/${id}`,
-  mediaType: "image/jpeg",
-  size: 50000
-})
-
-const createMockVideo = (id: string, title: string) => ({
-  videoMetadata: {
-    url: `https://example.com/video/${id}`,
-    id,
-    videoSite: "youtube",
-    title,
-    duration: { length: 300, unit: "seconds" },
-    size: 1000000,
-    thumbnail: createMockFileResource(`thumb-${id}`)
-  },
-  fileResource: {
-    id: `file-${id}`,
-    createdAt: "2024-01-15T10:00:00+00:00",
-    path: `/videos/${id}.mp4`,
-    mediaType: "video/mp4",
-    size: 1000000
-  },
-  createdAt: "2024-01-15T10:00:00+00:00",
-  watchTime: { length: 0, unit: "seconds" }
-})
-
-const createMockPlaylist = (id: string, title: string, videos: unknown[] = []) => ({
-  id,
-  userId: "user-123",
-  createdAt: "2024-01-15T10:00:00+00:00",
-  title,
-  description: "Test description",
-  videos,
-  albumArt: null
-})
 
 describe("PlaylistService", () => {
   beforeEach(() => {
@@ -73,7 +39,7 @@ describe("PlaylistService", () => {
 
   describe("createPlaylist", () => {
     test("should call API with title and description", async () => {
-      const mockPlaylist = createMockPlaylist("1", "My Playlist")
+      const mockPlaylist = playlistJson({ id: "1", title: "My Playlist" })
       mockAxiosPost.mockResolvedValue({ data: mockPlaylist })
 
       await createPlaylist("My Playlist", "Description")
@@ -85,7 +51,7 @@ describe("PlaylistService", () => {
     })
 
     test("should return parsed playlist", async () => {
-      const mockPlaylist = createMockPlaylist("1", "My Playlist")
+      const mockPlaylist = playlistJson({ id: "1", title: "My Playlist" })
       mockAxiosPost.mockResolvedValue({ data: mockPlaylist })
 
       const result = await createPlaylist("My Playlist")
@@ -115,8 +81,8 @@ describe("PlaylistService", () => {
     test("should return parsed playlists array", async () => {
       const mockPlaylists = {
         results: [
-          createMockPlaylist("1", "Playlist 1"),
-          createMockPlaylist("2", "Playlist 2")
+          playlistJson({ id: "1", title: "Playlist 1" }),
+          playlistJson({ id: "2", title: "Playlist 2" })
         ]
       }
       mockAxiosGet.mockResolvedValue({ data: mockPlaylists })
@@ -130,7 +96,7 @@ describe("PlaylistService", () => {
 
   describe("fetchPlaylistById", () => {
     test("should call API with playlist ID", async () => {
-      const mockPlaylist = createMockPlaylist("123", "My Playlist")
+      const mockPlaylist = playlistJson({ id: "123", title: "My Playlist" })
       mockAxiosGet.mockResolvedValue({ data: mockPlaylist })
 
       await fetchPlaylistById("123")
@@ -139,9 +105,9 @@ describe("PlaylistService", () => {
     })
 
     test("should return playlist with videos", async () => {
-      const mockPlaylist = createMockPlaylist("123", "My Playlist", [
-        createMockVideo("video-1", "Video 1")
-      ])
+      const mockPlaylist = playlistJson({ id: "123", title: "My Playlist", videos: [
+        videoJson({ id: "video-1", title: "Video 1" })
+      ] })
       mockAxiosGet.mockResolvedValue({ data: mockPlaylist })
 
       const result = await fetchPlaylistById("123")
@@ -153,7 +119,7 @@ describe("PlaylistService", () => {
 
   describe("updatePlaylist", () => {
     test("should call API with update data", async () => {
-      const mockPlaylist = createMockPlaylist("123", "Updated Title")
+      const mockPlaylist = playlistJson({ id: "123", title: "Updated Title" })
       mockAxiosPut.mockResolvedValue({ data: mockPlaylist })
 
       await updatePlaylist("123", "Updated Title", "Updated Description")
@@ -168,7 +134,7 @@ describe("PlaylistService", () => {
 
   describe("deletePlaylist", () => {
     test("should call API to delete playlist", async () => {
-      const mockPlaylist = createMockPlaylist("123", "My Playlist")
+      const mockPlaylist = playlistJson({ id: "123", title: "My Playlist" })
       mockAxiosDelete.mockResolvedValue({ data: mockPlaylist })
 
       await deletePlaylist("123")
@@ -179,10 +145,10 @@ describe("PlaylistService", () => {
 
   describe("reorderPlaylistVideos", () => {
     test("should call API with new video order", async () => {
-      const mockPlaylist = createMockPlaylist("playlist-123", "My Playlist", [
-        createMockVideo("video-2", "Video 2"),
-        createMockVideo("video-1", "Video 1")
-      ])
+      const mockPlaylist = playlistJson({ id: "playlist-123", title: "My Playlist", videos: [
+        videoJson({ id: "video-2", title: "Video 2" }),
+        videoJson({ id: "video-1", title: "Video 1" })
+      ] })
       mockAxiosPut.mockResolvedValue({ data: mockPlaylist })
 
       await reorderPlaylistVideos("playlist-123", ["video-2", "video-1"])
@@ -196,21 +162,14 @@ describe("PlaylistService", () => {
   })
 
   describe("addVideoToPlaylist", () => {
-    test("should add video to existing playlist videos", async () => {
-      const existingPlaylist = {
-        ...createMockPlaylist("playlist-123", "My Playlist", [
-          createMockVideo("video-1", "Video 1")
-        ]),
-        videos: [createMockVideo("video-1", "Video 1")]
-      }
-      const updatedPlaylist = createMockPlaylist("playlist-123", "My Playlist", [
-        createMockVideo("video-1", "Video 1"),
-        createMockVideo("video-2", "Video 2")
-      ])
-      mockAxiosPut.mockResolvedValue({ data: updatedPlaylist })
+    test("should append the video to the existing ordering", async () => {
+      const existingPlaylist = buildPlaylist({
+        id: "playlist-123",
+        videos: [videoJson({ id: "video-1", title: "Video 1" })]
+      })
+      mockAxiosPut.mockResolvedValue({ data: playlistJson({ id: "playlist-123" }) })
 
-      const { addVideoToPlaylist } = await import("~/services/playlist/PlaylistService")
-      await addVideoToPlaylist(existingPlaylist as any, "video-2")
+      await addVideoToPlaylist(existingPlaylist, "video-2")
 
       expect(mockAxiosPut).toHaveBeenCalledWith("/playlists/id/playlist-123", {
         title: undefined,
@@ -219,18 +178,11 @@ describe("PlaylistService", () => {
       })
     })
 
-    test("should add video to empty playlist", async () => {
-      const existingPlaylist = {
-        ...createMockPlaylist("playlist-123", "My Playlist", []),
-        videos: []
-      }
-      const updatedPlaylist = createMockPlaylist("playlist-123", "My Playlist", [
-        createMockVideo("video-1", "Video 1")
-      ])
-      mockAxiosPut.mockResolvedValue({ data: updatedPlaylist })
+    test("should add a video to an empty playlist", async () => {
+      const existingPlaylist = buildPlaylist({ id: "playlist-123", videos: [] })
+      mockAxiosPut.mockResolvedValue({ data: playlistJson({ id: "playlist-123" }) })
 
-      const { addVideoToPlaylist } = await import("~/services/playlist/PlaylistService")
-      await addVideoToPlaylist(existingPlaylist as any, "video-1")
+      await addVideoToPlaylist(existingPlaylist, "video-1")
 
       expect(mockAxiosPut).toHaveBeenCalledWith("/playlists/id/playlist-123", {
         title: undefined,
@@ -241,24 +193,17 @@ describe("PlaylistService", () => {
   })
 
   describe("removeVideoFromPlaylist", () => {
-    test("should remove video from playlist", async () => {
-      const existingPlaylist = {
-        ...createMockPlaylist("playlist-123", "My Playlist", [
-          createMockVideo("video-1", "Video 1"),
-          createMockVideo("video-2", "Video 2")
-        ]),
+    test("should drop the video and keep the remaining ordering", async () => {
+      const existingPlaylist = buildPlaylist({
+        id: "playlist-123",
         videos: [
-          createMockVideo("video-1", "Video 1"),
-          createMockVideo("video-2", "Video 2")
+          videoJson({ id: "video-1", title: "Video 1" }),
+          videoJson({ id: "video-2", title: "Video 2" })
         ]
-      }
-      const updatedPlaylist = createMockPlaylist("playlist-123", "My Playlist", [
-        createMockVideo("video-2", "Video 2")
-      ])
-      mockAxiosPut.mockResolvedValue({ data: updatedPlaylist })
+      })
+      mockAxiosPut.mockResolvedValue({ data: playlistJson({ id: "playlist-123" }) })
 
-      const { removeVideoFromPlaylist } = await import("~/services/playlist/PlaylistService")
-      await removeVideoFromPlaylist(existingPlaylist as any, "video-1")
+      await removeVideoFromPlaylist(existingPlaylist, "video-1")
 
       expect(mockAxiosPut).toHaveBeenCalledWith("/playlists/id/playlist-123", {
         title: undefined,
@@ -267,24 +212,92 @@ describe("PlaylistService", () => {
       })
     })
 
-    test("should result in empty playlist when removing last video", async () => {
-      const existingPlaylist = {
-        ...createMockPlaylist("playlist-123", "My Playlist", [
-          createMockVideo("video-1", "Video 1")
-        ]),
-        videos: [createMockVideo("video-1", "Video 1")]
-      }
-      const updatedPlaylist = createMockPlaylist("playlist-123", "My Playlist", [])
-      mockAxiosPut.mockResolvedValue({ data: updatedPlaylist })
+    test("should send an empty ordering when the last video is removed", async () => {
+      const existingPlaylist = buildPlaylist({
+        id: "playlist-123",
+        videos: [videoJson({ id: "video-1", title: "Video 1" })]
+      })
+      mockAxiosPut.mockResolvedValue({ data: playlistJson({ id: "playlist-123" }) })
 
-      const { removeVideoFromPlaylist } = await import("~/services/playlist/PlaylistService")
-      await removeVideoFromPlaylist(existingPlaylist as any, "video-1")
+      await removeVideoFromPlaylist(existingPlaylist, "video-1")
 
       expect(mockAxiosPut).toHaveBeenCalledWith("/playlists/id/playlist-123", {
         title: undefined,
         description: undefined,
         videoIds: []
       })
+    })
+  })
+
+  describe("uploadAlbumArt", () => {
+    test("should PUT the file as multipart form data", async () => {
+      mockAxiosPut.mockResolvedValue({ data: playlistJson({ id: "123", title: "My Playlist" }) })
+
+      const file = new File(["cover-bytes"], "cover.jpg", { type: "image/jpeg" })
+      await uploadAlbumArt("123", file)
+
+      expect(mockAxiosPut).toHaveBeenCalledWith("/playlists/id/123/album-art", expect.any(FormData))
+
+      // The API reads the upload from a "file" part, so the field name is part of the contract.
+      const formData = mockAxiosPut.mock.calls[0][1] as FormData
+      expect(formData.get("file")).toBe(file)
+    })
+
+    test("should return the parsed playlist carrying the new album art", async () => {
+      mockAxiosPut.mockResolvedValue({
+        data: {
+          ...playlistJson({ id: "123", title: "My Playlist" }),
+          albumArt: { ...fileResourceJson({ id: "art-1" }), type: "album-art" }
+        }
+      })
+
+      const result = await uploadAlbumArt("123", new File([""], "cover.jpg"))
+
+      expect(result.albumArt.isEmpty()).toBe(false)
+      expect(result.albumArt.toNullable()?.id).toBe("art-1")
+    })
+  })
+
+  describe("removeAlbumArt", () => {
+    test("should DELETE the album art and return the playlist without it", async () => {
+      mockAxiosDelete.mockResolvedValue({ data: playlistJson({ id: "123", title: "My Playlist" }) })
+
+      const result = await removeAlbumArt("123")
+
+      expect(mockAxiosDelete).toHaveBeenCalledWith("/playlists/id/123/album-art")
+      expect(result.albumArt.isEmpty()).toBe(true)
+    })
+  })
+
+  describe("failure handling", () => {
+    test("should propagate transport errors rather than swallowing them", async () => {
+      mockAxiosGet.mockRejectedValue(new Error("Network Error"))
+
+      await expect(fetchPlaylistById("123")).rejects.toThrow("Network Error")
+    })
+
+    test("should reject when the API returns a playlist that fails validation", async () => {
+      // A drifting API contract must fail loudly at the boundary instead of leaking
+      // a half-built Playlist into the UI.
+      mockAxiosGet.mockResolvedValue({ data: { id: "123", title: "My Playlist" } })
+
+      await expect(fetchPlaylistById("123")).rejects.toThrow()
+    })
+
+    test("should reject when a playlist in a list response fails validation", async () => {
+      mockAxiosGet.mockResolvedValue({ data: { results: [{ id: "1" }] } })
+
+      await expect(
+        fetchPlaylists(None.of(), 0, 20, PlaylistSortBy.CreatedAt, PlaylistOrdering.Descending)
+      ).rejects.toThrow()
+    })
+
+    test("should reject when createdAt is not a valid date-time", async () => {
+      mockAxiosPost.mockResolvedValue({
+        data: { ...playlistJson({ id: "1", title: "My Playlist" }), createdAt: "not-a-date" }
+      })
+
+      await expect(createPlaylist("My Playlist")).rejects.toThrow()
     })
   })
 })

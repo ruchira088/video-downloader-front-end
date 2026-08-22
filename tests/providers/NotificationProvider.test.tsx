@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React from "react"
 import { NotificationProvider, useNotification } from "~/providers/NotificationProvider"
@@ -134,5 +134,53 @@ describe("NotificationProvider", () => {
 
     expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to save the playlist", new Error("boom"))
     expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+  })
+  test("should not dismiss a notification when the user clicks elsewhere on the page", async () => {
+    const user = userEvent.setup()
+
+    render(
+      <NotificationProvider>
+        <TestConsumer />
+      </NotificationProvider>
+    )
+
+    await user.click(screen.getByRole("button", { name: "Succeed" }))
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toBeInTheDocument()
+    })
+
+    // MUI reports any click on the page as a "clickaway" close. Carrying on working must
+    // not wipe the message the user has not read yet.
+    await user.click(screen.getByTestId("child"))
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Playlist saved")
+  })
+  test("should dismiss a notification once the auto-hide timeout elapses", async () => {
+    vi.useFakeTimers()
+
+    try {
+      // userEvent drives its own timers, so this one case uses fireEvent to keep the
+      // fake clock under the test's control.
+      render(
+        <NotificationProvider>
+          <TestConsumer />
+        </NotificationProvider>
+      )
+
+      fireEvent.click(screen.getByRole("button", { name: "Succeed" }))
+      expect(screen.getByRole("alert")).toBeInTheDocument()
+
+      // A timeout close is the one reason, besides an explicit close, that dismisses.
+      // Advance well past the provider's auto-hide duration so the test does not
+      // restate the exact value.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(60_000)
+      })
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

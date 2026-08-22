@@ -2,12 +2,12 @@ import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, waitFor, fireEvent, act } from "@testing-library/react"
 import Videos from "~/pages/authenticated/videos/Videos"
 import { createMemoryRouter, RouterProvider } from "react-router"
-import { DateTime, Duration } from "luxon"
+import { Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some, None } from "~/types/Option"
-import { FileResourceType } from "~/models/FileResource"
 import React from "react"
+import { buildVideo } from "../fixtures"
 import { intersectionObserverCallbacks } from "../setup"
 
 const triggerIntersection = async () => {
@@ -23,35 +23,6 @@ const triggerIntersection = async () => {
 // The search debounce is wall-clock, so these waits must tolerate a heavily loaded suite.
 // waitFor polls, so a passing assertion still returns as soon as it holds.
 const DEBOUNCE_TIMEOUT_MS = 10_000
-
-const buildVideo = (id: string, title: string) => ({
-  videoMetadata: {
-    url: `https://example.com/video/${id}`,
-    id,
-    videoSite: "youtube",
-    title,
-    duration: Duration.fromObject({ minutes: 5 }),
-    size: 1024000000,
-    thumbnail: {
-      id: `thumb-${id}`,
-      type: FileResourceType.Thumbnail as const,
-      createdAt: DateTime.now(),
-      path: "/path/to/thumb",
-      mediaType: "image/jpeg",
-      size: 1024,
-    },
-  },
-  fileResource: {
-    id: `file-${id}`,
-    type: FileResourceType.Video as const,
-    createdAt: DateTime.now(),
-    path: "/path/to/video",
-    mediaType: "video/mp4",
-    size: 1024000000,
-  },
-  createdAt: DateTime.now(),
-  watchTime: Duration.fromObject({ minutes: 2 }),
-})
 
 vi.mock("~/services/video/VideoService", () => ({
   searchVideos: vi.fn(),
@@ -156,34 +127,7 @@ describe("Videos", () => {
     const { searchVideos } = await import("~/services/video/VideoService")
     vi.mocked(searchVideos).mockResolvedValue({
       results: [
-        {
-          videoMetadata: {
-            url: "https://example.com/video",
-            id: "video-123",
-            videoSite: "youtube",
-            title: "Test Video",
-            duration: Duration.fromObject({ minutes: 5 }),
-            size: 1024000000,
-            thumbnail: {
-              id: "thumb-123",
-              type: FileResourceType.Thumbnail as const,
-              createdAt: DateTime.now(),
-              path: "/path/to/thumb",
-              mediaType: "image/jpeg",
-              size: 1024,
-            },
-          },
-          fileResource: {
-            id: "file-123",
-            type: FileResourceType.Video as const,
-            createdAt: DateTime.now(),
-            path: "/path/to/video",
-            mediaType: "video/mp4",
-            size: 1024000000,
-          },
-          createdAt: DateTime.now(),
-          watchTime: Duration.fromObject({ minutes: 2 }),
-        },
+        buildVideo({ id: "video-123", title: "Test Video" }),
       ],
       pageNumber: 0,
       pageSize: 50,
@@ -201,34 +145,7 @@ describe("Videos", () => {
     const { searchVideos } = await import("~/services/video/VideoService")
     vi.mocked(searchVideos).mockResolvedValue({
       results: [
-        {
-          videoMetadata: {
-            url: "https://example.com/video",
-            id: "video-123",
-            videoSite: "youtube",
-            title: "Test Video",
-            duration: Duration.fromObject({ minutes: 5 }),
-            size: 1024000000,
-            thumbnail: {
-              id: "thumb-123",
-              type: FileResourceType.Thumbnail as const,
-              createdAt: DateTime.now(),
-              path: "/path/to/thumb",
-              mediaType: "image/jpeg",
-              size: 1024,
-            },
-          },
-          fileResource: {
-            id: "file-123",
-            type: FileResourceType.Video as const,
-            createdAt: DateTime.now(),
-            path: "/path/to/video",
-            mediaType: "video/mp4",
-            size: 1024000000,
-          },
-          createdAt: DateTime.now(),
-          watchTime: Duration.fromObject({ minutes: 2 }),
-        },
+        buildVideo({ id: "video-123", title: "Test Video" }),
       ],
       pageNumber: 0,
       pageSize: 50,
@@ -434,34 +351,7 @@ describe("Videos", () => {
     vi.mocked(searchVideos)
       .mockResolvedValueOnce({
         results: [
-          {
-            videoMetadata: {
-              url: "https://example.com/video1",
-              id: "video-1",
-              videoSite: "youtube",
-              title: "First Video",
-              duration: Duration.fromObject({ minutes: 5 }),
-              size: 1024000000,
-              thumbnail: {
-                id: "thumb-1",
-                type: FileResourceType.Thumbnail as const,
-                createdAt: DateTime.now(),
-                path: "/path/to/thumb",
-                mediaType: "image/jpeg",
-                size: 1024,
-              },
-            },
-            fileResource: {
-              id: "file-1",
-              type: FileResourceType.Video as const,
-              createdAt: DateTime.now(),
-              path: "/path/to/video",
-              mediaType: "video/mp4",
-              size: 1024000000,
-            },
-            createdAt: DateTime.now(),
-            watchTime: Duration.fromObject({ minutes: 2 }),
-          },
+          buildVideo({ id: "video-1", title: "First Video" }),
         ],
         pageNumber: 0,
         pageSize: 50,
@@ -537,7 +427,7 @@ describe("Videos", () => {
 
     test("should load and concatenate the next page when scroll trigger intersects", async () => {
       const { searchVideos } = await import("~/services/video/VideoService")
-      const fullPage = Array.from({ length: 50 }, (_, i) => buildVideo(`p0-${i}`, `Page0 ${i}`))
+      const fullPage = Array.from({ length: 50 }, (_, i) => buildVideo({ id: `p0-${i}`, title: `Page0 ${i}` }))
 
       vi.mocked(searchVideos)
         .mockResolvedValueOnce({
@@ -547,7 +437,7 @@ describe("Videos", () => {
           searchTerm: None.of(),
         })
         .mockResolvedValueOnce({
-          results: [buildVideo("p1-0", "Page1 0")],
+          results: [buildVideo({ id: "p1-0", title: "Page1 0" })],
           pageNumber: 1,
           pageSize: 50,
           searchTerm: None.of(),
@@ -576,7 +466,7 @@ describe("Videos", () => {
     test("should not refetch when results are less than page size (hasMore=false)", async () => {
       const { searchVideos } = await import("~/services/video/VideoService")
       vi.mocked(searchVideos).mockResolvedValue({
-        results: [buildVideo("only", "Only Video")],
+        results: [buildVideo({ id: "only", title: "Only Video" })],
         pageNumber: 0,
         pageSize: 50,
         searchTerm: None.of(),

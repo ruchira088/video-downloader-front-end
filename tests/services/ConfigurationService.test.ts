@@ -1,6 +1,10 @@
-import { describe, expect, test, vi } from "vitest"
+import { beforeEach, describe, expect, test, vi } from "vitest"
 import { Theme, ApplicationConfiguration } from "~/models/ApplicationConfiguration"
-import { ConfigurationService, LocalStorageConfigurationService } from "~/services/config/ConfigurationService"
+import {
+  ConfigurationService,
+  localStorageConfigurationService,
+  LocalStorageConfigurationService
+} from "~/services/config/ConfigurationService"
 import { None, Some } from "~/types/Option"
 
 describe("ConfigurationService", () => {
@@ -125,6 +129,74 @@ describe("ConfigurationService", () => {
       await service.getApplicationConfiguration()
 
       expect(mockStore.get).toHaveBeenCalledWith("AppConfigKey")
+    })
+  })
+  // The exported singleton is what the app actually uses, and it is the only thing that
+  // exercises the KeySpace codec that encodes/decodes the configuration for localStorage.
+  describe("localStorageConfigurationService", () => {
+    // Mirrors `${keySpace.name}-${keyEncoder.encode(key)}` in LocalKeyValueStore.
+    const storageKey = "application-configuration-AppConfigKey"
+
+    beforeEach(() => {
+      localStorage.clear()
+    })
+
+    test("should round-trip a configuration through localStorage", async () => {
+      const configuration: ApplicationConfiguration = { theme: Theme.Dark, safeMode: true }
+
+      await localStorageConfigurationService.setApplicationConfiguration(configuration)
+      const result = await localStorageConfigurationService.getApplicationConfiguration()
+
+      expect(result.toNullable()).toEqual(configuration)
+    })
+
+    test("should persist the configuration as JSON under the namespaced key", async () => {
+      await localStorageConfigurationService.setApplicationConfiguration({ theme: Theme.Light, safeMode: false })
+
+      expect(JSON.parse(localStorage.getItem(storageKey)!)).toEqual({ theme: "light", safeMode: false })
+    })
+
+    test("should return None when nothing has been stored", async () => {
+      const result = await localStorageConfigurationService.getApplicationConfiguration()
+
+      expect(result.isEmpty()).toBe(true)
+    })
+
+    test("should discard a stored value that is not valid JSON", async () => {
+      localStorage.setItem(storageKey, "}{ not json")
+
+      const result = await localStorageConfigurationService.getApplicationConfiguration()
+
+      expect(result.isEmpty()).toBe(true)
+      // A value that cannot be decoded is cleared so the app falls back to defaults
+      // instead of failing on every subsequent read.
+      expect(localStorage.getItem(storageKey)).toBeNull()
+    })
+
+    test("should discard a stored value that no longer matches the schema", async () => {
+      localStorage.setItem(storageKey, JSON.stringify({ theme: "solarized", safeMode: true }))
+
+      const result = await localStorageConfigurationService.getApplicationConfiguration()
+
+      expect(result.isEmpty()).toBe(true)
+      expect(localStorage.getItem(storageKey)).toBeNull()
+    })
+
+    test("should apply the schema default for a missing safeMode", async () => {
+      localStorage.setItem(storageKey, JSON.stringify({ theme: "dark" }))
+
+      const result = await localStorageConfigurationService.getApplicationConfiguration()
+
+      expect(result.toNullable()).toEqual({ theme: Theme.Dark, safeMode: false })
+    })
+
+    test("should overwrite a previously stored configuration", async () => {
+      await localStorageConfigurationService.setApplicationConfiguration({ theme: Theme.Light, safeMode: false })
+      await localStorageConfigurationService.setApplicationConfiguration({ theme: Theme.Dark, safeMode: true })
+
+      const result = await localStorageConfigurationService.getApplicationConfiguration()
+
+      expect(result.toNullable()).toEqual({ theme: Theme.Dark, safeMode: true })
     })
   })
 })

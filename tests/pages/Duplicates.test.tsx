@@ -3,12 +3,19 @@ import { render, screen, waitFor, act } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import Duplicates from "~/pages/authenticated/duplicates/Duplicates"
 import { createMemoryRouter, RouterProvider } from "react-router"
-import { DateTime, Duration } from "luxon"
-import { FileResourceType } from "~/models/FileResource"
+import { DateTime } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some } from "~/types/Option"
 import React from "react"
+import { buildVideo, durationJson } from "../fixtures"
+
+const createMockVideo = (id: string, title: string = `Title ${id}`) =>
+  buildVideo({
+    id,
+    title,
+    videoMetadata: { duration: durationJson(300), size: 1024 * 1024 * 100 }
+  })
 import { intersectionObserverCallbacks } from "../setup"
 
 vi.mock("~/services/video/VideoService", () => ({
@@ -34,35 +41,6 @@ import {
 const mockFetchDuplicateVideos = vi.mocked(fetchDuplicateVideos)
 const mockFetchVideoById = vi.mocked(fetchVideoById)
 const mockDeleteVideo = vi.mocked(deleteVideo)
-
-const createMockVideo = (id: string, title: string = `Title ${id}`) => ({
-  videoMetadata: {
-    id,
-    url: `https://example.com/video/${id}`,
-    videoSite: "youtube",
-    title,
-    duration: Duration.fromObject({ minutes: 5 }),
-    size: 1024 * 1024 * 100,
-    thumbnail: {
-      id: `thumb-${id}`,
-      type: FileResourceType.Thumbnail as const,
-      createdAt: DateTime.now(),
-      path: `/thumbnails/${id}.jpg`,
-      mediaType: "image/jpeg",
-      size: 1024,
-    },
-  },
-  fileResource: {
-    id: `file-${id}`,
-    type: FileResourceType.Video as const,
-    createdAt: DateTime.now(),
-    path: `/videos/${id}.mp4`,
-    mediaType: "video/mp4",
-    size: 1024 * 1024 * 100,
-  },
-  createdAt: DateTime.now(),
-  watchTime: Duration.fromObject({ minutes: 0 }),
-})
 
 const createDuplicateGroup = (groupId: string, videoIds: string[]) =>
   videoIds.map(id => ({

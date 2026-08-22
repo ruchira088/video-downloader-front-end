@@ -3,8 +3,7 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import DraggableSearchVideoCard from "~/pages/authenticated/playlists/components/DraggableSearchVideoCard"
 import React from "react"
-import { DateTime, Duration } from "luxon"
-import { FileResourceType } from "~/models/FileResource"
+import { buildVideo, durationJson } from "../fixtures"
 
 vi.mock("~/providers/ApplicationConfigurationProvider", () => ({
   useApplicationConfiguration: () => ({
@@ -12,38 +11,17 @@ vi.mock("~/providers/ApplicationConfigurationProvider", () => ({
   }),
 }))
 
-const createMockVideo = (id: string, title: string) => ({
-  videoMetadata: {
-    id,
-    url: `https://example.com/video/${id}`,
-    videoSite: "TestSite",
-    title,
-    duration: Duration.fromObject({ hours: 1, minutes: 30, seconds: 45 }),
-    size: 1024 * 1024 * 500, // 500 MB
-    thumbnail: {
-      id: `thumb-${id}`,
-      type: FileResourceType.Thumbnail as const,
-      createdAt: DateTime.now(),
-      path: `/thumbnails/${id}.jpg`,
-      mediaType: "image/jpeg",
-      size: 1024,
-    },
-  },
-  fileResource: {
-    id: `file-${id}`,
-    type: FileResourceType.Video as const,
-    createdAt: DateTime.now(),
-    path: `/videos/${id}.mp4`,
-    mediaType: "video/mp4",
-    size: 1024 * 1024 * 500,
-  },
-  createdAt: DateTime.now(),
-  watchTime: Duration.fromObject({ minutes: 0 }),
-})
-
 describe("DraggableSearchVideoCard", () => {
   const mockOnAdd = vi.fn()
-  const mockVideo = createMockVideo("video-1", "Test Video Title")
+  const mockVideo = buildVideo({
+    id: "video-1",
+    title: "Test Video Title",
+    videoMetadata: {
+      videoSite: "TestSite",
+      duration: durationJson(5445),
+      size: 1024 * 1024 * 500
+    }
+  })
 
   beforeEach(() => {
     vi.clearAllMocks()

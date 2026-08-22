@@ -72,4 +72,27 @@ describe("Navigator", () => {
     const videosLink = screen.getByRole("link", { name: "Videos" })
     expect(videosLink.className).toContain("isActive")
   })
+  test("should fall back to the Videos tab for a path that matches no tab", () => {
+    // MUI throws if the selected Tabs value is not one of the rendered tabs, so an
+    // unrecognised path has to resolve to a real tab rather than to nothing.
+    renderWithRouter("/not-a-known-section")
+
+    const videosLink = screen.getByRole("link", { name: "Videos" })
+    expect(videosLink.className).toContain("isActive")
+  })
+
+  test("should mark only one tab as active at a time", () => {
+    renderWithRouter("/playlists/123")
+
+    const activeLinks = screen.getAllByRole("link").filter(link => link.className.includes("isActive"))
+    expect(activeLinks).toHaveLength(1)
+    expect(activeLinks[0]).toHaveAccessibleName("Playlists")
+  })
+
+  test("should keep the owning tab active on a deeply nested path", () => {
+    renderWithRouter("/downloading/abc/def")
+
+    const downloadingLink = screen.getByRole("link", { name: "Downloading" })
+    expect(downloadingLink.className).toContain("isActive")
+  })
 })

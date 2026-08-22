@@ -2,12 +2,20 @@ import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, waitFor, act } from "@testing-library/react"
 import HistoryPage from "~/pages/authenticated/history/HistoryPage"
 import { createMemoryRouter, RouterProvider } from "react-router"
-import { DateTime, Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some } from "~/types/Option"
-import { FileResourceType } from "~/models/FileResource"
 import React from "react"
+import { buildVideoWatchHistory, durationJson } from "../fixtures"
+
+const createMockVideoWatchHistory = (id: string) =>
+  buildVideoWatchHistory({
+    id: `history-${id}`,
+    videoId: id,
+    title: `Test Video ${id}`,
+    duration: durationJson(120),
+    video: { videoMetadata: { duration: durationJson(300) } }
+  })
 import { intersectionObserverCallbacks } from "../setup"
 
 const triggerIntersection = async () => {
@@ -35,42 +43,6 @@ vi.mock("~/services/video/VideoService", () => ({
 vi.mock("~/components/helmet/Helmet", () => ({
   default: ({ title }: { title: string }) => <title>{title}</title>,
 }))
-
-const createMockVideoWatchHistory = (id: string) => ({
-  id: `history-${id}`,
-  duration: Duration.fromObject({ minutes: 2 }),
-  userId: "user-123",
-  createdAt: DateTime.now(),
-  lastUpdatedAt: DateTime.now(),
-  video: {
-    videoMetadata: {
-      url: `https://example.com/video/${id}`,
-      id,
-      videoSite: "youtube",
-      title: `Test Video ${id}`,
-      duration: Duration.fromObject({ minutes: 5 }),
-      size: 1024000000,
-      thumbnail: {
-        id: `thumb-${id}`,
-        type: FileResourceType.Thumbnail as const,
-        createdAt: DateTime.now(),
-        path: "/path/to/thumb",
-        mediaType: "image/jpeg",
-        size: 1024,
-      },
-    },
-    fileResource: {
-      id: `file-${id}`,
-      type: FileResourceType.Video as const,
-      createdAt: DateTime.now(),
-      path: "/path/to/video",
-      mediaType: "video/mp4",
-      size: 1024000000,
-    },
-    createdAt: DateTime.now(),
-    watchTime: Duration.fromObject({ minutes: 2 }),
-  },
-})
 
 const renderWithRouter = (component: React.ReactElement) => {
   const contextValue = {

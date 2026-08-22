@@ -3,8 +3,7 @@ import { render, screen, waitFor, act } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import VideoSearchPanel from "~/pages/authenticated/playlists/components/VideoSearchPanel"
 import React from "react"
-import { DateTime, Duration } from "luxon"
-import { FileResourceType } from "~/models/FileResource"
+import { buildVideo } from "../fixtures"
 import { None } from "~/types/Option"
 
 vi.mock("~/services/video/VideoService", () => ({
@@ -21,35 +20,6 @@ vi.mock("~/providers/ApplicationConfigurationProvider", () => ({
 import { searchVideos } from "~/services/video/VideoService"
 
 const mockSearchVideos = vi.mocked(searchVideos)
-
-const createMockVideo = (id: string, title: string) => ({
-  videoMetadata: {
-    id,
-    url: `https://example.com/video/${id}`,
-    videoSite: "TestSite",
-    title,
-    duration: Duration.fromObject({ minutes: 5 }),
-    size: 1024 * 1024 * 100,
-    thumbnail: {
-      id: `thumb-${id}`,
-      type: FileResourceType.Thumbnail as const,
-      createdAt: DateTime.now(),
-      path: `/thumbnails/${id}.jpg`,
-      mediaType: "image/jpeg",
-      size: 1024,
-    },
-  },
-  fileResource: {
-    id: `file-${id}`,
-    type: FileResourceType.Video as const,
-    createdAt: DateTime.now(),
-    path: `/videos/${id}.mp4`,
-    mediaType: "video/mp4",
-    size: 1024 * 1024 * 100,
-  },
-  createdAt: DateTime.now(),
-  watchTime: Duration.fromObject({ minutes: 0 }),
-})
 
 describe("VideoSearchPanel", () => {
   const mockOnVideoSelect = vi.fn()
@@ -86,8 +56,8 @@ describe("VideoSearchPanel", () => {
     test("should display search results", async () => {
       mockSearchVideos.mockResolvedValue({
         results: [
-          createMockVideo("video-1", "First Video"),
-          createMockVideo("video-2", "Second Video"),
+          buildVideo({ id: "video-1", title: "First Video" }),
+          buildVideo({ id: "video-2", title: "Second Video" }),
         ],
         pageNumber: 0,
         pageSize: 50,
@@ -112,8 +82,8 @@ describe("VideoSearchPanel", () => {
     test("should filter out existing videos", async () => {
       mockSearchVideos.mockResolvedValue({
         results: [
-          createMockVideo("video-1", "First Video"),
-          createMockVideo("video-2", "Second Video"),
+          buildVideo({ id: "video-1", title: "First Video" }),
+          buildVideo({ id: "video-2", title: "Second Video" }),
         ],
         pageNumber: 0,
         pageSize: 50,
@@ -138,7 +108,7 @@ describe("VideoSearchPanel", () => {
     test("should show message when all videos are in playlist", async () => {
       mockSearchVideos.mockResolvedValue({
         results: [
-          createMockVideo("video-1", "First Video"),
+          buildVideo({ id: "video-1", title: "First Video" }),
         ],
         pageNumber: 0,
         pageSize: 50,
@@ -162,7 +132,7 @@ describe("VideoSearchPanel", () => {
     test("should display hint text", async () => {
       mockSearchVideos.mockResolvedValue({
         results: [
-          createMockVideo("video-1", "First Video"),
+          buildVideo({ id: "video-1", title: "First Video" }),
         ],
         pageNumber: 0,
         pageSize: 50,
@@ -190,7 +160,7 @@ describe("VideoSearchPanel", () => {
       const user = userEvent.setup()
       mockSearchVideos.mockResolvedValue({
         results: [
-          createMockVideo("video-1", "First Video"),
+          buildVideo({ id: "video-1", title: "First Video" }),
         ],
         pageNumber: 0,
         pageSize: 50,

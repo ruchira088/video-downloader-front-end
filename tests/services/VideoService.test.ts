@@ -27,43 +27,12 @@ import {
   scanForVideos,
   fetchVideoScanStatus,
 } from "~/services/video/VideoService"
+import { fileResourceJson, videoJson, videoMetadataJson } from "../fixtures"
 
 const mockAxiosGet = vi.mocked(axiosClient.get)
 const mockAxiosPost = vi.mocked(axiosClient.post)
 const mockAxiosPatch = vi.mocked(axiosClient.patch)
 const mockAxiosDelete = vi.mocked(axiosClient.delete)
-
-// Helper to create valid mock data matching Zod schemas
-const createMockFileResource = (id: string) => ({
-  id,
-  createdAt: "2024-01-15T10:00:00+00:00",
-  path: `/files/${id}`,
-  mediaType: "image/jpeg",
-  size: 50000,
-})
-
-const createMockVideoMetadata = (id: string, title: string) => ({
-  url: `https://youtube.com/watch?v=${id}`,
-  id,
-  videoSite: "YouTube",
-  title,
-  duration: { length: 300, unit: "seconds" },
-  size: 1000000,
-  thumbnail: createMockFileResource(`thumb-${id}`),
-})
-
-const createMockVideo = (id: string, title: string) => ({
-  videoMetadata: createMockVideoMetadata(id, title),
-  fileResource: {
-    id: `file-${id}`,
-    createdAt: "2024-01-15T10:00:00+00:00",
-    path: `/videos/${id}.mp4`,
-    mediaType: "video/mp4",
-    size: 1000000,
-  },
-  createdAt: "2024-01-15T10:00:00+00:00",
-  watchTime: { length: 0, unit: "seconds" },
-})
 
 describe("VideoService", () => {
   beforeEach(() => {
@@ -73,7 +42,7 @@ describe("VideoService", () => {
   describe("searchVideos", () => {
     test("should call API with correct query parameters", async () => {
       const searchResult = {
-        results: [createMockVideo("video-123", "Test Video")],
+        results: [videoJson({ id: "video-123", title: "Test Video" })],
         pageNumber: 0,
         pageSize: 10,
         searchTerm: "test",
@@ -146,7 +115,7 @@ describe("VideoService", () => {
 
     test("should return parsed search result", async () => {
       const searchResult = {
-        results: [createMockVideo("video-123", "Test Video")],
+        results: [videoJson({ id: "video-123", title: "Test Video" })],
         pageNumber: 1,
         pageSize: 10,
         searchTerm: "query",
@@ -179,7 +148,7 @@ describe("VideoService", () => {
 
   describe("fetchVideoById", () => {
     test("should call API with video ID", async () => {
-      mockAxiosGet.mockResolvedValue({ data: createMockVideo("video-123", "Test Video") })
+      mockAxiosGet.mockResolvedValue({ data: videoJson({ id: "video-123", title: "Test Video" }) })
 
       await fetchVideoById("video-123")
 
@@ -187,7 +156,7 @@ describe("VideoService", () => {
     })
 
     test("should return parsed video", async () => {
-      mockAxiosGet.mockResolvedValue({ data: createMockVideo("video-123", "Test Video") })
+      mockAxiosGet.mockResolvedValue({ data: videoJson({ id: "video-123", title: "Test Video" }) })
 
       const result = await fetchVideoById("video-123")
 
@@ -202,7 +171,7 @@ describe("VideoService", () => {
         results: [
           {
             videoId: "video-123",
-            fileResource: createMockFileResource("snap-1"),
+            fileResource: fileResourceJson({ id: "snap-1" }),
             videoTimestamp: { length: 30, unit: "seconds" },
           },
         ],
@@ -219,7 +188,7 @@ describe("VideoService", () => {
 
   describe("metadata", () => {
     test("should post URL and return video metadata", async () => {
-      const mockMetadata = createMockVideoMetadata("meta-123", "New Video")
+      const mockMetadata = videoMetadataJson({ id: "meta-123", title: "New Video" })
       mockAxiosPost.mockResolvedValue({ data: mockMetadata })
 
       const result = await metadata("https://youtube.com/watch?v=xyz")
@@ -233,7 +202,7 @@ describe("VideoService", () => {
 
   describe("updateVideoTitle", () => {
     test("should patch video title and return updated video", async () => {
-      const updatedVideo = createMockVideo("video-123", "Updated Title")
+      const updatedVideo = videoJson({ id: "video-123", title: "Updated Title" })
       mockAxiosPatch.mockResolvedValue({ data: updatedVideo })
 
       const result = await updateVideoTitle("video-123", "Updated Title")
@@ -264,7 +233,7 @@ describe("VideoService", () => {
 
   describe("deleteVideo", () => {
     test("should delete video without file", async () => {
-      mockAxiosDelete.mockResolvedValue({ data: createMockVideo("video-123", "Test Video") })
+      mockAxiosDelete.mockResolvedValue({ data: videoJson({ id: "video-123", title: "Test Video" }) })
 
       const result = await deleteVideo("video-123", false)
 
@@ -277,7 +246,7 @@ describe("VideoService", () => {
     })
 
     test("should delete video with file", async () => {
-      mockAxiosDelete.mockResolvedValue({ data: createMockVideo("video-123", "Test Video") })
+      mockAxiosDelete.mockResolvedValue({ data: videoJson({ id: "video-123", title: "Test Video" }) })
 
       await deleteVideo("video-123", true)
 
@@ -362,6 +331,78 @@ describe("VideoService", () => {
 
       // updatedAt uses ZodOptional which transforms to Option
       expect(result.scanStatus).toBe("Idle")
+    })
+  })
+  describe("failure handling", () => {
+    test("should propagate transport errors rather than swallowing them", async () => {
+      mockAxiosGet.mockRejectedValue(new Error("Network Error"))
+
+      await expect(fetchVideoById("video-1")).rejects.toThrow("Network Error")
+    })
+
+    test("should propagate an aborted search", async () => {
+      const abortError = Object.assign(new Error("canceled"), { code: "ERR_CANCELED" })
+      mockAxiosGet.mockRejectedValue(abortError)
+
+      await expect(
+        searchVideos(
+          None.of(),
+          { min: Duration.fromMillis(0), max: None.of() },
+          { min: 0, max: None.of() },
+          [],
+          0,
+          10,
+          SortBy.Date,
+          Ordering.Descending,
+          new AbortController().signal
+        )
+      ).rejects.toThrow("canceled")
+    })
+
+    test("should reject when the API returns a video that fails validation", async () => {
+      // A drifting API contract must fail loudly at the boundary instead of leaking
+      // a half-built Video into the UI.
+      mockAxiosGet.mockResolvedValue({ data: { videoMetadata: { id: "video-1" } } })
+
+      await expect(fetchVideoById("video-1")).rejects.toThrow()
+    })
+
+    test("should reject when a video inside a search result fails validation", async () => {
+      mockAxiosGet.mockResolvedValue({ data: { results: [{ videoMetadata: {} }] } })
+
+      await expect(
+        searchVideos(
+          None.of(),
+          { min: Duration.fromMillis(0), max: None.of() },
+          { min: 0, max: None.of() },
+          [],
+          0,
+          10,
+          SortBy.Date,
+          Ordering.Descending,
+          new AbortController().signal
+        )
+      ).rejects.toThrow()
+    })
+
+    test("should reject when a duration is not a valid Luxon duration", async () => {
+      mockAxiosGet.mockResolvedValue({
+        data: {
+          ...videoJson({ id: "video-1", title: "Video" }),
+          videoMetadata: {
+            ...videoMetadataJson({ id: "video-1", title: "Video" }),
+            duration: { length: "not-a-number", unit: "seconds" }
+          }
+        }
+      })
+
+      await expect(fetchVideoById("video-1")).rejects.toThrow()
+    })
+
+    test("should reject when the scan status is not a known value", async () => {
+      mockAxiosGet.mockResolvedValue({ data: { status: "Unrecognised", updatedAt: "2024-01-15T10:00:00+00:00" } })
+
+      await expect(fetchVideoScanStatus()).rejects.toThrow()
     })
   })
 })

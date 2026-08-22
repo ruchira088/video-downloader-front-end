@@ -2,13 +2,23 @@ import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, waitFor, fireEvent, act } from "@testing-library/react"
 import ScheduledVideos from "~/pages/authenticated/downloading/ScheduledVideos"
 import { createMemoryRouter, RouterProvider } from "react-router"
-import { DateTime, Duration } from "luxon"
+import { DateTime } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some, None } from "~/types/Option"
+import { Some } from "~/types/Option"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
-import { FileResourceType } from "~/models/FileResource"
 import React from "react"
+import { buildScheduledVideoDownload, durationJson } from "../fixtures"
+
+const createMockScheduledVideo = (id: string) =>
+  buildScheduledVideoDownload({
+    id,
+    title: `Test Video ${id}`,
+    scheduledAt: "2023-10-15T10:00:00+00:00",
+    status: SchedulingStatus.Active,
+    downloadedBytes: 500000000,
+    videoMetadata: { duration: durationJson(300), size: 1000000000 }
+  })
 
 // Capture-style IntersectionObserver for InfiniteScroll — allows tests below
 // to manually trigger intersection events to exercise loadMore.
@@ -34,31 +44,6 @@ const triggerIntersection = async () => {
     )
   })
 }
-
-const createMockScheduledVideo = (id: string) => ({
-  lastUpdatedAt: DateTime.now(),
-  scheduledAt: DateTime.fromISO("2023-10-15T10:00:00Z"),
-  videoMetadata: {
-    url: `https://example.com/video/${id}`,
-    id,
-    videoSite: "youtube",
-    title: `Test Video ${id}`,
-    duration: Duration.fromObject({ minutes: 5 }),
-    size: 1000000000,
-    thumbnail: {
-      id: `thumb-${id}`,
-      type: FileResourceType.Thumbnail as const,
-      createdAt: DateTime.now(),
-      path: "/path/to/thumb",
-      mediaType: "image/jpeg",
-      size: 1024,
-    },
-  },
-  status: SchedulingStatus.Active,
-  downloadedBytes: 500000000,
-  completedAt: None.of<DateTime>(),
-  errorInfo: null,
-})
 
 vi.mock("~/services/scheduling/SchedulingService", () => ({
   fetchScheduledVideos: vi.fn().mockResolvedValue([]),

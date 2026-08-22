@@ -102,40 +102,12 @@ import {
   fetchScheduledVideos,
   scheduledVideoDownloadStream,
 } from "~/services/scheduling/SchedulingService"
+import { scheduledVideoDownloadJson } from "../fixtures"
 
 const mockAxiosGet = vi.mocked(axiosClient.get)
 const mockAxiosPost = vi.mocked(axiosClient.post)
 const mockAxiosPut = vi.mocked(axiosClient.put)
 const mockAxiosDelete = vi.mocked(axiosClient.delete)
-
-// Helper to create valid mock data matching Zod schemas
-const createMockFileResource = (id: string) => ({
-  id,
-  createdAt: "2024-01-15T10:00:00+00:00",
-  path: `/files/${id}`,
-  mediaType: "image/jpeg",
-  size: 50000,
-})
-
-const createMockVideoMetadata = (id: string, title: string) => ({
-  url: `https://youtube.com/watch?v=${id}`,
-  id,
-  videoSite: "YouTube",
-  title,
-  duration: { length: 300, unit: "seconds" },
-  size: 1000000,
-  thumbnail: createMockFileResource(`thumb-${id}`),
-})
-
-const createMockScheduledDownload = (id: string, status: string = "Queued") => ({
-  lastUpdatedAt: "2024-01-15T10:00:00+00:00",
-  scheduledAt: "2024-01-15T09:00:00+00:00",
-  videoMetadata: createMockVideoMetadata(id, "Test Video"),
-  errorInfo: null,
-  status,
-  downloadedBytes: 0,
-  completedAt: null,
-})
 
 describe("SchedulingService", () => {
   beforeEach(() => {
@@ -144,7 +116,7 @@ describe("SchedulingService", () => {
 
   describe("scheduleVideo", () => {
     test("should post URL and return scheduled download", async () => {
-      mockAxiosPost.mockResolvedValue({ data: createMockScheduledDownload("video-123") })
+      mockAxiosPost.mockResolvedValue({ data: scheduledVideoDownloadJson({ id: "video-123" }) })
 
       const result = await scheduleVideo("https://youtube.com/watch?v=abc123")
 
@@ -157,7 +129,7 @@ describe("SchedulingService", () => {
 
   describe("updateSchedulingStatus", () => {
     test("should update status and return updated download", async () => {
-      mockAxiosPut.mockResolvedValue({ data: createMockScheduledDownload("video-123", "Paused") })
+      mockAxiosPut.mockResolvedValue({ data: scheduledVideoDownloadJson({ id: "video-123", status: "Paused" }) })
 
       const result = await updateSchedulingStatus("video-123", SchedulingStatus.Paused)
 
@@ -172,8 +144,8 @@ describe("SchedulingService", () => {
     test("should post to retry endpoint and return updated downloads", async () => {
       const mockResults = {
         results: [
-          createMockScheduledDownload("video-123"),
-          createMockScheduledDownload("video-456"),
+          scheduledVideoDownloadJson({ id: "video-123" }),
+          scheduledVideoDownloadJson({ id: "video-456" }),
         ],
       }
       mockAxiosPost.mockResolvedValue({ data: mockResults })
@@ -211,7 +183,7 @@ describe("SchedulingService", () => {
 
   describe("deleteScheduledVideoById", () => {
     test("should delete and return the deleted download", async () => {
-      mockAxiosDelete.mockResolvedValue({ data: createMockScheduledDownload("video-123") })
+      mockAxiosDelete.mockResolvedValue({ data: scheduledVideoDownloadJson({ id: "video-123" }) })
 
       const result = await deleteScheduledVideoById("video-123")
 
@@ -222,7 +194,7 @@ describe("SchedulingService", () => {
 
   describe("fetchScheduledVideos", () => {
     test("should fetch with correct parameters including search term", async () => {
-      mockAxiosGet.mockResolvedValue({ data: { results: [createMockScheduledDownload("video-123")] } })
+      mockAxiosGet.mockResolvedValue({ data: { results: [scheduledVideoDownloadJson({ id: "video-123" })] } })
 
       const result = await fetchScheduledVideos(
         Some.of("test query"),
@@ -322,7 +294,7 @@ describe("SchedulingService", () => {
 
       scheduledVideoDownloadStream(onProgress, onUpdate, onError)
 
-      const mockUpdateData = createMockScheduledDownload("video-456", "Queued")
+      const mockUpdateData = scheduledVideoDownloadJson({ id: "video-456", status: "Queued" })
 
       mockEventSourceInstance!.simulateMessage(EventStreamEventType.SCHEDULED_VIDEO_DOWNLOAD_UPDATE, mockUpdateData)
 

@@ -3,8 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import PlaylistPlayer from "~/pages/authenticated/playlists/components/PlaylistPlayer"
 import React from "react"
-import { DateTime, Duration } from "luxon"
-import { FileResourceType } from "~/models/FileResource"
+import { buildVideo } from "../fixtures"
 
 vi.mock("~/providers/ApplicationConfigurationProvider", () => ({
   useApplicationConfiguration: () => ({
@@ -19,41 +18,12 @@ beforeAll(() => {
   window.HTMLMediaElement.prototype.pause = vi.fn()
 })
 
-const createMockVideo = (id: string, title: string) => ({
-  videoMetadata: {
-    id,
-    url: `https://example.com/video/${id}`,
-    videoSite: "TestSite",
-    title,
-    duration: Duration.fromObject({ minutes: 5, seconds: 30 }),
-    size: 1024 * 1024 * 100,
-    thumbnail: {
-      id: `thumb-${id}`,
-      type: FileResourceType.Thumbnail as const,
-      createdAt: DateTime.now(),
-      path: `/thumbnails/${id}.jpg`,
-      mediaType: "image/jpeg",
-      size: 1024,
-    },
-  },
-  fileResource: {
-    id: `file-${id}`,
-    type: FileResourceType.Video as const,
-    createdAt: DateTime.now(),
-    path: `/videos/${id}.mp4`,
-    mediaType: "video/mp4",
-    size: 1024 * 1024 * 100,
-  },
-  createdAt: DateTime.now(),
-  watchTime: Duration.fromObject({ minutes: 0 }),
-})
-
 const defaultProps = {
   videos: [
-    createMockVideo("video-1", "First Video"),
-    createMockVideo("video-2", "Second Video"),
-    createMockVideo("video-3", "Third Video"),
-    createMockVideo("video-4", "Fourth Video"),
+    buildVideo({ id: "video-1", title: "First Video" }),
+    buildVideo({ id: "video-2", title: "Second Video" }),
+    buildVideo({ id: "video-3", title: "Third Video" }),
+    buildVideo({ id: "video-4", title: "Fourth Video" }),
   ],
   currentIndex: 0,
   onNext: vi.fn(),

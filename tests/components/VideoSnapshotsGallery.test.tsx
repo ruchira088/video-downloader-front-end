@@ -2,12 +2,12 @@ import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import VideoSnapshotsGallery from "~/components/video/video-snapshots/VideoSnapshotsGallery"
 import { createMemoryRouter, RouterProvider } from "react-router"
-import { DateTime, Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some } from "~/types/Option"
-import { FileResourceType } from "~/models/FileResource"
 import React from "react"
+import type { Snapshot } from "~/models/Snapshot"
+import { buildSnapshot, durationJson } from "../fixtures"
 
 vi.mock("~/services/asset/AssetService", () => ({
   imageUrl: vi.fn((resource, safeMode) =>
@@ -15,20 +15,7 @@ vi.mock("~/services/asset/AssetService", () => ({
   ),
 }))
 
-const createMockSnapshot = (id: string, seconds: number) => ({
-  videoId: "video-123",
-  videoTimestamp: Duration.fromObject({ seconds }),
-  fileResource: {
-    id: `file-${id}`,
-    type: FileResourceType.Snapshot as const,
-    createdAt: DateTime.now(),
-    path: `/path/to/${id}`,
-    mediaType: "image/jpeg",
-    size: 1024,
-  },
-})
-
-const renderWithRouter = (snapshots: ReturnType<typeof createMockSnapshot>[]) => {
+const renderWithRouter = (snapshots: Snapshot[]) => {
   const contextValue = {
     safeMode: false,
     theme: Theme.Light,
@@ -63,8 +50,8 @@ describe("VideoSnapshotsGallery", () => {
 
   test("should render snapshots", () => {
     renderWithRouter([
-      createMockSnapshot("snap-1", 30),
-      createMockSnapshot("snap-2", 60),
+      buildSnapshot({ id: "snap-1", videoTimestamp: durationJson(30) }),
+      buildSnapshot({ id: "snap-2", videoTimestamp: durationJson(60) }),
     ])
 
     const images = screen.getAllByAltText("video snapshot")
@@ -73,9 +60,9 @@ describe("VideoSnapshotsGallery", () => {
 
   test("should sort snapshots by timestamp", () => {
     renderWithRouter([
-      createMockSnapshot("snap-2", 120),
-      createMockSnapshot("snap-1", 30),
-      createMockSnapshot("snap-3", 60),
+      buildSnapshot({ id: "snap-2", videoTimestamp: durationJson(120) }),
+      buildSnapshot({ id: "snap-1", videoTimestamp: durationJson(30) }),
+      buildSnapshot({ id: "snap-3", videoTimestamp: durationJson(60) }),
     ])
 
     const timestamps = screen.getAllByText(/\d+:\d+/)
@@ -85,7 +72,7 @@ describe("VideoSnapshotsGallery", () => {
   })
 
   test("should link to video with timestamp", () => {
-    renderWithRouter([createMockSnapshot("snap-1", 90)])
+    renderWithRouter([buildSnapshot({ id: "snap-1", videoTimestamp: durationJson(90) })])
 
     const link = screen.getByRole("link")
     expect(link).toHaveAttribute("href", "/video/video-123?timestamp=90")
@@ -93,7 +80,7 @@ describe("VideoSnapshotsGallery", () => {
 
   test("should display formatted timestamp", () => {
     renderWithRouter([
-      createMockSnapshot("snap-1", 65),
+      buildSnapshot({ id: "snap-1", videoTimestamp: durationJson(65) }),
     ])
 
     expect(screen.getByText("1:05")).toBeInTheDocument()
@@ -114,7 +101,7 @@ describe("VideoSnapshotsGallery", () => {
         path: "/",
         element: (
           <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-            <VideoSnapshotsGallery snapshots={[createMockSnapshot("snap-1", 30)]} />
+            <VideoSnapshotsGallery snapshots={[buildSnapshot({ id: "snap-1", videoTimestamp: durationJson(30) })]} />
           </ApplicationConfigurationContext.Provider>
         ),
       },

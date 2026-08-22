@@ -1,24 +1,12 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import CreatePlaylistDialog from "~/pages/authenticated/playlists/components/CreatePlaylistDialog"
-import { DateTime } from "luxon"
-import { None } from "~/types/Option"
-import { FileResource, FileResourceType } from "~/models/FileResource"
 import React from "react"
+import { buildPlaylist } from "../fixtures"
 
 vi.mock("~/services/playlist/PlaylistService", () => ({
   createPlaylist: vi.fn()
 }))
-
-const createMockPlaylist = () => ({
-  id: "playlist-123",
-  userId: "user-123",
-  title: "Test Playlist",
-  description: "Test Description",
-  createdAt: DateTime.now(),
-  videos: [],
-  albumArt: None.of<FileResource<FileResourceType.AlbumArt>>()
-})
 
 describe("CreatePlaylistDialog", () => {
   const onClose = vi.fn()
@@ -115,7 +103,7 @@ describe("CreatePlaylistDialog", () => {
 
   test("should call createPlaylist and onPlaylistCreated when create button is clicked", async () => {
     const { createPlaylist } = await import("~/services/playlist/PlaylistService")
-    vi.mocked(createPlaylist).mockResolvedValue(createMockPlaylist())
+    vi.mocked(createPlaylist).mockResolvedValue(buildPlaylist({ description: "Test Description" }))
 
     render(
       <CreatePlaylistDialog

@@ -1,12 +1,12 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import VideoMetadataCard from "~/components/video/video-metadata-card/VideoMetadataCard"
-import { DateTime, Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some } from "~/types/Option"
-import { FileResourceType } from "~/models/FileResource"
 import React from "react"
+import type { VideoMetadata } from "~/models/VideoMetadata"
+import { buildSnapshot, buildVideoMetadata, durationJson } from "../fixtures"
 
 vi.mock("~/services/asset/AssetService", () => ({
   imageUrl: vi.fn((resource, safeMode) =>
@@ -22,25 +22,8 @@ vi.mock("~/services/sanitize/SanitizationService", () => ({
   translate: vi.fn((text, safeMode) => (safeMode ? "[SAFE] " + text : text)),
 }))
 
-const createMockVideoMetadata = () => ({
-  url: "https://example.com/video",
-  id: "video-123",
-  videoSite: "youtube",
-  title: "Test Video Title",
-  duration: Duration.fromObject({ minutes: 5, seconds: 30 }),
-  size: 1024000000,
-  thumbnail: {
-    id: "thumb-123",
-    type: FileResourceType.Thumbnail as const,
-    createdAt: DateTime.now(),
-    path: "/path/to/thumb",
-    mediaType: "image/jpeg",
-    size: 1024,
-  },
-})
-
 const renderWithContext = (
-  videoMetadata: ReturnType<typeof createMockVideoMetadata>,
+  videoMetadata: VideoMetadata,
   options: { safeMode?: boolean; disableSnapshots?: boolean; enableSourceLink?: boolean } = {}
 ) => {
   const contextValue = {
@@ -67,38 +50,38 @@ describe("VideoMetadataCard", () => {
   })
 
   test("should render video thumbnail", () => {
-    renderWithContext(createMockVideoMetadata())
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }))
 
     expect(screen.getByAltText("video thumbnail")).toBeInTheDocument()
   })
 
   test("should render video title", () => {
-    renderWithContext(createMockVideoMetadata())
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }))
 
     expect(screen.getByText("Test Video Title")).toBeInTheDocument()
   })
 
   test("should render video site card", () => {
-    renderWithContext(createMockVideoMetadata())
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }))
 
     expect(screen.getByAltText("youtube logo")).toBeInTheDocument()
   })
 
   test("should render file size", () => {
-    renderWithContext(createMockVideoMetadata())
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }))
 
     // 1024000000 bytes = 1.02 GB (using 1000-based units)
     expect(screen.getByText(/1\.02/)).toBeInTheDocument()
   })
 
   test("should render duration", () => {
-    renderWithContext(createMockVideoMetadata())
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }))
 
     expect(screen.getByText(/5:30/)).toBeInTheDocument()
   })
 
   test("should render source link when enableSourceLink is true", () => {
-    renderWithContext(createMockVideoMetadata(), { enableSourceLink: true })
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }), { enableSourceLink: true })
 
     const link = screen.getByRole("link")
     expect(link).toHaveAttribute("href", "https://example.com/video")
@@ -106,14 +89,14 @@ describe("VideoMetadataCard", () => {
   })
 
   test("should not render source link when enableSourceLink is false", () => {
-    renderWithContext(createMockVideoMetadata(), { enableSourceLink: false })
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }), { enableSourceLink: false })
 
     expect(screen.queryByRole("link")).not.toBeInTheDocument()
   })
 
   test("should trim long titles", () => {
     const videoMetadata = {
-      ...createMockVideoMetadata(),
+      ...buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }),
       title: "This is a very long video title that should be trimmed at some point because it exceeds the limit",
     }
 
@@ -134,7 +117,7 @@ describe("VideoMetadataCard", () => {
 
     render(
       <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-        <VideoMetadataCard videoMetadata={createMockVideoMetadata()}>
+        <VideoMetadataCard videoMetadata={buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" })}>
           <div data-testid="child">Child Content</div>
         </VideoMetadataCard>
       </ApplicationConfigurationContext.Provider>
@@ -146,7 +129,7 @@ describe("VideoMetadataCard", () => {
   test("should fetch snapshots on mouse over when not disabled", async () => {
     const { fetchVideoSnapshotsByVideoId } = await import("~/services/video/VideoService")
 
-    renderWithContext(createMockVideoMetadata(), { disableSnapshots: false })
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }), { disableSnapshots: false })
 
     const thumbnail = screen.getByAltText("video thumbnail")
     fireEvent.mouseOver(thumbnail.parentElement!)
@@ -159,7 +142,7 @@ describe("VideoMetadataCard", () => {
   test("should not fetch snapshots when disableSnapshots is true", async () => {
     const { fetchVideoSnapshotsByVideoId } = await import("~/services/video/VideoService")
 
-    renderWithContext(createMockVideoMetadata(), { disableSnapshots: true })
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }), { disableSnapshots: true })
 
     const thumbnail = screen.getByAltText("video thumbnail")
     fireEvent.mouseOver(thumbnail.parentElement!)
@@ -171,7 +154,7 @@ describe("VideoMetadataCard", () => {
   })
 
   test("should reset index on mouse leave", async () => {
-    renderWithContext(createMockVideoMetadata(), { disableSnapshots: false })
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }), { disableSnapshots: false })
 
     const thumbnail = screen.getByAltText("video thumbnail")
     const container = thumbnail.parentElement!
@@ -189,7 +172,7 @@ describe("VideoMetadataCard", () => {
   test("should use safe mode image URL when safeMode is enabled", async () => {
     const { imageUrl } = await import("~/services/asset/AssetService")
 
-    renderWithContext(createMockVideoMetadata(), { safeMode: true })
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }), { safeMode: true })
 
     expect(imageUrl).toHaveBeenCalledWith(expect.anything(), true)
   })
@@ -204,7 +187,7 @@ describe("VideoMetadataCard", () => {
 
     const { container } = render(
       <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-        <VideoMetadataCard videoMetadata={createMockVideoMetadata()} classNames="custom-class" />
+        <VideoMetadataCard videoMetadata={buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" })} classNames="custom-class" />
       </ApplicationConfigurationContext.Provider>
     )
 
@@ -213,7 +196,7 @@ describe("VideoMetadataCard", () => {
 
   test("should trim title at space boundary when over limit", () => {
     const videoMetadata = {
-      ...createMockVideoMetadata(),
+      ...buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }),
       title: "Short title that fits in the limit",
     }
 
@@ -225,7 +208,7 @@ describe("VideoMetadataCard", () => {
 
   test("should trim title at character limit when no space found", () => {
     const videoMetadata = {
-      ...createMockVideoMetadata(),
+      ...buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }),
       title: "TitleWithNoSpacesThatWillBeTrimmedAtCharacterLimit",
     }
 
@@ -238,21 +221,10 @@ describe("VideoMetadataCard", () => {
   test("should show snapshots when hovering and snapshots are available", async () => {
     const { fetchVideoSnapshotsByVideoId } = await import("~/services/video/VideoService")
     vi.mocked(fetchVideoSnapshotsByVideoId).mockResolvedValue([
-      {
-        videoId: "video-123",
-        videoTimestamp: Duration.fromObject({ seconds: 30 }),
-        fileResource: {
-          id: "snap-file-1",
-          type: FileResourceType.Snapshot as const,
-          createdAt: DateTime.now(),
-          path: "/path/to/snap",
-          mediaType: "image/jpeg",
-          size: 1024,
-        },
-      },
+      buildSnapshot({ id: "snap-file-1", videoTimestamp: durationJson(30) })
     ])
 
-    renderWithContext(createMockVideoMetadata(), { disableSnapshots: false })
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }), { disableSnapshots: false })
 
     const thumbnail = screen.getByAltText("video thumbnail")
     fireEvent.mouseOver(thumbnail.parentElement!)
@@ -263,7 +235,7 @@ describe("VideoMetadataCard", () => {
   })
 
   test("should lock image dimensions on load", () => {
-    renderWithContext(createMockVideoMetadata())
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }))
 
     const thumbnail = screen.getByAltText("video thumbnail")
     fireEvent.load(thumbnail)
@@ -273,7 +245,7 @@ describe("VideoMetadataCard", () => {
   })
 
   test("should handle window resize events", () => {
-    renderWithContext(createMockVideoMetadata())
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }))
 
     // Trigger resize event
     fireEvent(window, new Event("resize"))
@@ -285,7 +257,7 @@ describe("VideoMetadataCard", () => {
   test("should cleanup event listeners on unmount", () => {
     const removeEventListenerSpy = vi.spyOn(window, "removeEventListener")
 
-    const { unmount } = renderWithContext(createMockVideoMetadata())
+    const { unmount } = renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }))
     unmount()
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith("resize", expect.any(Function))
@@ -296,7 +268,7 @@ describe("VideoMetadataCard", () => {
     const { fetchVideoSnapshotsByVideoId } = await import("~/services/video/VideoService")
     const setIntervalSpy = vi.spyOn(window, "setInterval")
 
-    renderWithContext(createMockVideoMetadata(), { disableSnapshots: false })
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }), { disableSnapshots: false })
 
     const container = screen.getByAltText("video thumbnail").parentElement!
     fireEvent.mouseOver(container)
@@ -316,7 +288,7 @@ describe("VideoMetadataCard", () => {
     const setIntervalSpy = vi.spyOn(window, "setInterval")
     const clearIntervalSpy = vi.spyOn(window, "clearInterval")
 
-    renderWithContext(createMockVideoMetadata(), { disableSnapshots: false })
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }), { disableSnapshots: false })
 
     const container = screen.getByAltText("video thumbnail").parentElement!
     fireEvent.mouseOver(container)
@@ -338,7 +310,7 @@ describe("VideoMetadataCard", () => {
     const setIntervalSpy = vi.spyOn(window, "setInterval")
     const clearIntervalSpy = vi.spyOn(window, "clearInterval")
 
-    const { unmount } = renderWithContext(createMockVideoMetadata(), { disableSnapshots: false })
+    const { unmount } = renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }), { disableSnapshots: false })
 
     const container = screen.getByAltText("video thumbnail").parentElement!
     fireEvent.mouseOver(container)
@@ -360,7 +332,7 @@ describe("VideoMetadataCard", () => {
     vi.mocked(fetchVideoSnapshotsByVideoId).mockRejectedValueOnce(new Error("fetch failed"))
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 
-    renderWithContext(createMockVideoMetadata(), { disableSnapshots: false })
+    renderWithContext(buildVideoMetadata({ title: "Test Video Title", url: "https://example.com/video" }), { disableSnapshots: false })
 
     const thumbnail = screen.getByAltText("video thumbnail")
     fireEvent.mouseOver(thumbnail.parentElement!)

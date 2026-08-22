@@ -1,12 +1,12 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, act } from "@testing-library/react"
 import Preview from "~/components/schedule/preview/Preview"
-import { DateTime, Duration } from "luxon"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { Some } from "~/types/Option"
-import { FileResourceType } from "~/models/FileResource"
 import React from "react"
+import type { VideoMetadata } from "~/models/VideoMetadata"
+import { buildVideoMetadata } from "../fixtures"
 
 vi.mock("~/services/video/VideoService", () => ({
   metadata: vi.fn(),
@@ -19,23 +19,6 @@ vi.mock("~/services/asset/AssetService", () => ({
 import { metadata } from "~/services/video/VideoService"
 
 const mockMetadata = vi.mocked(metadata)
-
-const createMockVideoMetadata = () => ({
-  url: "https://example.com/video",
-  id: "video-123",
-  videoSite: "youtube",
-  title: "Test Video",
-  duration: Duration.fromObject({ minutes: 5 }),
-  size: 1024000,
-  thumbnail: {
-    id: "thumb-123",
-    type: FileResourceType.Thumbnail as const,
-    createdAt: DateTime.now(),
-    path: "/path/to/thumb",
-    mediaType: "image/jpeg",
-    size: 1024,
-  },
-})
 
 const previewWithContext = (url: string) => {
   const contextValue = {
@@ -75,7 +58,7 @@ describe("Preview", () => {
   })
 
   test("should call metadata after debounce delay", async () => {
-    mockMetadata.mockResolvedValue(createMockVideoMetadata())
+    mockMetadata.mockResolvedValue(buildVideoMetadata())
 
     renderWithContext("https://example.com/video")
 
@@ -98,9 +81,9 @@ describe("Preview", () => {
   })
 
   test("should not overwrite the newer preview with a slow stale response", async () => {
-    let resolveStale: (value: ReturnType<typeof createMockVideoMetadata>) => void = () => {}
-    const staleMetadata = { ...createMockVideoMetadata(), title: "Old Video" }
-    const freshMetadata = { ...createMockVideoMetadata(), title: "New Video" }
+    let resolveStale: (value: VideoMetadata) => void = () => {}
+    const staleMetadata = buildVideoMetadata({ title: "Old Video" })
+    const freshMetadata = buildVideoMetadata({ title: "New Video" })
 
     mockMetadata
       .mockImplementationOnce(() => new Promise((resolve) => { resolveStale = resolve }))

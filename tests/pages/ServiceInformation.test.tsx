@@ -2,10 +2,45 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 import { act, render, screen, waitFor } from "@testing-library/react"
 import ServiceInformation from "~/pages/authenticated/service-information/ServiceInformation"
 import { createMemoryRouter, RouterProvider } from "react-router"
-import { DateTime, Duration } from "luxon"
+import { DateTime } from "luxon"
 import { Some } from "~/types/Option"
 import { HealthStatus } from "~/models/HealthCheck"
 import React from "react"
+import { buildBackendServiceInformation, buildHealthCheck } from "../fixtures"
+
+const createMockBackendInfo = () =>
+  buildBackendServiceInformation({
+    serviceName: "video-downloader-backend",
+    organization: "ruchira",
+    javaVersion: "21.0.1",
+    scalaVersion: "3.3.1",
+    sbtVersion: "1.9.7",
+    // The schema renames this to `ytDlpVersion`, so the fixture states the wire name.
+    "yt-dlpVersion": "2024.01.01",
+    currentTimestamp: "2024-01-15T10:30:00+00:00",
+    gitBranch: "main",
+    gitCommit: "abc1234",
+    buildTimestamp: "2024-01-10T08:00:00+00:00"
+  })
+
+const healthy = (durationInMs: number) => ({ durationInMs, healthStatus: HealthStatus.Healthy })
+
+const createMockHealthCheck = (allHealthy = true) =>
+  buildHealthCheck({
+    database: {
+      durationInMs: 50,
+      healthStatus: allHealthy ? HealthStatus.Healthy : HealthStatus.Unhealthy
+    },
+    keyValueStore: healthy(30),
+    pubSub: healthy(25),
+    spaRenderer: healthy(100),
+    internetConnectivity: healthy(200),
+    fileRepository: {
+      imageFolder: { filePath: "/data/images", healthStatusDetails: healthy(10) },
+      videoFolder: { filePath: "/data/videos", healthStatusDetails: healthy(15) },
+      otherVideoFolders: [{ filePath: "/data/archive", healthStatusDetails: healthy(20) }]
+    }
+  })
 
 vi.mock("~/services/health/HealthCheckService", () => ({
   retrieveBackendServiceInformation: vi.fn(),
@@ -23,19 +58,6 @@ vi.mock("~/components/helmet/Helmet", () => ({
   default: ({ title }: { title: string }) => <title>{title}</title>,
 }))
 
-const createMockBackendInfo = () => ({
-  serviceName: "video-downloader-backend",
-  organization: "ruchira",
-  javaVersion: "21.0.1",
-  scalaVersion: "3.3.1",
-  sbtVersion: "1.9.7",
-  ytDlpVersion: "2024.01.01",
-  currentTimestamp: DateTime.fromISO("2024-01-15T10:30:00Z"),
-  gitBranch: Some.of("main"),
-  gitCommit: Some.of("abc1234"),
-  buildTimestamp: Some.of(DateTime.fromISO("2024-01-10T08:00:00Z")),
-})
-
 const createMockFrontendInfo = () => ({
   name: "video-downloader-front-end",
   version: "1.0.0",
@@ -43,54 +65,6 @@ const createMockFrontendInfo = () => ({
   gitBranch: Some.of("main"),
   gitCommit: Some.of("def5678"),
   buildTimestamp: Some.of(DateTime.fromISO("2024-01-10T08:00:00Z")),
-})
-
-const createMockHealthCheck = (allHealthy = true) => ({
-  database: {
-    healthStatus: allHealthy ? HealthStatus.Healthy : HealthStatus.Unhealthy,
-    duration: Duration.fromMillis(50),
-  },
-  keyValueStore: {
-    healthStatus: HealthStatus.Healthy,
-    duration: Duration.fromMillis(30),
-  },
-  pubSub: {
-    healthStatus: HealthStatus.Healthy,
-    duration: Duration.fromMillis(25),
-  },
-  spaRenderer: {
-    healthStatus: HealthStatus.Healthy,
-    duration: Duration.fromMillis(100),
-  },
-  internetConnectivity: {
-    healthStatus: HealthStatus.Healthy,
-    duration: Duration.fromMillis(200),
-  },
-  fileRepository: {
-    imageFolder: {
-      filePath: "/data/images",
-      healthStatusDetails: {
-        healthStatus: HealthStatus.Healthy,
-        duration: Duration.fromMillis(10),
-      },
-    },
-    videoFolder: {
-      filePath: "/data/videos",
-      healthStatusDetails: {
-        healthStatus: HealthStatus.Healthy,
-        duration: Duration.fromMillis(15),
-      },
-    },
-    otherVideoFolders: [
-      {
-        filePath: "/data/archive",
-        healthStatusDetails: {
-          healthStatus: HealthStatus.Healthy,
-          duration: Duration.fromMillis(20),
-        },
-      },
-    ],
-  },
 })
 
 const renderWithRouter = () => {

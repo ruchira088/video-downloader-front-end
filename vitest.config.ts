@@ -30,11 +30,14 @@ export default defineConfig({
         "app/entry.{client,server}.tsx",
         "app/routes.ts"
       ],
+      // A ratchet, not a target: these sit just under the coverage the suite actually
+      // achieves, so a change that drops coverage fails CI. Raise them when real coverage
+      // climbs; never lower them to make a build pass.
       thresholds: {
-        statements: 60,
-        branches: 60,
-        functions: 55,
-        lines: 60
+        statements: 95,
+        branches: 90,
+        functions: 94,
+        lines: 96
       }
     }
   },

@@ -1,9 +1,11 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router"
-import { DateTime, Duration } from "luxon"
-import { FileResourceType } from "~/models/FileResource"
+import { Duration } from "luxon"
 import React from "react"
+import { buildVideo } from "../fixtures"
+import type { Video } from "~/models/Video"
 
 vi.mock("~/services/video/VideoService", () => ({
   fetchVideoById: vi.fn(),
@@ -13,11 +15,26 @@ vi.mock("~/services/video/VideoService", () => ({
 // VideoWatch is a heavy child (player, dialogs, sanitization); stub it and surface
 // the props VideoPage passes so we can assert on them.
 vi.mock("~/pages/authenticated/videos/video-page/watch/VideoWatch", () => ({
-  default: (props: { video: { videoMetadata: { title: string } }; timestamp: Duration; snapshots: unknown[] }) => (
+  default: (props: {
+    video: { videoMetadata: { title: string } }
+    timestamp: Duration
+    snapshots: unknown[]
+    updateVideo: (video: unknown) => void
+  }) => (
     <div data-testid="video-watch">
       <span data-testid="title">{props.video.videoMetadata.title}</span>
       <span data-testid="timestamp-seconds">{props.timestamp.as("seconds")}</span>
       <span data-testid="snapshot-count">{props.snapshots.length}</span>
+      <button
+        onClick={() =>
+          props.updateVideo({
+            ...props.video,
+            videoMetadata: { ...props.video.videoMetadata, title: "Renamed Video" },
+          })
+        }
+      >
+        Rename
+      </button>
     </div>
   ),
 }))
@@ -27,35 +44,6 @@ import VideoPage from "~/pages/authenticated/videos/video-page/VideoPage"
 
 const mockFetchVideoById = vi.mocked(fetchVideoById)
 const mockFetchVideoSnapshots = vi.mocked(fetchVideoSnapshotsByVideoId)
-
-const buildVideo = (id: string, title: string) => ({
-  videoMetadata: {
-    url: `https://example.com/video/${id}`,
-    id,
-    videoSite: "youtube",
-    title,
-    duration: Duration.fromObject({ minutes: 5 }),
-    size: 1024,
-    thumbnail: {
-      id: `thumb-${id}`,
-      type: FileResourceType.Thumbnail as const,
-      createdAt: DateTime.now(),
-      path: "/path/to/thumb",
-      mediaType: "image/jpeg",
-      size: 1024,
-    },
-  },
-  fileResource: {
-    id: `file-${id}`,
-    type: FileResourceType.Video as const,
-    createdAt: DateTime.now(),
-    path: "/path/to/video",
-    mediaType: "video/mp4",
-    size: 1024,
-  },
-  createdAt: DateTime.now(),
-  watchTime: Duration.fromObject({ minutes: 2 }),
-})
 
 // VideoPage reads its videoId from `props.params` (a route module prop), so pass it directly.
 const renderVideoPage = (videoId: string, initialEntry: string) =>
@@ -82,7 +70,7 @@ describe("VideoPage", () => {
   })
 
   test("fetches the video and snapshots, then renders VideoWatch", async () => {
-    mockFetchVideoById.mockResolvedValue(buildVideo("video-123", "My Video"))
+    mockFetchVideoById.mockResolvedValue(buildVideo({ id: "video-123", title: "My Video" }))
     mockFetchVideoSnapshots.mockResolvedValue([{} as never, {} as never])
 
     renderVideoPage("video-123", "/video/video-123")
@@ -111,7 +99,7 @@ describe("VideoPage", () => {
   })
 
   test("still renders the video when only the snapshots fetch fails", async () => {
-    mockFetchVideoById.mockResolvedValue(buildVideo("video-123", "My Video"))
+    mockFetchVideoById.mockResolvedValue(buildVideo({ id: "video-123", title: "My Video" }))
     mockFetchVideoSnapshots.mockRejectedValue(new Error("snapshots failed"))
 
     renderVideoPage("video-123", "/video/video-123")
@@ -127,7 +115,7 @@ describe("VideoPage", () => {
   })
 
   test("resets and shows fresh data when the videoId changes", async () => {
-    mockFetchVideoById.mockResolvedValue(buildVideo("video-a", "Video A"))
+    mockFetchVideoById.mockResolvedValue(buildVideo({ id: "video-a", title: "Video A" }))
 
     const { rerender } = renderVideoPage("video-a", "/video/video-a")
 
@@ -137,7 +125,7 @@ describe("VideoPage", () => {
 
     // Navigate to video B while its fetch is still pending: the page must drop
     // video A and show the loading indicator again.
-    let resolveVideoB: (video: ReturnType<typeof buildVideo>) => void
+    let resolveVideoB: (video: Video) => void
     mockFetchVideoById.mockReturnValue(
       new Promise((resolve) => {
         resolveVideoB = resolve
@@ -155,7 +143,7 @@ describe("VideoPage", () => {
     })
     expect(screen.getByRole("progressbar")).toBeInTheDocument()
 
-    resolveVideoB!(buildVideo("video-b", "Video B"))
+    resolveVideoB!(buildVideo({ id: "video-b", title: "Video B" }))
 
     await waitFor(() => {
       expect(screen.getByTestId("title")).toHaveTextContent("Video B")
@@ -165,7 +153,7 @@ describe("VideoPage", () => {
   })
 
   test("parses the timestamp query parameter", async () => {
-    mockFetchVideoById.mockResolvedValue(buildVideo("video-123", "My Video"))
+    mockFetchVideoById.mockResolvedValue(buildVideo({ id: "video-123", title: "My Video" }))
 
     renderVideoPage("video-123", "/video/video-123?timestamp=90")
 
@@ -175,12 +163,29 @@ describe("VideoPage", () => {
   })
 
   test("defaults the timestamp to 0 when the query parameter is absent", async () => {
-    mockFetchVideoById.mockResolvedValue(buildVideo("video-123", "My Video"))
+    mockFetchVideoById.mockResolvedValue(buildVideo({ id: "video-123", title: "My Video" }))
 
     renderVideoPage("video-123", "/video/video-123")
 
     await waitFor(() => {
       expect(screen.getByTestId("timestamp-seconds")).toHaveTextContent("0")
     })
+  })
+  test("renders an updated video from the child without refetching it", async () => {
+    // VideoWatch edits the title in place, so the page has to adopt the video it hands back
+    // rather than waiting for a fresh fetch.
+    const user = userEvent.setup()
+    mockFetchVideoById.mockResolvedValue(buildVideo({ id: "video-123", title: "My Video" }))
+
+    renderVideoPage("video-123", "/video/video-123")
+
+    await waitFor(() => {
+      expect(screen.getByTestId("title")).toHaveTextContent("My Video")
+    })
+
+    await user.click(screen.getByRole("button", { name: "Rename" }))
+
+    expect(screen.getByTestId("title")).toHaveTextContent("Renamed Video")
+    expect(mockFetchVideoById).toHaveBeenCalledTimes(1)
   })
 })

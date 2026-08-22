@@ -1,14 +1,30 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import ScheduledVideoDownloadCard from "~/pages/authenticated/downloading/scheduled-video-download-card/ScheduledVideoDownloadCard"
-import { DateTime, Duration } from "luxon"
-import { None, Some } from "~/types/Option"
+import { Some } from "~/types/Option"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
-import { FileResourceType } from "~/models/FileResource"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
+import { buildDownloadableScheduledVideo, durationJson } from "../fixtures"
+
+const createMockDownloadableScheduledVideo = (status: SchedulingStatus = SchedulingStatus.Active) =>
+  buildDownloadableScheduledVideo({
+    title: "Test Video Title",
+    scheduledAt: "2023-10-15T10:00:00+00:00",
+    status,
+    downloadedBytes: 500000000,
+    downloadSpeed: 1000000,
+    downloadHistory: [100000, 200000, 300000],
+    // The schema splits `details` into a stack trace, so the fixture supplies the wire shape.
+    errorInfo: status === SchedulingStatus.Error ? { message: "Download failed", details: "Connection timeout" } : null,
+    videoMetadata: {
+      url: "https://example.com/video",
+      duration: durationJson(300),
+      size: 1000000000
+    }
+  })
 
 vi.mock("~/services/asset/AssetService", () => ({
   imageUrl: vi.fn(() => "https://example.com/image.jpg"),
@@ -21,33 +37,6 @@ vi.mock("~/services/video/VideoService", () => ({
 vi.mock("~/services/sanitize/SanitizationService", () => ({
   translate: vi.fn((text) => text),
 }))
-
-const createMockDownloadableScheduledVideo = (status: SchedulingStatus = SchedulingStatus.Active) => ({
-  lastUpdatedAt: DateTime.now(),
-  scheduledAt: DateTime.fromISO("2023-10-15T10:00:00Z"),
-  videoMetadata: {
-    url: "https://example.com/video",
-    id: "video-123",
-    videoSite: "youtube",
-    title: "Test Video Title",
-    duration: Duration.fromObject({ minutes: 5 }),
-    size: 1000000000,
-    thumbnail: {
-      id: "thumb-123",
-      type: FileResourceType.Thumbnail as const,
-      createdAt: DateTime.now(),
-      path: "/path/to/thumb",
-      mediaType: "image/jpeg",
-      size: 1024,
-    },
-  },
-  status,
-  downloadedBytes: 500000000,
-  completedAt: None.of<DateTime>(),
-  errorInfo: status === SchedulingStatus.Error ? { message: "Download failed", stackTrace: ["Connection timeout"] } : null,
-  downloadSpeed: Some.of(1000000),
-  downloadHistory: [100000, 200000, 300000],
-})
 
 const renderWithContext = (
   downloadableScheduledVideo = createMockDownloadableScheduledVideo(),

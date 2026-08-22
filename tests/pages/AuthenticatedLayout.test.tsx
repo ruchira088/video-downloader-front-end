@@ -3,24 +3,17 @@ import { render, screen, waitFor } from "@testing-library/react"
 import AuthenticatedLayout from "~/pages/authenticated/AuthenticatedLayout"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
+import { buildStoredAuthenticationToken, buildUser } from "../fixtures"
+
+const createMockToken = (expiresAt: DateTime = DateTime.now().plus({ hours: 1 })) =>
+  buildStoredAuthenticationToken({
+    expiresAt: expiresAt.toISO(),
+    issuedAt: DateTime.now().minus({ days: 1 }).toISO()
+  })
+
+const createMockUser = () => buildUser()
 import { None, Some } from "~/types/Option"
 import { DateTime } from "luxon"
-import { Role } from "~/models/User"
-
-const createMockToken = (expiresAt = DateTime.now().plus({ hours: 1 })) => ({
-  expiresAt,
-  issuedAt: DateTime.now().minus({ days: 1 }),
-  renewals: 0,
-})
-
-const createMockUser = () => ({
-  id: "user-123",
-  createdAt: DateTime.now(),
-  firstName: "Test",
-  lastName: "User",
-  email: "test@example.com",
-  role: Role.User,
-})
 
 const mockNavigate = vi.fn()
 

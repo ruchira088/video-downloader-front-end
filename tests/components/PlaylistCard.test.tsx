@@ -1,27 +1,22 @@
 import { describe, expect, test, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import PlaylistCard from "~/pages/authenticated/playlists/components/PlaylistCard"
-import { DateTime } from "luxon"
-import { None } from "~/types/Option"
-import { FileResource, FileResourceType } from "~/models/FileResource"
 import React from "react"
+import { buildPlaylist, type Json, videoJson } from "../fixtures"
+
+const createMockPlaylist = (overrides: Json = {}) =>
+  buildPlaylist({
+    title: "My Playlist",
+    description: "A test playlist description",
+    createdAt: "2023-10-15T10:30:00+00:00",
+    ...overrides
+  })
 
 vi.mock("~/providers/ApplicationConfigurationProvider", () => ({
   useApplicationConfiguration: () => ({
     safeMode: false,
   }),
 }))
-
-const createMockPlaylist = (overrides = {}) => ({
-  id: "playlist-123",
-  userId: "user-123",
-  title: "My Playlist",
-  description: "A test playlist description",
-  createdAt: DateTime.fromISO("2023-10-15T10:30:00Z"),
-  videos: [],
-  albumArt: None.of<FileResource<FileResourceType.AlbumArt>>(),
-  ...overrides
-})
 
 describe("PlaylistCard", () => {
   test("should render playlist title", () => {
@@ -55,13 +50,13 @@ describe("PlaylistCard", () => {
   })
 
   test("should render video count", () => {
-    render(<PlaylistCard playlist={createMockPlaylist({ videos: [{}, {}, {}] })} />)
+    render(<PlaylistCard playlist={createMockPlaylist({ videos: [videoJson(), videoJson(), videoJson()] })} />)
 
     expect(screen.getByText("3 videos")).toBeInTheDocument()
   })
 
   test("should render singular video for 1 video", () => {
-    render(<PlaylistCard playlist={createMockPlaylist({ videos: [{}] })} />)
+    render(<PlaylistCard playlist={createMockPlaylist({ videos: [videoJson()] })} />)
 
     expect(screen.getByText("1 video")).toBeInTheDocument()
   })

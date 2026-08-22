@@ -4,8 +4,26 @@ import userEvent from "@testing-library/user-event"
 import PlaylistDetail from "~/pages/authenticated/playlists/PlaylistDetail"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
-import { DateTime, Duration } from "luxon"
-import { FileResourceType, type FileResource } from "~/models/FileResource"
+import { buildPlaylist, buildVideo, durationJson, videoJson } from "../fixtures"
+
+const videoOverrides = (id: string, title: string) => ({
+  id,
+  title,
+  videoMetadata: { videoSite: "TestSite", duration: durationJson(300), size: 1024 * 1024 * 100 }
+})
+
+const createMockVideo = (id: string, title: string) => buildVideo(videoOverrides(id, title))
+
+const createMockPlaylist = (videoCount: number = 2) =>
+  buildPlaylist({
+    title: "Test Playlist",
+    description: "A test playlist",
+    videos: Array.from({ length: videoCount }, (_, i) =>
+      videoJson(videoOverrides(`video-${i + 1}`, `Video ${i + 1}`))
+    )
+  })
+import { DateTime } from "luxon"
+import { FileResourceType } from "~/models/FileResource"
 import { None } from "~/types/Option"
 import { NotificationProvider } from "~/providers/NotificationProvider"
 
@@ -59,51 +77,10 @@ const mockUploadAlbumArt = vi.mocked(uploadAlbumArt)
 const mockRemoveAlbumArt = vi.mocked(removeAlbumArt)
 const mockSearchVideos = vi.mocked(searchVideos)
 
-const createMockVideo = (id: string, title: string) => ({
-  videoMetadata: {
-    id,
-    url: `https://example.com/video/${id}`,
-    videoSite: "TestSite",
-    title,
-    duration: Duration.fromObject({ minutes: 5 }),
-    size: 1024 * 1024 * 100,
-    thumbnail: {
-      id: `thumb-${id}`,
-      type: FileResourceType.Thumbnail as const,
-      createdAt: DateTime.now(),
-      path: `/thumbnails/${id}.jpg`,
-      mediaType: "image/jpeg",
-      size: 1024,
-    },
-  },
-  fileResource: {
-    id: `file-${id}`,
-    type: FileResourceType.Video as const,
-    createdAt: DateTime.now(),
-    path: `/videos/${id}.mp4`,
-    mediaType: "video/mp4",
-    size: 1024 * 1024 * 100,
-  },
-  createdAt: DateTime.now(),
-  watchTime: Duration.fromObject({ minutes: 0 }),
-})
-
 // PlaylistDetail distinguishes a genuine 404 from a failed request, so shape the rejection
 // the way axios does.
 const notFoundError = () =>
   Object.assign(new Error("Not found"), { isAxiosError: true, response: { status: 404 } })
-
-const createMockPlaylist = (videoCount: number = 2) => ({
-  id: "playlist-123",
-  userId: "user-123",
-  createdAt: DateTime.now(),
-  title: "Test Playlist",
-  description: "A test playlist",
-  videos: Array.from({ length: videoCount }, (_, i) =>
-    createMockVideo(`video-${i + 1}`, `Video ${i + 1}`)
-  ),
-  albumArt: None.of<FileResource<FileResourceType.AlbumArt>>(),
-})
 
 const renderWithRouter = (playlistId: string = "playlist-123") => {
   const routes = [

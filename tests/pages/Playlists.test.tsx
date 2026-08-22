@@ -1,11 +1,12 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import Playlists from "~/pages/authenticated/playlists/Playlists"
-import { DateTime } from "luxon"
-import { None } from "~/types/Option"
-import { FileResource, FileResourceType } from "~/models/FileResource"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
+import { buildPlaylist } from "../fixtures"
+
+const createMockPlaylist = (id: string, title: string) =>
+  buildPlaylist({ id, title, description: `Description for ${title}` })
 
 vi.mock("~/services/playlist/PlaylistService", () => ({
   fetchPlaylists: vi.fn(),
@@ -21,16 +22,6 @@ vi.mock("~/providers/ApplicationConfigurationProvider", () => ({
     safeMode: false,
   }),
 }))
-
-const createMockPlaylist = (id: string, title: string) => ({
-  id,
-  userId: "user-123",
-  title,
-  description: `Description for ${title}`,
-  createdAt: DateTime.now(),
-  videos: [],
-  albumArt: None.of<FileResource<FileResourceType.AlbumArt>>()
-})
 
 const renderWithRouter = (initialPath: string = "/playlists") => {
   const routes = [
