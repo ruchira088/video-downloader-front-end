@@ -99,19 +99,25 @@ describe("VideoSearch", () => {
     const input = screen.getByLabelText("Search videos")
     fireEvent.change(input, { target: { value: "new search" } })
 
-    expect(onSearchTermChange).toHaveBeenCalled()
+    expect(onSearchTermChange).toHaveBeenCalledWith(Some.of("new search"))
   })
 
-  test("should show autocomplete component", async () => {
-    await renderVideoSearch()
+  test("should report a cleared search as None", async () => {
+    const onSearchTermChange = vi.fn()
+    await renderVideoSearch({ searchTerm: Some.of("old"), onSearchTermChange })
 
-    expect(screen.getByLabelText("Search videos")).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText("Search videos"), { target: { value: "   " } })
+
+    expect(onSearchTermChange).toHaveBeenCalledWith(None.of())
   })
 
-  test("should render with provided video titles for autocomplete", async () => {
+  test("should suggest the given video titles once the user starts typing", async () => {
     await renderVideoSearch()
 
-    // Verify component renders properly
-    expect(screen.getByLabelText("Search videos")).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText("Search videos"), { target: { value: "Video" } })
+
+    expect(screen.getByRole("option", { name: "Video 1" })).toBeInTheDocument()
+    expect(screen.getByRole("option", { name: "Video 2" })).toBeInTheDocument()
+    expect(screen.getByRole("option", { name: "Video 3" })).toBeInTheDocument()
   })
 })

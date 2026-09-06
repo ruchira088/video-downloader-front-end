@@ -67,17 +67,6 @@ describe("OrderingComponent", () => {
 
       expect(onChange).toHaveBeenCalledWith(Ordering.Ascending)
     })
-
-    test("should still call onChange when clicking already selected option", async () => {
-      const user = userEvent.setup()
-      const onChange = vi.fn()
-      render(<OrderingComponent ordering={Ordering.Ascending} onOrderingChange={onChange} />)
-
-      await user.click(screen.getByLabelText(/ascending/i))
-
-      // MUI RadioGroup behavior - may or may not call onChange
-      // This depends on implementation
-    })
   })
 
   describe("className Prop", () => {

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
-import { meta, links, Layout, HydrateFallback, ErrorBoundary } from "~/root"
+import App, { meta, links, Layout, HydrateFallback, ErrorBoundary } from "~/root"
 import { initSentry } from "~/services/Sentry"
 import React from "react"
 
@@ -81,6 +81,14 @@ describe("root", () => {
       expect(unexpectedErrors).toStrictEqual([])
 
       consoleError.mockRestore()
+    })
+  })
+
+  describe("App", () => {
+    test("should render the route outlet inside the configuration provider", () => {
+      render(<App />)
+
+      expect(screen.getByTestId("provider")).toContainElement(screen.getByTestId("outlet"))
     })
   })
 

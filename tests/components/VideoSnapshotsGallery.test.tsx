@@ -2,12 +2,10 @@ import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import VideoSnapshotsGallery from "~/components/video/video-snapshots/VideoSnapshotsGallery"
 import { createMemoryRouter, RouterProvider } from "react-router"
-import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some } from "~/types/Option"
 import React from "react"
 import type { Snapshot } from "~/models/Snapshot"
 import { buildSnapshot, durationJson } from "../fixtures"
+import { withApplicationConfiguration } from "../helpers"
 
 vi.mock("~/services/asset/AssetService", () => ({
   imageUrl: vi.fn((resource, safeMode) =>
@@ -15,22 +13,11 @@ vi.mock("~/services/asset/AssetService", () => ({
   ),
 }))
 
-const renderWithRouter = (snapshots: Snapshot[]) => {
-  const contextValue = {
-    safeMode: false,
-    theme: Theme.Light,
-    setSafeMode: vi.fn(),
-    setTheme: vi.fn(),
-  }
-
+const renderWithRouter = (snapshots: Snapshot[], safeMode = false) => {
   const router = createMemoryRouter([
     {
       path: "/",
-      element: (
-        <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-          <VideoSnapshotsGallery snapshots={snapshots} />
-        </ApplicationConfigurationContext.Provider>
-      ),
+      element: withApplicationConfiguration(<VideoSnapshotsGallery snapshots={snapshots} />, { safeMode }),
     },
   ])
 
@@ -87,28 +74,8 @@ describe("VideoSnapshotsGallery", () => {
   })
 
   test("should use safe mode image URL when safe mode is enabled", async () => {
-    const { imageUrl } = await import("~/services/asset/AssetService")
+    renderWithRouter([buildSnapshot({ id: "snap-1", videoTimestamp: durationJson(30) })], true)
 
-    const contextValue = {
-      safeMode: true,
-      theme: Theme.Light,
-      setSafeMode: vi.fn(),
-      setTheme: vi.fn(),
-    }
-
-    const router = createMemoryRouter([
-      {
-        path: "/",
-        element: (
-          <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-            <VideoSnapshotsGallery snapshots={[buildSnapshot({ id: "snap-1", videoTimestamp: durationJson(30) })]} />
-          </ApplicationConfigurationContext.Provider>
-        ),
-      },
-    ])
-
-    render(<RouterProvider router={router} />)
-
-    expect(imageUrl).toHaveBeenCalledWith(expect.anything(), true)
+    expect(screen.getByAltText("video snapshot")).toHaveAttribute("src", "https://safe.example.com/image.jpg")
   })
 })

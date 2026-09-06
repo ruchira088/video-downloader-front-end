@@ -3,32 +3,30 @@ import { WorkerStatus } from "~/models/WorkerStatus"
 import { fetchWorkerStatus, updateWorkerStatus } from "~/services/scheduling/SchedulingService"
 import { PlayCircle, PauseCircle } from "@mui/icons-material"
 import QuickSettingsButton from "./QuickSettingsButton"
+import { None, type Option, Some } from "~/types/Option"
 
 const WorkerStatusSwitch = () => {
-  const [workerStatus, setWorkerStatus] = useState<WorkerStatus | null>(null)
+  // None until the current status has been fetched; the button is disabled in the meantime.
+  const [workerStatus, setWorkerStatus] = useState<Option<WorkerStatus>>(None.of())
 
   useEffect(() => {
-    fetchWorkerStatus().then((status) => setWorkerStatus(status)).catch(console.error)
+    fetchWorkerStatus().then((status) => setWorkerStatus(Some.of(status))).catch(console.error)
   }, [])
 
-  const onClick = async () => {
-    if (workerStatus === null) return
+  const onClick = () =>
+    void workerStatus.forEach(async (current) => {
+      const updated = current === WorkerStatus.Available ? WorkerStatus.Paused : WorkerStatus.Available
+      setWorkerStatus(Some.of(updated))
 
-    const updated: WorkerStatus = workerStatus === WorkerStatus.Available
-      ? WorkerStatus.Paused
-      : WorkerStatus.Available
-    const existingValue = workerStatus
-    setWorkerStatus(updated)
+      try {
+        await updateWorkerStatus(updated)
+      } catch (error) {
+        console.error(error)
+        setWorkerStatus(Some.of(current))
+      }
+    })
 
-    try {
-      await updateWorkerStatus(updated)
-    } catch (e) {
-      console.error(e)
-      setWorkerStatus(existingValue)
-    }
-  }
-
-  const isAvailable = workerStatus === WorkerStatus.Available
+  const isAvailable = workerStatus.toNullable() === WorkerStatus.Available
 
   return (
     <QuickSettingsButton
@@ -36,7 +34,7 @@ const WorkerStatusSwitch = () => {
       ariaLabel={isAvailable ? "Pause workers" : "Start workers"}
       icon={isAvailable ? <PauseCircle /> : <PlayCircle />}
       onClick={onClick}
-      disabled={workerStatus === null}
+      disabled={workerStatus.isEmpty()}
     />
   )
 }

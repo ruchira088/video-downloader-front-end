@@ -4,24 +4,7 @@ import userEvent from "@testing-library/user-event"
 import SignupPage from "~/pages/unauthenticated/signup/SignupPage"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
-import { DateTime } from "luxon"
-import { Role } from "~/models/User"
-
-const mockUser = {
-  id: "user-123",
-  createdAt: DateTime.now(),
-  firstName: "Test",
-  lastName: "User",
-  email: "test@example.com",
-  role: Role.User,
-}
-
-const mockToken = {
-  secret: "test-secret",
-  expiresAt: DateTime.now().plus({ days: 1 }),
-  issuedAt: DateTime.now(),
-  renewals: 0,
-}
+import { buildAuthenticationToken, buildUser } from "../fixtures"
 
 vi.mock("~/services/user/UserService", () => ({
   createUser: vi.fn(),
@@ -116,8 +99,8 @@ describe("SignupPage", () => {
 
   test("should navigate to home page after successful signup", async () => {
     const user = userEvent.setup()
-    mockCreateUser.mockResolvedValue(mockUser)
-    mockLogin.mockResolvedValue(mockToken)
+    mockCreateUser.mockResolvedValue(buildUser())
+    mockLogin.mockResolvedValue(buildAuthenticationToken())
 
     renderWithRouter()
 

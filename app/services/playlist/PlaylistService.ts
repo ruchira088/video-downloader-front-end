@@ -4,16 +4,19 @@ import { axiosClient } from "~/services/http/HttpClient"
 import { zodParse } from "~/types/Zod"
 import type { Option } from "~/types/Option"
 import type { PlaylistSortBy } from "~/models/PlaylistSortBy"
-import type { PlaylistOrdering } from "~/models/PlaylistOrdering"
+import type { Ordering } from "~/models/Ordering"
 
-export const createPlaylist = async (
-  title: string,
-  description?: string
-): Promise<Playlist> => {
+/** Fields of a playlist that can be changed; anything omitted is left as it is. */
+export type PlaylistUpdate = {
+  readonly title?: string
+  readonly description?: string
+  readonly videoIds?: string[]
+}
+
+export const createPlaylist = async (title: string, description?: string): Promise<Playlist> => {
   const response = await axiosClient.post("/playlists", { title, description })
-  const playlist = zodParse(Playlist, response.data)
 
-  return playlist
+  return zodParse(Playlist, response.data)
 }
 
 export const fetchPlaylists = async (
@@ -21,7 +24,7 @@ export const fetchPlaylists = async (
   pageNumber: number,
   pageSize: number,
   sortBy: PlaylistSortBy,
-  ordering: PlaylistOrdering
+  ordering: Ordering
 ): Promise<Playlist[]> => {
   const response = await axiosClient.get("/playlists", {
     params: {
@@ -32,90 +35,54 @@ export const fetchPlaylists = async (
       order: ordering
     }
   })
-  const playlists = zodParse(ListResponse(Playlist), response.data)
 
-  return playlists.results
+  return zodParse(ListResponse(Playlist), response.data).results
 }
 
-export const fetchPlaylistById = async (
-  playlistId: string
-): Promise<Playlist> => {
+export const fetchPlaylistById = async (playlistId: string): Promise<Playlist> => {
   const response = await axiosClient.get(`/playlists/id/${playlistId}`)
-  const playlist = zodParse(Playlist, response.data)
 
-  return playlist
+  return zodParse(Playlist, response.data)
 }
 
-export const updatePlaylist = async (
-  playlistId: string,
-  title?: string,
-  description?: string,
-  videoIds?: string[]
-): Promise<Playlist> => {
+export const updatePlaylist = async (playlistId: string, update: PlaylistUpdate): Promise<Playlist> => {
   const response = await axiosClient.put(`/playlists/id/${playlistId}`, {
-    title,
-    description,
-    videoIds
+    title: update.title,
+    description: update.description,
+    videoIds: update.videoIds
   })
-  const playlist = zodParse(Playlist, response.data)
 
-  return playlist
+  return zodParse(Playlist, response.data)
 }
 
 export const deletePlaylist = async (playlistId: string): Promise<Playlist> => {
   const response = await axiosClient.delete(`/playlists/id/${playlistId}`)
-  const playlist = zodParse(Playlist, response.data)
 
-  return playlist
+  return zodParse(Playlist, response.data)
 }
 
-export const addVideoToPlaylist = async (
-  playlist: Playlist,
-  videoId: string
-): Promise<Playlist> => {
-  const existingVideoIds = playlist.videos.map(v => v.videoMetadata.id)
-  const newVideoIds = [...existingVideoIds, videoId]
+const videoIdsOf = (playlist: Playlist): string[] => playlist.videos.map(video => video.videoMetadata.id)
 
-  return updatePlaylist(playlist.id, undefined, undefined, newVideoIds)
-}
+export const addVideoToPlaylist = (playlist: Playlist, videoId: string): Promise<Playlist> =>
+  updatePlaylist(playlist.id, { videoIds: [...videoIdsOf(playlist), videoId] })
 
-export const removeVideoFromPlaylist = async (
-  playlist: Playlist,
-  videoId: string
-): Promise<Playlist> => {
-  const newVideoIds = playlist.videos
-    .map(v => v.videoMetadata.id)
-    .filter(id => id !== videoId)
+export const removeVideoFromPlaylist = (playlist: Playlist, videoId: string): Promise<Playlist> =>
+  updatePlaylist(playlist.id, { videoIds: videoIdsOf(playlist).filter(id => id !== videoId) })
 
-  return updatePlaylist(playlist.id, undefined, undefined, newVideoIds)
-}
+export const reorderPlaylistVideos = (playlistId: string, videoIds: string[]): Promise<Playlist> =>
+  updatePlaylist(playlistId, { videoIds })
 
-export const reorderPlaylistVideos = async (
-  playlistId: string,
-  videoIds: string[]
-): Promise<Playlist> => {
-  return updatePlaylist(playlistId, undefined, undefined, videoIds)
-}
-
-export const uploadAlbumArt = async (
-  playlistId: string,
-  file: File
-): Promise<Playlist> => {
+export const uploadAlbumArt = async (playlistId: string, file: File): Promise<Playlist> => {
   const formData = new FormData()
   formData.append("file", file)
 
-  const response = await axiosClient.put(
-    `/playlists/id/${playlistId}/album-art`,
-    formData
-  )
-  const playlist = zodParse(Playlist, response.data)
+  const response = await axiosClient.put(`/playlists/id/${playlistId}/album-art`, formData)
 
-  return playlist
+  return zodParse(Playlist, response.data)
 }
 
 export const removeAlbumArt = async (playlistId: string): Promise<Playlist> => {
   const response = await axiosClient.delete(`/playlists/id/${playlistId}/album-art`)
-  const playlist = zodParse(Playlist, response.data)
 
-  return playlist
+  return zodParse(Playlist, response.data)
 }

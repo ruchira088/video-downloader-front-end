@@ -18,17 +18,17 @@ const HistoryPage = () => {
   const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch<VideoWatchHistory>(
     pageNumber => getVideoHistory(pageNumber, PAGE_SIZE),
     videoHistories => {
-      const newVideoHistories = videoHistories.reduce<VideoWatchHistory[]>(
-        (videos, videoHistory) => {
-          if (!videoIds.current.has(videoHistory.video.videoMetadata.id)) {
-            videoIds.current.add(videoHistory.video.videoMetadata.id)
-            return videos.concat(videoHistory)
-          } else {
-            return videos
-          }
-        },
-        []
-      )
+      // A video watched more than once appears in several history entries; show it once.
+      const newVideoHistories = videoHistories.filter(videoHistory => {
+        const videoId = videoHistory.video.videoMetadata.id
+
+        if (videoIds.current.has(videoId)) {
+          return false
+        }
+
+        videoIds.current.add(videoId)
+        return true
+      })
 
       setVideoWatchHistories(videoWatchHistories => videoWatchHistories.concat(newVideoHistories))
     },

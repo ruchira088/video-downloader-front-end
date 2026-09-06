@@ -29,7 +29,7 @@ const isOnUnauthenticatedPage = (): boolean =>
   UNAUTHENTICATED_PATHS.some((path) => window.location.pathname.startsWith(path))
 
 axiosClient.interceptors.response.use(
-  (value) => Promise.resolve(value),
+  (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       console.debug("Received 401 status response. Removing authentication token.")

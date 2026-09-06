@@ -1,14 +1,14 @@
 import React, { type FC, useState } from "react"
-import { Button, TextField, InputAdornment, IconButton } from "@mui/material"
-import Visibility from "@mui/icons-material/Visibility"
-import VisibilityOff from "@mui/icons-material/VisibilityOff"
+import { Button, TextField } from "@mui/material"
 import { login } from "~/services/authentication/AuthenticationService"
 import { createUser, type CreateUserRequest } from "~/services/user/UserService"
 import styles from "./SignupForm.module.scss"
 import ErrorMessages from "~/components/error-messages/ErrorMessages"
-import smallLogo from "~/images/small-logo.svg"
 import { Link } from "react-router"
-import { extractErrorMessages, onFieldChange } from "~/pages/unauthenticated/AuthFormHelpers"
+import { onFieldChange } from "~/pages/unauthenticated/AuthFormHelpers"
+import { extractErrorMessages } from "~/utils/ErrorMessages"
+import AuthFormHeader from "~/pages/unauthenticated/components/AuthFormHeader"
+import PasswordField from "~/pages/unauthenticated/components/PasswordField"
 
 interface Errors {
   firstName: string | null
@@ -38,8 +38,6 @@ const SignupForm: FC<SignupFormProps> = props => {
   const [email, setEmail] = useState<string>("")
   const [password, setPassword] = useState<string>("")
   const [confirmPassword, setConfirmPassword] = useState<string>("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [errors, setErrors] = useState<Errors>(EMPTY_ERRORS)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -104,11 +102,7 @@ const SignupForm: FC<SignupFormProps> = props => {
 
   return (
     <div className={styles.signupForm}>
-      <div className={styles.logoSection}>
-        <img src={smallLogo} alt="Video Downloader" className={styles.logo} />
-        <h1 className={styles.title}>Video Downloader</h1>
-        <p className={styles.subtitle}>Create your account</p>
-      </div>
+      <AuthFormHeader subtitle="Create your account" />
       <form className={styles.signupFormBody} onSubmit={onSubmit} noValidate>
         <div className={styles.nameRow}>
           <TextField
@@ -146,59 +140,25 @@ const SignupForm: FC<SignupFormProps> = props => {
           className={styles.textField}
           fullWidth
         />
-        <TextField
+        <PasswordField
           error={errors.password != null}
           value={password}
           onChange={onChange(setPassword)}
           helperText={errors.password}
           label="Password"
-          type={showPassword ? "text" : "password"}
           name="password"
           autoComplete="new-password"
           className={styles.textField}
-          fullWidth
-          slotProps={{
-            input: {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }
-          }}
         />
-        <TextField
+        <PasswordField
           error={errors.confirmPassword != null}
           value={confirmPassword}
           onChange={onChange(setConfirmPassword)}
           helperText={errors.confirmPassword}
           label="Confirm Password"
-          type={showConfirmPassword ? "text" : "password"}
           name="confirmPassword"
           autoComplete="new-password"
           className={styles.textField}
-          fullWidth
-          slotProps={{
-            input: {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    edge="end"
-                  >
-                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }
-          }}
         />
         <div className={styles.signupButton}>
           <Button

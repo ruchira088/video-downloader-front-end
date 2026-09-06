@@ -1,14 +1,14 @@
 import React, { type FC, useState } from "react"
-import { Button, TextField, InputAdornment, IconButton } from "@mui/material"
-import Visibility from "@mui/icons-material/Visibility"
-import VisibilityOff from "@mui/icons-material/VisibilityOff"
+import { Button, TextField } from "@mui/material"
 import { login } from "~/services/authentication/AuthenticationService"
 import { type AuthenticationToken } from "~/models/AuthenticationToken"
 import styles from "./LoginForm.module.scss"
 import ErrorMessages from "~/components/error-messages/ErrorMessages"
-import smallLogo from "~/images/small-logo.svg"
 import { Link } from "react-router"
-import { extractErrorMessages, onFieldChange } from "~/pages/unauthenticated/AuthFormHelpers"
+import { onFieldChange } from "~/pages/unauthenticated/AuthFormHelpers"
+import { extractErrorMessages } from "~/utils/ErrorMessages"
+import AuthFormHeader from "~/pages/unauthenticated/components/AuthFormHeader"
+import PasswordField from "~/pages/unauthenticated/components/PasswordField"
 
 interface Errors {
   email: string | null
@@ -25,7 +25,6 @@ type LoginFormProps = {
 const LoginForm: FC<LoginFormProps> = props => {
   const [email, setEmail] = useState<string>("")
   const [password, setPassword] = useState<string>("")
-  const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Errors>(EMPTY_ERRORS)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -65,11 +64,7 @@ const LoginForm: FC<LoginFormProps> = props => {
 
   return (
     <div className={styles.loginForm}>
-      <div className={styles.logoSection}>
-        <img src={smallLogo} alt="Video Downloader" className={styles.logo} />
-        <h1 className={styles.title}>Video Downloader</h1>
-        <p className={styles.subtitle}>Sign in to your account</p>
-      </div>
+      <AuthFormHeader subtitle="Sign in to your account" />
       <form className={styles.loginFormBody} onSubmit={onSubmit} noValidate>
         <TextField
           error={errors.email != null}
@@ -83,32 +78,15 @@ const LoginForm: FC<LoginFormProps> = props => {
           className={styles.textField}
           fullWidth
         />
-        <TextField
+        <PasswordField
           error={errors.password != null}
           value={password}
           onChange={onChange(setPassword)}
           helperText={errors.password}
           label="Password"
-          type={showPassword ? "text" : "password"}
           name="password"
           autoComplete="current-password"
           className={styles.textField}
-          fullWidth
-          slotProps={{
-            input: {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }
-          }}
         />
         <div className={styles.loginButton}>
           <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>

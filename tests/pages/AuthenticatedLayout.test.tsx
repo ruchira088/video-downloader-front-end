@@ -4,6 +4,8 @@ import AuthenticatedLayout from "~/pages/authenticated/AuthenticatedLayout"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
 import { buildStoredAuthenticationToken, buildUser } from "../fixtures"
+import { None, Some } from "~/types/Option"
+import { DateTime } from "luxon"
 
 const createMockToken = (expiresAt: DateTime = DateTime.now().plus({ hours: 1 })) =>
   buildStoredAuthenticationToken({
@@ -12,8 +14,6 @@ const createMockToken = (expiresAt: DateTime = DateTime.now().plus({ hours: 1 })
   })
 
 const createMockUser = () => buildUser()
-import { None, Some } from "~/types/Option"
-import { DateTime } from "luxon"
 
 const mockNavigate = vi.fn()
 

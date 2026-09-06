@@ -51,9 +51,7 @@ export const getAuthenticatedUser = async (): Promise<User> => {
   // A 401 here is an expected answer ("not signed in") handled by the caller,
   // so the interceptor must not hard-redirect to the sign-in page.
   const response = await axiosClient.get("/authentication/user", { skipUnauthenticatedRedirect: true })
-  const user = zodParse(User, response.data)
-
-  return user
+  return zodParse(User, response.data)
 }
 
 export const logout = async (): Promise<User> => {

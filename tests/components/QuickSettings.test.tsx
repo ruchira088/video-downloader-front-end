@@ -1,12 +1,10 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
 import QuickSettings from "~/components/quick-settings/QuickSettings"
-import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some } from "~/types/Option"
 import { WorkerStatus } from "~/models/WorkerStatus"
 import React from "react"
 import { MemoryRouter } from "react-router"
+import { withApplicationConfiguration } from "../helpers"
 
 vi.mock("~/services/scheduling/SchedulingService", () => ({
   fetchWorkerStatus: vi.fn(),
@@ -21,22 +19,8 @@ import { fetchWorkerStatus } from "~/services/scheduling/SchedulingService"
 
 const mockFetchWorkerStatus = vi.mocked(fetchWorkerStatus)
 
-const renderWithContext = () => {
-  const contextValue = {
-    safeMode: false,
-    theme: Theme.Light,
-    setSafeMode: vi.fn(),
-    setTheme: vi.fn(),
-  }
-
-  return render(
-    <MemoryRouter>
-      <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-        <QuickSettings />
-      </ApplicationConfigurationContext.Provider>
-    </MemoryRouter>
-  )
-}
+const renderWithContext = () =>
+  render(<MemoryRouter>{withApplicationConfiguration(<QuickSettings />)}</MemoryRouter>)
 
 describe("QuickSettings", () => {
   beforeEach(() => {

@@ -126,6 +126,11 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     ? Option.fromNullable(displayedVideos[currentIndex]).map(video => video.videoMetadata.id)
     : None.of()
 
+  const handlePlayFromIndex = (index: number) => {
+    setCurrentIndex(index)
+    setIsPlaying(true)
+  }
+
   const playVideo = (videoId: string) => {
     const index = displayedVideos.findIndex(video => video.videoMetadata.id === videoId)
 
@@ -172,7 +177,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
 
   const handleUpdateTitle = async (title: string) => {
     try {
-      await updatePlaylist(playlistId, title)
+      await updatePlaylist(playlistId, { title })
       setPlaylist(prev => prev.map(p => ({ ...p, title })))
     } catch (error) {
       notifyError("Failed to rename the playlist", error)
@@ -271,28 +276,21 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     )
   }
 
-  const handlePlayFromIndex = useCallback((index: number) => {
-    setCurrentIndex(index)
-    setIsPlaying(true)
-  }, [])
-
-  const handleNextVideo = useCallback(() => {
+  const handleNextVideo = () => {
     if (currentIndex < displayedVideos.length - 1) {
       setCurrentIndex(prev => prev + 1)
     } else {
       setIsPlaying(false)
     }
-  }, [currentIndex, displayedVideos.length])
+  }
 
-  const handlePreviousVideo = useCallback(() => {
+  const handlePreviousVideo = () => {
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1)
     }
-  }, [currentIndex])
+  }
 
-  const handleClosePlayer = useCallback(() => {
-    setIsPlaying(false)
-  }, [])
+  const handleClosePlayer = () => setIsPlaying(false)
 
   if (isLoading) {
     return (
@@ -370,9 +368,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
           />
         </div>
 
-        {p.description && (
-          <p className={styles.description}>{p.description}</p>
-        )}
+        {p.description.map(description => <p className={styles.description}>{description}</p>).toNullable()}
 
         <div className={styles.controls}>
           <Button

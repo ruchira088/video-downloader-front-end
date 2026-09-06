@@ -15,7 +15,7 @@ export const ScheduledVideoDownload = z.object({
   lastUpdatedAt: ZodDateTime,
   scheduledAt: ZodDateTime,
   videoMetadata: VideoMetadata,
-  errorInfo: ErrorInformation.nullish(),
+  errorInfo: ZodOptional(ErrorInformation),
   status: z.enum(SchedulingStatus),
   downloadedBytes: z.number(),
   completedAt: ZodOptional(ZodDateTime)

@@ -6,10 +6,11 @@ import Helmet from "~/components/helmet/Helmet"
 import { Playlist } from "~/models/Playlist"
 import { fetchPlaylists } from "~/services/playlist/PlaylistService"
 import { PlaylistSortBy } from "~/models/PlaylistSortBy"
-import { PlaylistOrdering } from "~/models/PlaylistOrdering"
+import { Ordering } from "~/models/Ordering"
 import { None } from "~/types/Option"
 import PlaylistCard from "./components/PlaylistCard"
 import CreatePlaylistDialog from "./components/CreatePlaylistDialog"
+import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
 import { usePaginatedFetch } from "~/components/infinite-scroll/usePaginatedFetch"
 
 import styles from "./Playlists.module.scss"
@@ -20,9 +21,9 @@ const Playlists = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const { isLoading, hasMore, loadMore } = usePaginatedFetch<Playlist>(
+  const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch<Playlist>(
     pageNumber =>
-      fetchPlaylists(None.of(), pageNumber, PAGE_SIZE, PlaylistSortBy.CreatedAt, PlaylistOrdering.Descending),
+      fetchPlaylists(None.of(), pageNumber, PAGE_SIZE, PlaylistSortBy.CreatedAt, Ordering.Descending),
     newPlaylists => setPlaylists(prev => [...prev, ...newPlaylists]),
     { pageSize: PAGE_SIZE }
   )
@@ -46,7 +47,15 @@ const Playlists = () => {
           New Playlist
         </Button>
       </div>
-      <div className={styles.playlistsGrid}>
+      <InfiniteScroll
+        loadMore={loadMore}
+        hasMore={hasMore}
+        isLoading={isLoading}
+        hasError={hasError}
+        onRetry={retry}
+        endMessage={playlists.length > 0 ? "No more playlists" : undefined}
+        className={styles.playlistsGrid}
+      >
         {playlists.map(playlist => (
           <Link
             to={`/playlists/${playlist.id}`}
@@ -56,15 +65,8 @@ const Playlists = () => {
             <PlaylistCard playlist={playlist} />
           </Link>
         ))}
-      </div>
-      {hasMore && playlists.length > 0 && (
-        <div className={styles.loadMoreContainer}>
-          <Button onClick={loadMore} variant="outlined">
-            Load More
-          </Button>
-        </div>
-      )}
-      {playlists.length === 0 && !isLoading && (
+      </InfiniteScroll>
+      {playlists.length === 0 && !isLoading && !hasError && (
         <div className={styles.emptyState}>
           <p>No playlists yet. Create your first playlist to get started!</p>
         </div>

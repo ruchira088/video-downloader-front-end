@@ -1,4 +1,5 @@
 import React, { type FC } from "react"
+import classNames from "classnames"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { IconButton } from "@mui/material"
@@ -51,7 +52,7 @@ const PlaylistVideoCard: FC<PlaylistVideoCardProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`${styles.playlistVideoCard} ${isCurrentlyPlaying ? styles.playing : ""}`}
+      className={classNames(styles.playlistVideoCard, { [styles.playing]: isCurrentlyPlaying })}
     >
       <div className={styles.dragHandle} {...attributes} {...listeners}>
         <DragIndicator />

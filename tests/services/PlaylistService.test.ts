@@ -23,7 +23,7 @@ import {
   removeAlbumArt
 } from "~/services/playlist/PlaylistService"
 import { PlaylistSortBy } from "~/models/PlaylistSortBy"
-import { PlaylistOrdering } from "~/models/PlaylistOrdering"
+import { Ordering } from "~/models/Ordering"
 import { None } from "~/types/Option"
 import { buildPlaylist, fileResourceJson, playlistJson, videoJson } from "../fixtures"
 
@@ -65,7 +65,7 @@ describe("PlaylistService", () => {
     test("should call API with pagination parameters", async () => {
       mockAxiosGet.mockResolvedValue({ data: { results: [] } })
 
-      await fetchPlaylists(None.of(), 0, 20, PlaylistSortBy.CreatedAt, PlaylistOrdering.Descending)
+      await fetchPlaylists(None.of(), 0, 20, PlaylistSortBy.CreatedAt, Ordering.Descending)
 
       expect(mockAxiosGet).toHaveBeenCalledWith("/playlists", {
         params: {
@@ -73,7 +73,7 @@ describe("PlaylistService", () => {
           pageNumber: 0,
           pageSize: 20,
           sortBy: PlaylistSortBy.CreatedAt,
-          order: PlaylistOrdering.Descending
+          order: Ordering.Descending
         }
       })
     })
@@ -87,7 +87,7 @@ describe("PlaylistService", () => {
       }
       mockAxiosGet.mockResolvedValue({ data: mockPlaylists })
 
-      const result = await fetchPlaylists(None.of(), 0, 20, PlaylistSortBy.CreatedAt, PlaylistOrdering.Descending)
+      const result = await fetchPlaylists(None.of(), 0, 20, PlaylistSortBy.CreatedAt, Ordering.Descending)
 
       expect(result).toHaveLength(2)
       expect(result[0].title).toBe("Playlist 1")
@@ -122,7 +122,7 @@ describe("PlaylistService", () => {
       const mockPlaylist = playlistJson({ id: "123", title: "Updated Title" })
       mockAxiosPut.mockResolvedValue({ data: mockPlaylist })
 
-      await updatePlaylist("123", "Updated Title", "Updated Description")
+      await updatePlaylist("123", { title: "Updated Title", description: "Updated Description" })
 
       expect(mockAxiosPut).toHaveBeenCalledWith("/playlists/id/123", {
         title: "Updated Title",
@@ -288,7 +288,7 @@ describe("PlaylistService", () => {
       mockAxiosGet.mockResolvedValue({ data: { results: [{ id: "1" }] } })
 
       await expect(
-        fetchPlaylists(None.of(), 0, 20, PlaylistSortBy.CreatedAt, PlaylistOrdering.Descending)
+        fetchPlaylists(None.of(), 0, 20, PlaylistSortBy.CreatedAt, Ordering.Descending)
       ).rejects.toThrow()
     })
 

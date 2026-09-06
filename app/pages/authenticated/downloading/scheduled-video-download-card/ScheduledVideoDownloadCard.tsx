@@ -9,7 +9,6 @@ import VideoMetadataCard from "~/components/video/video-metadata-card/VideoMetad
 import {VideoMetadata} from "~/models/VideoMetadata"
 import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVideo"
 import styles from "./ScheduledVideoDownloadCard.module.scss"
-import classNames from "classnames"
 import Timestamp from "~/components/timestamp/Timestamp"
 
 enum ModalDialogType {
@@ -26,8 +25,9 @@ type ScheduledVideoDownloadCardProps = {
 const ScheduledVideoDownloadCard: FC<ScheduledVideoDownloadCardProps> = props => {
   const [dialogVisibility, setDialogVisibility] = useState<Option<ModalDialogType>>(None.of())
 
-  const isVisible = (modalDialogType: ModalDialogType) =>
-    !dialogVisibility.filter(dialogType => dialogType === modalDialogType).isEmpty()
+  const isVisible = (modalDialogType: ModalDialogType) => dialogVisibility.toNullable() === modalDialogType
+
+  const closeDialog = () => setDialogVisibility(None.of())
 
   return (
     <div className={styles.card}>
@@ -61,15 +61,14 @@ const ScheduledVideoDownloadCard: FC<ScheduledVideoDownloadCardProps> = props =>
       <ScheduledVideoDeleteDialog
         videoMetadata={props.downloadableScheduledVideo.videoMetadata}
         isVisible={isVisible(ModalDialogType.Delete)}
-        onClose={() => setDialogVisibility(None.of())}
+        onClose={closeDialog}
         onDelete={props.onDelete}
       />
       <ErrorDetailsDialog
         scheduleVideoDownload={props.downloadableScheduledVideo}
         isVisible={isVisible(ModalDialogType.Error)}
-        onClose={() => setDialogVisibility(None.of())}
-        onUpdateStatus={props.onUpdateStatus}
-        onDelete={props.onDelete}/>
+        onClose={closeDialog}
+        onUpdateStatus={props.onUpdateStatus}/>
     </div>
   )
 }
@@ -79,14 +78,13 @@ type ErrorDetailsDialogProps = {
   readonly isVisible: boolean
   readonly onClose: () => void
   readonly onUpdateStatus: (schedulingStatus: SchedulingStatus) => Promise<unknown>
-  readonly onDelete: () => void
 }
 
 const ErrorDetailsDialog: FC<ErrorDetailsDialogProps> = props => (
   <Dialog open={props.isVisible} onClose={props.onClose}>
     <DialogTitle>Error Details</DialogTitle>
     <DialogContent>
-      {props.scheduleVideoDownload.errorInfo?.message}
+      {props.scheduleVideoDownload.errorInfo.map(errorInfo => errorInfo.message).toNullable()}
     </DialogContent>
     <DialogActions>
       <Button onClick={() => props.onUpdateStatus(SchedulingStatus.Queued).catch(console.error).finally(props.onClose)}>Retry</Button>
@@ -136,23 +134,20 @@ const Actions: FC<ActionsProps> = props => {
     <div className={styles.actions}>
       <div className={styles.actionButtons}>
       {
-        Option.fromNullable(TRANSITION_STATES[status])
-          .getOrElse(() => [] as SchedulingStatus[])
-          .map((next: SchedulingStatus, index: number) => (
-            getActionName(status, next).fold(
-              () => null,
-              actionName =>
-                <Button
-                  key={index}
-                  variant="contained"
-                  className={styles.actionButton}
-                  onClick={() => props.onUpdateStatus(next)}
-                >
-                  {actionName}
-                </Button>
-              )
+        (TRANSITION_STATES[status] ?? []).map((next) =>
+          getActionName(status, next)
+            .map(actionName =>
+              <Button
+                key={next}
+                variant="contained"
+                className={styles.actionButton}
+                onClick={() => props.onUpdateStatus(next)}
+              >
+                {actionName}
+              </Button>
             )
-          )
+            .toNullable()
+        )
       }
       </div>
       <div className={styles.statusInfo}>
@@ -161,7 +156,7 @@ const Actions: FC<ActionsProps> = props => {
           <button
             type="button"
             onClick={props.onClickErrorDetails}
-            className={classNames(styles.errorDetails)}>
+            className={styles.errorDetails}>
             Error Details
           </button>
         }

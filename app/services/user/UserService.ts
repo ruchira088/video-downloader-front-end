@@ -11,7 +11,5 @@ export type CreateUserRequest = {
 
 export const createUser = async (request: CreateUserRequest): Promise<User> => {
   const response = await axiosClient.post("/users", request)
-  const user = zodParse(User, response.data)
-
-  return user
+  return zodParse(User, response.data)
 }

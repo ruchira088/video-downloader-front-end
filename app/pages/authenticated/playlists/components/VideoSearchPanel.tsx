@@ -1,5 +1,4 @@
-import React, { type FC, useState, useEffect } from "react"
-import { CircularProgress } from "@mui/material"
+import React, { type FC, useState } from "react"
 import { Video } from "~/models/Video"
 import { searchVideos } from "~/services/video/VideoService"
 import { SortBy } from "~/models/SortBy"
@@ -12,6 +11,7 @@ import VideoSearch from "~/pages/authenticated/videos/components/VideoSearch"
 import DraggableSearchVideoCard from "./DraggableSearchVideoCard"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
 import { usePaginatedFetch } from "~/components/infinite-scroll/usePaginatedFetch"
+import { useDebouncedValue } from "~/hooks/useDebouncedValue"
 
 import styles from "./VideoSearchPanel.module.scss"
 
@@ -28,19 +28,6 @@ const DEFAULT_SIZE_RANGE: Range<number> = {
 const PAGE_SIZE = 20
 
 const SEARCH_DEBOUNCE_MS = 300
-
-// Trails the given value by `delayMs`, so rapid changes (e.g. typing) only
-// produce one update once the input settles.
-function useDebouncedValue<A>(value: A, delayMs: number): A {
-  const [debouncedValue, setDebouncedValue] = useState(value)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delayMs)
-    return () => clearTimeout(timer)
-  }, [value, delayMs])
-
-  return debouncedValue
-}
 
 type VideoSearchPanelProps = {
   readonly onVideoSelect: (videoId: string) => Promise<void>
@@ -59,7 +46,7 @@ const VideoSearchPanel: FC<VideoSearchPanelProps> = ({ onVideoSelect, existingVi
 
   const debouncedSearchTerm = useDebouncedValue(searchTerm, SEARCH_DEBOUNCE_MS)
 
-  const { isLoading, hasMore, loadMore } = usePaginatedFetch<Video>(
+  const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch<Video>(
     (pageNumber, signal) =>
       searchVideos(
         debouncedSearchTerm,
@@ -112,43 +99,32 @@ const VideoSearchPanel: FC<VideoSearchPanelProps> = ({ onVideoSelect, existingVi
         isLoading={isLoading}
       />
 
-      {isLoading && videos.length === 0 && (
-        <div className={styles.loadingContainer}>
-          <CircularProgress size={24} />
-        </div>
-      )}
-
-      {filteredVideos.length > 0 && (
-        <InfiniteScroll
-          loadMore={loadMore}
-          hasMore={hasMore}
-          className={styles.results}
-        >
+      <InfiniteScroll
+        loadMore={loadMore}
+        hasMore={hasMore}
+        isLoading={isLoading}
+        hasError={hasError}
+        onRetry={retry}
+        className={styles.results}
+      >
+        {filteredVideos.length > 0 && (
           <p className={styles.resultsHint}>
             Click + to add videos to playlist
           </p>
-          {filteredVideos.map(video => {
-            const videoId = video.videoMetadata.id
-            const isAdding = addingVideoId
-              .map(id => id === videoId)
-              .getOrElse(() => false)
+        )}
+        {filteredVideos.map(video => {
+          const videoId = video.videoMetadata.id
 
-            return (
-              <DraggableSearchVideoCard
-                key={videoId}
-                video={video}
-                onAdd={() => handleAddVideo(videoId)}
-                isAdding={isAdding}
-              />
-            )
-          })}
-          {isLoading && (
-            <div className={styles.loadingMore}>
-              <CircularProgress size={20} />
-            </div>
-          )}
-        </InfiniteScroll>
-      )}
+          return (
+            <DraggableSearchVideoCard
+              key={videoId}
+              video={video}
+              onAdd={() => handleAddVideo(videoId)}
+              isAdding={addingVideoId.toNullable() === videoId}
+            />
+          )
+        })}
+      </InfiniteScroll>
 
       {!isLoading && filteredVideos.length === 0 && videos.length > 0 && (
         <div className={styles.noResults}>All videos already in playlist</div>

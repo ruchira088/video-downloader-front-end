@@ -2,11 +2,9 @@ import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import VideoWatch from "~/pages/authenticated/videos/video-page/watch/VideoWatch"
 import { Duration } from "luxon"
-import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some } from "~/types/Option"
 import React from "react"
 import { buildVideo, type Json } from "../fixtures"
+import { withApplicationConfiguration } from "../helpers"
 
 const createMockVideo = (overrides: Json = {}) =>
   buildVideo({
@@ -53,26 +51,14 @@ const renderWithContext = (
   video = createMockVideo(),
   timestamp = Duration.fromObject({ seconds: 0 }),
   updateVideo = vi.fn(),
-  snapshots: any[] = []
-) => {
-  const contextValue = {
-    safeMode: false,
-    theme: Theme.Light,
-    setSafeMode: vi.fn(),
-    setTheme: vi.fn(),
-  }
-
-  return render(
-    <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-      <VideoWatch
-        video={video}
-        timestamp={timestamp}
-        updateVideo={updateVideo}
-        snapshots={snapshots}
-      />
-    </ApplicationConfigurationContext.Provider>
+  safeMode = false
+) =>
+  render(
+    withApplicationConfiguration(
+      <VideoWatch video={video} timestamp={timestamp} updateVideo={updateVideo} snapshots={[]} />,
+      { safeMode }
+    )
   )
-}
 
 describe("VideoWatch", () => {
   beforeEach(async () => {
@@ -170,23 +156,7 @@ describe("VideoWatch", () => {
   })
 
   test("should use safe mode translation when enabled", () => {
-    const contextValue = {
-      safeMode: true,
-      theme: Theme.Light,
-      setSafeMode: vi.fn(),
-      setTheme: vi.fn(),
-    }
-
-    render(
-      <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-        <VideoWatch
-          video={createMockVideo()}
-          timestamp={Duration.fromObject({ seconds: 0 })}
-          updateVideo={vi.fn()}
-          snapshots={[]}
-        />
-      </ApplicationConfigurationContext.Provider>
-    )
+    renderWithContext(createMockVideo(), Duration.fromObject({ seconds: 0 }), vi.fn(), true)
 
     expect(screen.getByText("[SAFE] Test Video Title")).toBeInTheDocument()
   })

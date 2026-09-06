@@ -1,12 +1,11 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
-import { render, screen, waitFor, act } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import HistoryPage from "~/pages/authenticated/history/HistoryPage"
 import { createMemoryRouter, RouterProvider } from "react-router"
-import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some } from "~/types/Option"
 import React from "react"
 import { buildVideoWatchHistory, durationJson } from "../fixtures"
+import { triggerIntersection, withApplicationConfiguration } from "../helpers"
+import { intersectionObserverCallbacks } from "../setup"
 
 const createMockVideoWatchHistory = (id: string) =>
   buildVideoWatchHistory({
@@ -16,17 +15,6 @@ const createMockVideoWatchHistory = (id: string) =>
     duration: durationJson(120),
     video: { videoMetadata: { duration: durationJson(300) } }
   })
-import { intersectionObserverCallbacks } from "../setup"
-
-const triggerIntersection = async () => {
-  const callback = intersectionObserverCallbacks[intersectionObserverCallbacks.length - 1]
-  await act(async () => {
-    callback(
-      [{ isIntersecting: true } as IntersectionObserverEntry],
-      {} as IntersectionObserver
-    )
-  })
-}
 
 vi.mock("~/services/history/HistoryService", () => ({
   getVideoHistory: vi.fn(),
@@ -45,21 +33,10 @@ vi.mock("~/components/helmet/Helmet", () => ({
 }))
 
 const renderWithRouter = (component: React.ReactElement) => {
-  const contextValue = {
-    safeMode: false,
-    theme: Theme.Light,
-    setSafeMode: vi.fn(),
-    setTheme: vi.fn(),
-  }
-
   const router = createMemoryRouter([
     {
       path: "/",
-      element: (
-        <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-          {component}
-        </ApplicationConfigurationContext.Provider>
-      ),
+      element: withApplicationConfiguration(component),
     },
   ])
 

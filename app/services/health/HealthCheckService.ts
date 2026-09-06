@@ -9,16 +9,12 @@ import {HealthCheck} from "~/models/HealthCheck"
 
 export const retrieveBackendServiceInformation = async (): Promise<BackendServiceInformation> => {
   const response = await axiosClient.get("/service/info")
-  const backendServiceInformation = zodParse(BackendServiceInformation, response.data)
-
-  return backendServiceInformation
+  return zodParse(BackendServiceInformation, response.data)
 }
 
 export const performHealthCheck = async (): Promise<HealthCheck> => {
   const response = await axiosClient.get("/service/health", { validateStatus: () => true })
-  const healthCheck: HealthCheck = zodParse(HealthCheck, response.data)
-
-  return healthCheck
+  return zodParse(HealthCheck, response.data)
 }
 
 export const frontendServiceInformation = (env: ImportMetaEnv): FrontendServiceInformation => ({

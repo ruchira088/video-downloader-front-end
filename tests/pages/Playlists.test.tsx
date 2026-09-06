@@ -4,9 +4,14 @@ import Playlists from "~/pages/authenticated/playlists/Playlists"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
 import { buildPlaylist } from "../fixtures"
+import { triggerIntersection } from "../helpers"
+import { intersectionObserverCallbacks } from "../setup"
 
 const createMockPlaylist = (id: string, title: string) =>
   buildPlaylist({ id, title, description: `Description for ${title}` })
+
+const playlistPage = (from: number, count: number) =>
+  Array.from({ length: count }, (_, i) => createMockPlaylist(`${from + i}`, `Playlist ${from + i}`))
 
 vi.mock("~/services/playlist/PlaylistService", () => ({
   fetchPlaylists: vi.fn(),
@@ -22,6 +27,10 @@ vi.mock("~/providers/ApplicationConfigurationProvider", () => ({
     safeMode: false,
   }),
 }))
+
+import { fetchPlaylists } from "~/services/playlist/PlaylistService"
+
+const mockFetchPlaylists = vi.mocked(fetchPlaylists)
 
 const renderWithRouter = (initialPath: string = "/playlists") => {
   const routes = [
@@ -42,10 +51,10 @@ const renderWithRouter = (initialPath: string = "/playlists") => {
 }
 
 describe("Playlists", () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks()
-    const { fetchPlaylists } = await import("~/services/playlist/PlaylistService")
-    vi.mocked(fetchPlaylists).mockResolvedValue([
+    intersectionObserverCallbacks.length = 0
+    mockFetchPlaylists.mockResolvedValue([
       createMockPlaylist("1", "Favorites"),
       createMockPlaylist("2", "Watch Later")
     ])
@@ -76,9 +85,16 @@ describe("Playlists", () => {
     })
   })
 
+  test("should link each playlist to its detail page", async () => {
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: /Favorites/ })).toHaveAttribute("href", "/playlists/1")
+    })
+  })
+
   test("should show empty state when no playlists", async () => {
-    const { fetchPlaylists } = await import("~/services/playlist/PlaylistService")
-    vi.mocked(fetchPlaylists).mockResolvedValue([])
+    mockFetchPlaylists.mockResolvedValue([])
 
     renderWithRouter()
 
@@ -152,93 +168,77 @@ describe("Playlists", () => {
     })
   })
 
-  test("should show Load More button when there are more playlists", async () => {
-    const { fetchPlaylists } = await import("~/services/playlist/PlaylistService")
-    const manyPlaylists = Array.from({ length: 50 }, (_, i) =>
-      createMockPlaylist(`${i + 1}`, `Playlist ${i + 1}`)
-    )
-    vi.mocked(fetchPlaylists).mockResolvedValue(manyPlaylists)
+  describe("Pagination", () => {
+    test("should load the next page when the scroll trigger intersects", async () => {
+      mockFetchPlaylists
+        .mockResolvedValueOnce(playlistPage(1, 50))
+        .mockResolvedValueOnce(playlistPage(51, 10))
 
-    renderWithRouter()
+      renderWithRouter()
 
-    await waitFor(() => {
+      await waitFor(() => {
+        expect(screen.getByText("Playlist 1")).toBeInTheDocument()
+      })
+      expect(mockFetchPlaylists).toHaveBeenCalledTimes(1)
+
+      await triggerIntersection()
+
+      await waitFor(() => {
+        expect(screen.getByText("Playlist 51")).toBeInTheDocument()
+      })
+      expect(mockFetchPlaylists).toHaveBeenCalledTimes(2)
+      // Earlier pages stay in place beneath the new one.
       expect(screen.getByText("Playlist 1")).toBeInTheDocument()
     })
 
-    expect(screen.getByRole("button", { name: /Load More/i })).toBeInTheDocument()
-  })
+    test("should show the end message once every playlist has been loaded", async () => {
+      mockFetchPlaylists.mockResolvedValue(playlistPage(1, 10))
 
-  test("should load more playlists when Load More button is clicked", async () => {
-    const { fetchPlaylists } = await import("~/services/playlist/PlaylistService")
-    const firstPagePlaylists = Array.from({ length: 50 }, (_, i) =>
-      createMockPlaylist(`${i + 1}`, `Playlist ${i + 1}`)
-    )
-    const secondPagePlaylists = Array.from({ length: 10 }, (_, i) =>
-      createMockPlaylist(`${i + 51}`, `Playlist ${i + 51}`)
-    )
+      renderWithRouter()
 
-    vi.mocked(fetchPlaylists)
-      .mockResolvedValueOnce(firstPagePlaylists)
-      .mockResolvedValueOnce(secondPagePlaylists)
+      await waitFor(() => {
+        expect(screen.getByText("No more playlists")).toBeInTheDocument()
+      })
 
-    renderWithRouter()
-
-    await waitFor(() => {
-      expect(screen.getByText("Playlist 1")).toBeInTheDocument()
+      const callsBefore = mockFetchPlaylists.mock.calls.length
+      await triggerIntersection()
+      expect(mockFetchPlaylists.mock.calls.length).toBe(callsBefore)
     })
 
-    fireEvent.click(screen.getByRole("button", { name: /Load More/i }))
+    test("should not show the end message on an empty list", async () => {
+      mockFetchPlaylists.mockResolvedValue([])
 
-    await waitFor(() => {
-      expect(screen.getByText("Playlist 51")).toBeInTheDocument()
-    })
-  })
+      renderWithRouter()
 
-  test("should hide Load More button when all playlists are loaded", async () => {
-    const { fetchPlaylists } = await import("~/services/playlist/PlaylistService")
-    const firstPagePlaylists = Array.from({ length: 50 }, (_, i) =>
-      createMockPlaylist(`${i + 1}`, `Playlist ${i + 1}`)
-    )
-    const lastPagePlaylists = Array.from({ length: 10 }, (_, i) =>
-      createMockPlaylist(`${i + 51}`, `Playlist ${i + 51}`)
-    )
+      await waitFor(() => {
+        expect(screen.getByText(/No playlists yet/)).toBeInTheDocument()
+      })
 
-    vi.mocked(fetchPlaylists)
-      .mockResolvedValueOnce(firstPagePlaylists)
-      .mockResolvedValueOnce(lastPagePlaylists)
-
-    renderWithRouter()
-
-    await waitFor(() => {
-      expect(screen.getByText("Playlist 1")).toBeInTheDocument()
+      expect(screen.queryByText("No more playlists")).not.toBeInTheDocument()
     })
 
-    expect(screen.getByRole("button", { name: /Load More/i })).toBeInTheDocument()
+    test("should offer a retry instead of the empty state when loading fails", async () => {
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+      mockFetchPlaylists
+        .mockRejectedValueOnce(new Error("Network down"))
+        .mockResolvedValueOnce([createMockPlaylist("1", "Favorites")])
 
-    fireEvent.click(screen.getByRole("button", { name: /Load More/i }))
+      renderWithRouter()
 
-    await waitFor(() => {
-      expect(screen.getByText("Playlist 51")).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByRole("alert")).toHaveTextContent("Something went wrong while loading.")
+      })
+      // A failed load is not "no playlists": the empty state must not claim there are none.
+      expect(screen.queryByText(/No playlists yet/)).not.toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole("button", { name: /retry/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText("Favorites")).toBeInTheDocument()
+      })
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+
+      consoleError.mockRestore()
     })
-
-    await waitFor(() => {
-      expect(screen.queryByRole("button", { name: /Load More/i })).not.toBeInTheDocument()
-    })
-  })
-
-  test("should not show Load More button when fewer than page size playlists returned", async () => {
-    const { fetchPlaylists } = await import("~/services/playlist/PlaylistService")
-    const fewPlaylists = Array.from({ length: 10 }, (_, i) =>
-      createMockPlaylist(`${i + 1}`, `Playlist ${i + 1}`)
-    )
-    vi.mocked(fetchPlaylists).mockResolvedValue(fewPlaylists)
-
-    renderWithRouter()
-
-    await waitFor(() => {
-      expect(screen.getByText("Playlist 1")).toBeInTheDocument()
-    })
-
-    expect(screen.queryByRole("button", { name: /Load More/i })).not.toBeInTheDocument()
   })
 })

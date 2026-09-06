@@ -49,12 +49,13 @@ describe("ScheduledVideoDownload", () => {
     expect(result.completedAt.isEmpty()).toBe(false)
   })
 
-  test("should handle completedAt as None when not provided", () => {
+  test("should handle completedAt and errorInfo as None when not provided", () => {
     const data = createValidData()
 
     const result = ScheduledVideoDownload.parse(data)
 
     expect(result.completedAt.isEmpty()).toBe(true)
+    expect(result.errorInfo.isEmpty()).toBe(true)
   })
 
   test("should parse error info when provided", () => {
@@ -69,8 +70,7 @@ describe("ScheduledVideoDownload", () => {
 
     const result = ScheduledVideoDownload.parse(data)
 
-    expect(result.errorInfo).not.toBeNull()
-    expect(result.errorInfo?.message).toBe("Download failed")
+    expect(result.errorInfo.toNullable()?.message).toBe("Download failed")
   })
 
   test("should split stack trace on backslash-escaped newlines", () => {
@@ -85,7 +85,7 @@ describe("ScheduledVideoDownload", () => {
 
     const result = ScheduledVideoDownload.parse(data)
 
-    expect(result.errorInfo?.stackTrace).toEqual(["Connection timeout", "Retry failed", "Giving up"])
+    expect(result.errorInfo.toNullable()?.stackTrace).toEqual(["Connection timeout", "Retry failed", "Giving up"])
   })
 
   test("should split stack trace on plain newlines", () => {
@@ -100,7 +100,7 @@ describe("ScheduledVideoDownload", () => {
 
     const result = ScheduledVideoDownload.parse(data)
 
-    expect(result.errorInfo?.stackTrace).toEqual(["Connection timeout", "Retry failed", "Giving up"])
+    expect(result.errorInfo.toNullable()?.stackTrace).toEqual(["Connection timeout", "Retry failed", "Giving up"])
   })
 
   test("should split stack trace on CRLF newlines", () => {
@@ -115,7 +115,7 @@ describe("ScheduledVideoDownload", () => {
 
     const result = ScheduledVideoDownload.parse(data)
 
-    expect(result.errorInfo?.stackTrace).toEqual(["Connection timeout", "Retry failed"])
+    expect(result.errorInfo.toNullable()?.stackTrace).toEqual(["Connection timeout", "Retry failed"])
   })
 
   test("should handle all scheduling statuses", () => {

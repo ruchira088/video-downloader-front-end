@@ -1,4 +1,4 @@
-import React, { type FC, type ReactNode, useEffect, useRef, useState } from "react"
+import React, { type FC, type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import classNames from "classnames"
 import { VideoMetadata } from "~/models/VideoMetadata"
 import { imageUrl } from "~/services/asset/AssetService"
@@ -25,13 +25,15 @@ type ImageDimensions = {
   readonly height: number
 }
 
+const SNAPSHOT_INTERVAL_MS = 400
+
 const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
   const [maybeSnapshots, setMaybeSnapshots] = useState<Option<Snapshot[]>>(None.of())
-  const [isHovering, setIsHovering] = useState<boolean>(false)
-  const intervalTimeoutRef = useRef<Option<NodeJS.Timeout>>(None.of<NodeJS.Timeout>())
-  const [index, setIndex] = useState<number>(0)
+  const [isHovering, setIsHovering] = useState(false)
+  const snapshotInterval = useRef<Option<ReturnType<typeof setInterval>>>(None.of())
+  const [index, setIndex] = useState(0)
   const imageRef = useRef<HTMLImageElement | null>(null)
-  const [imageDimensions, setImageDimensions] = useState<Option<ImageDimensions>>(None.of<ImageDimensions>())
+  const [imageDimensions, setImageDimensions] = useState<Option<ImageDimensions>>(None.of())
   const {safeMode} = useApplicationConfiguration()
 
   const initializeSnapshots = (): Promise<Snapshot[]> =>
@@ -45,23 +47,23 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
       )
 
   const onMouseEnter = () => {
-    if (!Option.fromNullable(props.disableSnapshots).getOrElse(() => false) && intervalTimeoutRef.current.isEmpty()) {
-      intervalTimeoutRef.current = Some.of(setInterval(() => setIndex((index) => index + 1), 400))
+    if (!props.disableSnapshots && snapshotInterval.current.isEmpty()) {
+      snapshotInterval.current = Some.of(setInterval(() => setIndex((index) => index + 1), SNAPSHOT_INTERVAL_MS))
       setIsHovering(true)
       initializeSnapshots().catch((error) => console.error(error))
     }
   }
 
   const onMouseLeave = () => {
-    void intervalTimeoutRef.current.forEach(clearInterval)
-    intervalTimeoutRef.current = None.of()
+    void snapshotInterval.current.forEach(clearInterval)
+    snapshotInterval.current = None.of()
     setIsHovering(false)
     setIndex(0)
   }
 
   useEffect(() => {
     return () => {
-      void intervalTimeoutRef.current.forEach(clearInterval)
+      void snapshotInterval.current.forEach(clearInterval)
     }
   }, [])
 
@@ -77,18 +79,19 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
       safeMode
     )
 
-  const lockImageDimensions = () => {
+  // Snapshots rarely share the thumbnail's aspect ratio, so the image height is pinned once the
+  // thumbnail has loaded and cycling through snapshots on hover cannot make the card jump.
+  const lockImageDimensions = useCallback(() => {
     if (imageRef.current != null) {
       const {height, width} = imageRef.current
       setImageDimensions(Some.of({ width, height }))
     }
-  }
+  }, [])
 
+  // The pinned height only suits the width it was measured at, so a resize releases it and the
+  // layout effect below re-measures once the image has re-flowed, before the browser paints.
   useEffect(() => {
-    const clearImageDimensions = () => {
-      setImageDimensions(None.of())
-      lockImageDimensions()
-    }
+    const clearImageDimensions = () => setImageDimensions(None.of())
 
     addEventListener("resize", clearImageDimensions)
 
@@ -96,6 +99,14 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
       removeEventListener("resize", clearImageDimensions)
     }
   }, [])
+
+  useLayoutEffect(() => {
+    if (imageDimensions.isEmpty() && imageRef.current?.complete) {
+      // Re-pinning after a resize is the purpose of this effect; it settles after one update.
+      // oxlint-disable-next-line react/set-state-in-effect
+      lockImageDimensions()
+    }
+  }, [imageDimensions, lockImageDimensions])
 
   return (
     <div className={classNames(styles.videoMetadataCard, props.classNames)}>
@@ -105,12 +116,12 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
         className={styles.imageContainer}>
         { props.children }
         {
-          props.enableSourceLink &&
-          <a href={props.videoMetadata.url} target="_blank" rel="noopener noreferrer" className={styles.videoSiteUrl}>
+          props.enableSourceLink ?
+            <a href={props.videoMetadata.url} target="_blank" rel="noopener noreferrer" className={styles.videoSiteUrl}>
+              <VideoSiteCard videoSite={props.videoMetadata.videoSite}/>
+            </a> :
             <VideoSiteCard videoSite={props.videoMetadata.videoSite}/>
-          </a>
         }
-        {!props.enableSourceLink && <VideoSiteCard videoSite={props.videoMetadata.videoSite}/>}
         <img
           ref={imageRef}
           src={thumbnail(safeMode)}
@@ -129,16 +140,13 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
   )
 }
 
-const trimTitle =
-  (title: string): string =>  {
-    const textLimit = 35
-    const lastTerminatingSpace = title.indexOf(" ", textLimit)
+const TITLE_LENGTH_LIMIT = 35
 
-    if (lastTerminatingSpace === -1) {
-      return title.substring(0, textLimit)
-    } else {
-      return title.substring(0, lastTerminatingSpace)
-    }
+/** Cuts the title at the first space after the limit, or at the limit when there is none. */
+const trimTitle = (title: string): string => {
+  const lastTerminatingSpace = title.indexOf(" ", TITLE_LENGTH_LIMIT)
+
+  return title.substring(0, lastTerminatingSpace === -1 ? TITLE_LENGTH_LIMIT : lastTerminatingSpace)
 }
 
 export default VideoMetadataCard

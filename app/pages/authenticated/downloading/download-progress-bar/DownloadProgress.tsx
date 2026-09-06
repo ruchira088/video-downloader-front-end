@@ -3,7 +3,7 @@ import { LinearProgress } from "@mui/material"
 import { humanReadableSize } from "~/utils/Formatter"
 
 import styles from "./DownloadProgress.module.scss"
-import {Option} from "~/types/Option"
+import {None, type Option, Some} from "~/types/Option"
 import {SchedulingStatus} from "~/models/SchedulingStatus"
 
 export interface ProgressValue {
@@ -13,10 +13,11 @@ export interface ProgressValue {
 }
 
 const DownloadProgress: FC<ProgressValue> = ({completeValue, currentValue, schedulingStatus}) => {
+  // A percentage is only meaningful once both the total and the progress are known.
   const maybePercentage: Option<number> =
-    Option.fromNullable(completeValue)
-      .filter(completeValue => completeValue > 0 && currentValue > 0)
-      .map(completeValue => Number(((currentValue / completeValue) * 100).toFixed(2)))
+    completeValue > 0 && currentValue > 0
+      ? Some.of(Number(((currentValue / completeValue) * 100).toFixed(2)))
+      : None.of()
 
   return (
     <div className={styles.downloadProgress}>
@@ -32,7 +33,6 @@ const DownloadProgress: FC<ProgressValue> = ({completeValue, currentValue, sched
           percentage => <LinearProgress variant="determinate" value={percentage} />
         )
       }
-
     </div>
   )
 }

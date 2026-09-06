@@ -2,9 +2,9 @@ import { describe, expect, test, vi, beforeEach } from "vitest"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import LoginForm from "~/pages/unauthenticated/login/components/login-form/LoginForm"
-import { DateTime } from "luxon"
 import { MemoryRouter } from "react-router"
 import React from "react"
+import { buildAuthenticationToken } from "../fixtures"
 
 // Mock the authentication service
 vi.mock("~/services/authentication/AuthenticationService", () => ({
@@ -21,12 +21,7 @@ const renderWithRouter = (ui: React.ReactElement) => {
 
 describe("LoginForm", () => {
   const mockOnAuthenticate = vi.fn()
-  const mockToken = {
-    secret: "test-secret",
-    expiresAt: DateTime.now().plus({ days: 1 }),
-    issuedAt: DateTime.now(),
-    renewals: 0,
-  }
+  const mockToken = buildAuthenticationToken()
 
   beforeEach(() => {
     vi.clearAllMocks()

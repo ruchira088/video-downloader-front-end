@@ -4,8 +4,7 @@ import userEvent from "@testing-library/user-event"
 import SignupForm from "~/pages/unauthenticated/signup/components/signup-form/SignupForm"
 import { MemoryRouter } from "react-router"
 import React from "react"
-import { DateTime } from "luxon"
-import { Role } from "~/models/User"
+import { buildAuthenticationToken, buildUser } from "../fixtures"
 
 vi.mock("~/services/user/UserService", () => ({
   createUser: vi.fn(),
@@ -27,20 +26,8 @@ const renderWithRouter = (ui: React.ReactElement) => {
 
 describe("SignupForm", () => {
   const mockOnSignup = vi.fn()
-  const mockUser = {
-    id: "user-123",
-    createdAt: DateTime.now(),
-    firstName: "John",
-    lastName: "Doe",
-    email: "john@example.com",
-    role: Role.User,
-  }
-  const mockToken = {
-    secret: "test-secret",
-    expiresAt: DateTime.now().plus({ days: 1 }),
-    issuedAt: DateTime.now(),
-    renewals: 0,
-  }
+  const mockUser = buildUser({ firstName: "John", lastName: "Doe", email: "john@example.com" })
+  const mockToken = buildAuthenticationToken()
 
   beforeEach(() => {
     vi.clearAllMocks()

@@ -2,11 +2,9 @@ import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
 import Header from "~/components/title-bar/Header"
 import { createMemoryRouter, RouterProvider } from "react-router"
-import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some } from "~/types/Option"
 import { WorkerStatus } from "~/models/WorkerStatus"
 import React from "react"
+import { withApplicationConfiguration } from "../helpers"
 
 vi.mock("~/services/scheduling/SchedulingService", () => ({
   fetchWorkerStatus: vi.fn(),
@@ -18,21 +16,10 @@ import { fetchWorkerStatus } from "~/services/scheduling/SchedulingService"
 const mockFetchWorkerStatus = vi.mocked(fetchWorkerStatus)
 
 const renderWithProviders = () => {
-  const contextValue = {
-    safeMode: false,
-    theme: Theme.Light,
-    setSafeMode: vi.fn(),
-    setTheme: vi.fn(),
-  }
-
   const routes = [
     {
       path: "*",
-      element: (
-        <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-          <Header />
-        </ApplicationConfigurationContext.Provider>
-      ),
+      element: withApplicationConfiguration(<Header />),
     },
   ]
   const router = createMemoryRouter(routes, {

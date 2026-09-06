@@ -4,7 +4,9 @@ import userEvent from "@testing-library/user-event"
 import PlaylistDetail from "~/pages/authenticated/playlists/PlaylistDetail"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
-import { buildPlaylist, buildVideo, durationJson, videoJson } from "../fixtures"
+import { None } from "~/types/Option"
+import { NotificationProvider } from "~/providers/NotificationProvider"
+import { buildPlaylist, buildVideo, durationJson, fileResourceJson, videoJson } from "../fixtures"
 
 const videoOverrides = (id: string, title: string) => ({
   id,
@@ -22,10 +24,9 @@ const createMockPlaylist = (videoCount: number = 2) =>
       videoJson(videoOverrides(`video-${i + 1}`, `Video ${i + 1}`))
     )
   })
-import { DateTime } from "luxon"
-import { FileResourceType } from "~/models/FileResource"
-import { None } from "~/types/Option"
-import { NotificationProvider } from "~/providers/NotificationProvider"
+
+/** A playlist's album art, in the parsed shape a service returns it in. */
+const albumArt = () => buildPlaylist({ albumArt: fileResourceJson({ id: "album-art-1" }) }).albumArt
 
 vi.mock("~/services/playlist/PlaylistService", () => ({
   fetchPlaylistById: vi.fn(),
@@ -65,7 +66,6 @@ import {
   removeAlbumArt,
 } from "~/services/playlist/PlaylistService"
 import { searchVideos } from "~/services/video/VideoService"
-import { Some } from "~/types/Option"
 
 const mockFetchPlaylistById = vi.mocked(fetchPlaylistById)
 const mockDeletePlaylist = vi.mocked(deletePlaylist)
@@ -247,20 +247,6 @@ describe("PlaylistDetail", () => {
       })
     })
 
-    test("should render back button", async () => {
-      mockFetchPlaylistById.mockResolvedValue(createMockPlaylist())
-
-      renderWithRouter()
-
-      await waitFor(() => {
-        expect(screen.getByText("Test Playlist")).toBeInTheDocument()
-      })
-
-      // Check that we have multiple buttons including the back button
-      const buttons = screen.getAllByRole("button")
-      expect(buttons.length).toBeGreaterThan(0)
-    })
-
     test("should delete playlist when clicking delete button", async () => {
       const user = userEvent.setup()
       mockFetchPlaylistById.mockResolvedValue(createMockPlaylist())
@@ -297,8 +283,6 @@ describe("PlaylistDetail", () => {
       })
     })
   })
-
-
 
   describe("Play Functionality", () => {
     test("should enable Play button when playlist has videos", async () => {
@@ -338,7 +322,7 @@ describe("PlaylistDetail", () => {
     test("should not display description when not provided", async () => {
       const playlist = {
         ...createMockPlaylist(),
-        description: undefined,
+        description: None.of<string>(),
       }
       mockFetchPlaylistById.mockResolvedValue(playlist)
 
@@ -385,24 +369,6 @@ describe("PlaylistDetail", () => {
       await waitFor(() => {
         expect(screen.getByText("Up Next")).toBeInTheDocument()
       })
-    })
-  })
-
-  describe("Update Title", () => {
-    test("should update playlist title", async () => {
-      userEvent.setup()
-      mockFetchPlaylistById.mockResolvedValue(createMockPlaylist())
-      mockUpdatePlaylist.mockResolvedValue(createMockPlaylist())
-
-      renderWithRouter()
-
-      await waitFor(() => {
-        expect(screen.getByText("Test Playlist")).toBeInTheDocument()
-      })
-
-      // The EditableLabel component should be present
-      const titleElement = screen.getByText("Test Playlist")
-      expect(titleElement).toBeInTheDocument()
     })
   })
 
@@ -685,7 +651,7 @@ describe("PlaylistDetail", () => {
       await user.click(saveButton)
 
       await waitFor(() => {
-        expect(mockUpdatePlaylist).toHaveBeenCalledWith("playlist-123", "New Title")
+        expect(mockUpdatePlaylist).toHaveBeenCalledWith("playlist-123", { title: "New Title" })
       })
     })
   })
@@ -733,7 +699,7 @@ describe("PlaylistDetail", () => {
   })
 
   describe("Reorder Videos", () => {
-    test("should call reorderPlaylistVideos when drag ends", async () => {
+    test("should render a drag handle for every video", async () => {
       mockFetchPlaylistById.mockResolvedValue(createMockPlaylist(3))
       mockReorderPlaylistVideos.mockResolvedValue(createMockPlaylist(3))
 
@@ -747,25 +713,6 @@ describe("PlaylistDetail", () => {
       // Drag handles should be present
       const dragHandles = document.querySelectorAll('[aria-roledescription="sortable"]')
       expect(dragHandles.length).toBe(3)
-    })
-
-    test("should reload playlist when reorder fails", async () => {
-      const playlist = createMockPlaylist(3)
-      mockFetchPlaylistById.mockResolvedValue(playlist)
-      mockReorderPlaylistVideos.mockRejectedValue(new Error("Reorder failed"))
-
-      renderWithRouter()
-
-      await waitFor(() => {
-        expect(screen.getByText("Video 1")).toBeInTheDocument()
-      })
-
-      // Initial fetch
-      expect(mockFetchPlaylistById).toHaveBeenCalledTimes(1)
-
-      // Simulate a drag end event by calling the handler indirectly through the component
-      // The component should reload the playlist when reorder fails
-      // This is tested by verifying the mock is set up correctly
     })
   })
 
@@ -785,14 +732,7 @@ describe("PlaylistDetail", () => {
       mockFetchPlaylistById.mockResolvedValue(playlist)
       mockUploadAlbumArt.mockResolvedValue({
         ...playlist,
-        albumArt: Some.of({
-          id: "album-art-1",
-          type: FileResourceType.AlbumArt as const,
-          createdAt: DateTime.now(),
-          path: "/album-art/1.jpg",
-          mediaType: "image/jpeg",
-          size: 2048,
-        }),
+        albumArt: albumArt(),
       })
 
       const { container } = renderWithRouter()
@@ -830,14 +770,7 @@ describe("PlaylistDetail", () => {
     test("should display album art image and Change/Delete actions when set", async () => {
       mockFetchPlaylistById.mockResolvedValue({
         ...createMockPlaylist(),
-        albumArt: Some.of({
-          id: "album-art-1",
-          type: FileResourceType.AlbumArt as const,
-          createdAt: DateTime.now(),
-          path: "/album-art/1.jpg",
-          mediaType: "image/jpeg",
-          size: 2048,
-        }),
+        albumArt: albumArt(),
       })
 
       renderWithRouter()
@@ -853,14 +786,7 @@ describe("PlaylistDetail", () => {
       const user = userEvent.setup()
       const playlist = {
         ...createMockPlaylist(),
-        albumArt: Some.of({
-          id: "album-art-1",
-          type: FileResourceType.AlbumArt as const,
-          createdAt: DateTime.now(),
-          path: "/album-art/1.jpg",
-          mediaType: "image/jpeg",
-          size: 2048,
-        }),
+        albumArt: albumArt(),
       }
       mockFetchPlaylistById.mockResolvedValue(playlist)
       mockRemoveAlbumArt.mockResolvedValue(createMockPlaylist())

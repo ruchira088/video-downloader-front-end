@@ -3,7 +3,7 @@ import {Typography} from "@mui/material"
 import {LoadableComponent} from "~/components/hoc/loading/LoadableComponent"
 import VideoMetadataCard from "~/components/video/video-metadata-card/VideoMetadataCard"
 import {type VideoMetadata} from "~/models/VideoMetadata"
-import {None, Option} from "~/types/Option"
+import {None, type Option, Some} from "~/types/Option"
 import {metadata} from "~/services/video/VideoService"
 
 type PreviewProps = {
@@ -24,7 +24,7 @@ const Preview: FC<PreviewProps> = props => {
         metadata(props.url)
           .then((result) => {
             if (!cancelled) {
-              setMaybeVideoMetadata(Option.fromNullable(result))
+              setMaybeVideoMetadata(Some.of(result))
             }
           })
           .catch(() => {

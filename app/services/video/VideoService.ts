@@ -40,44 +40,32 @@ export const searchVideos = async (
     },
   })
 
-  const searchResult: SearchResult<Video> = zodParse(SearchResult(Video), response.data)
-
-  return searchResult
+  return zodParse(SearchResult(Video), response.data)
 }
 
 export const fetchVideoById = async (videoId: string): Promise<Video> => {
   const response = await axiosClient.get(`/videos/id/${videoId}`)
-  const video = zodParse(Video, response.data)
-
-  return video
+  return zodParse(Video, response.data)
 }
 
 export const fetchVideoSnapshotsByVideoId = async (videoId: string): Promise<Snapshot[]> => {
   const response = await axiosClient.get(`/videos/id/${videoId}/snapshots`)
-  const snapshots = zodParse(ListResponse(Snapshot), response.data)
-
-  return snapshots.results
+  return zodParse(ListResponse(Snapshot), response.data).results
 }
 
 export const metadata = async (url: string): Promise<VideoMetadata> => {
   const response = await axiosClient.post("/videos/metadata", { url })
-  const videoMetadata = zodParse(VideoMetadata, response.data)
-
-  return videoMetadata
+  return zodParse(VideoMetadata, response.data)
 }
 
 export const updateVideoTitle = async (videoId: string, title: string): Promise<Video> => {
   const response = await axiosClient.patch(`/videos/id/${videoId}/metadata`, { title })
-  const video = zodParse(Video, response.data)
-
-  return video
+  return zodParse(Video, response.data)
 }
 
 export const videoServiceSummary = async (): Promise<VideoServiceSummary> => {
   const response = await axiosClient.get("/videos/summary")
-  const videoServiceSummary = zodParse(VideoServiceSummary, response.data)
-
-  return videoServiceSummary
+  return zodParse(VideoServiceSummary, response.data)
 }
 
 export const deleteVideo = async (videoId: string, deleteFile: boolean): Promise<Video> => {
@@ -86,9 +74,7 @@ export const deleteVideo = async (videoId: string, deleteFile: boolean): Promise
       "delete-video-file": deleteFile,
     },
   })
-  const video = zodParse(Video, response.data)
-
-  return video
+  return zodParse(Video, response.data)
 }
 
 export const fetchDuplicateVideos = async (pageNumber: number, pageSize: number): Promise<DuplicateVideoGroups> => {
@@ -105,7 +91,5 @@ export const scanForVideos = (): Promise<void> => axiosClient.post("/videos/scan
 
 export const fetchVideoScanStatus = async (): Promise<VideoScan> => {
   const response = await axiosClient.get("/videos/scan")
-  const videoScan = zodParse(VideoScan, response.data)
-
-  return videoScan
+  return zodParse(VideoScan, response.data)
 }

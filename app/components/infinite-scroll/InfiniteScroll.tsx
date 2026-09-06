@@ -52,12 +52,12 @@ const InfiniteScroll: FC<InfiniteScrollProps> = props => {
     // The caller's className usually makes the list a grid, so the status row lives outside it
     // rather than becoming a stray cell among the cards.
     return (
-        <div className={classNames(styles.infiniteScroll)}>
+        <div className={styles.infiniteScroll}>
             <div className={props.className}>
                 {props.children}
             </div>
             <Status {...props}/>
-            <div ref={loadingTrigger} className={classNames(styles.loader)}/>
+            <div ref={loadingTrigger} className={styles.loader}/>
         </div>
     )
 }

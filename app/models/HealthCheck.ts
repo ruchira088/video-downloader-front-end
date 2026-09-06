@@ -27,7 +27,8 @@ export type FileHealthStatusDetails = z.infer<typeof FileHealthStatusDetails>
 export const FileRepositoryHealthStatusDetails = z.object({
   imageFolder: FileHealthStatusDetails,
   videoFolder: FileHealthStatusDetails,
-  otherVideoFolders: z.array(FileHealthStatusDetails).nullish()
+  // The API omits the list when there are no extra folders; an empty list means the same thing.
+  otherVideoFolders: z.array(FileHealthStatusDetails).nullish().transform(folders => folders ?? [])
 })
 
 export type FileRepositoryHealthStatusDetails = z.infer<typeof FileRepositoryHealthStatusDetails>

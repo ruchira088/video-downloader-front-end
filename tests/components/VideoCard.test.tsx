@@ -1,12 +1,10 @@
 import { describe, expect, test, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import VideoCard from "~/components/video/video-card/VideoCard"
-import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some } from "~/types/Option"
 import React from "react"
 import type { Video } from "~/models/Video"
 import { buildVideo } from "../fixtures"
+import { withApplicationConfiguration } from "../helpers"
 
 vi.mock("~/services/asset/AssetService", () => ({
   imageUrl: vi.fn(() => "https://example.com/image.jpg"),
@@ -22,20 +20,7 @@ const VIDEO = {
   createdAt: "2023-10-15T10:30:00+00:00"
 }
 
-const renderWithContext = (video: Video) => {
-  const contextValue = {
-    safeMode: false,
-    theme: Theme.Light,
-    setSafeMode: vi.fn(),
-    setTheme: vi.fn(),
-  }
-
-  return render(
-    <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-      <VideoCard video={video} />
-    </ApplicationConfigurationContext.Provider>
-  )
-}
+const renderWithContext = (video: Video) => render(withApplicationConfiguration(<VideoCard video={video} />))
 
 describe("VideoCard", () => {
   test("should render video thumbnail", () => {

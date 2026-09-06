@@ -34,12 +34,10 @@ const inferBaseApiUrl = (): string => {
   } else {
     const environment = getEnvironment()
 
-    if (environment in API_URL_MAPPINGS) {
-      return `${location.protocol}//${API_URL_MAPPINGS[environment as NonLocalEnvironment]}`
-    } else {
-      const apiUrl = `${location.protocol}//api.${location.host}`
-      return apiUrl
-    }
+    const apiHost =
+      environment in API_URL_MAPPINGS ? API_URL_MAPPINGS[environment as NonLocalEnvironment] : `api.${location.host}`
+
+    return `${location.protocol}//${apiHost}`
   }
 }
 

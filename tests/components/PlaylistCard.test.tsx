@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import PlaylistCard from "~/pages/authenticated/playlists/components/PlaylistCard"
 import React from "react"
-import { buildPlaylist, type Json, videoJson } from "../fixtures"
+import { buildPlaylist, fileResourceJson, type Json, videoJson } from "../fixtures"
 
 const createMockPlaylist = (overrides: Json = {}) =>
   buildPlaylist({
@@ -16,6 +16,10 @@ vi.mock("~/providers/ApplicationConfigurationProvider", () => ({
   useApplicationConfiguration: () => ({
     safeMode: false,
   }),
+}))
+
+vi.mock("~/services/asset/AssetService", () => ({
+  imageUrl: vi.fn((resource) => `https://example.com/${resource.id}.jpg`),
 }))
 
 describe("PlaylistCard", () => {
@@ -43,10 +47,18 @@ describe("PlaylistCard", () => {
     expect(screen.getByText(/2023/)).toBeInTheDocument()
   })
 
-  test("should render playlist icon", () => {
+  test("should render a placeholder icon when there is no album art", () => {
     render(<PlaylistCard playlist={createMockPlaylist()} />)
 
     expect(screen.getByTestId("QueueMusicIcon")).toBeInTheDocument()
+    expect(screen.queryByRole("img")).not.toBeInTheDocument()
+  })
+
+  test("should render the album art in place of the icon when set", () => {
+    render(<PlaylistCard playlist={createMockPlaylist({ albumArt: fileResourceJson({ id: "art-1" }) })} />)
+
+    expect(screen.getByRole("img", { name: "My Playlist cover" })).toHaveAttribute("src", "https://example.com/art-1.jpg")
+    expect(screen.queryByTestId("QueueMusicIcon")).not.toBeInTheDocument()
   })
 
   test("should render video count", () => {

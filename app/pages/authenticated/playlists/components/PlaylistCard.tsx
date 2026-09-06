@@ -33,9 +33,7 @@ const PlaylistCard: FC<PlaylistCardProps> = ({ playlist }) => {
     }
     <div className={styles.content}>
       <h3 className={styles.name}>{playlist.title}</h3>
-      {playlist.description && (
-        <p className={styles.description}>{playlist.description}</p>
-      )}
+      {playlist.description.map(description => <p className={styles.description}>{description}</p>).toNullable()}
       <div className={styles.meta}>
         <span className={styles.videoCount}>
           {playlist.videos.length} {playlist.videos.length === 1 ? "video" : "videos"}

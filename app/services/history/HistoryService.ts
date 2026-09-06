@@ -10,7 +10,5 @@ export const getVideoHistory = async (pageNumber: number, pageSize: number): Pro
       "page-size": pageSize,
     },
   })
-  const history = zodParse(ListResponse(VideoWatchHistory), response.data).results
-
-  return history
+  return zodParse(ListResponse(VideoWatchHistory), response.data).results
 }

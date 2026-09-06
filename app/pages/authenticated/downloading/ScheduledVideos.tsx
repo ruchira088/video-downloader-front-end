@@ -27,9 +27,16 @@ const DOWNLOAD_HISTORY_SIZE = 10
 const PAGE_SIZE = 50
 
 const average = (numbers: number[]): Option<number> =>
-  numbers
-    .reduce<Option<number>>((acc, value) => Some.of(acc.getOrElse(() => 0) + value), None.of())
-    .map((total) => total / numbers.length)
+  numbers.length === 0
+    ? None.of()
+    : Some.of(numbers.reduce((total, value) => total + value, 0) / numbers.length)
+
+/** A freshly fetched or updated download has no progress samples yet, so its speed is unknown. */
+const toDownloadable = (scheduledVideoDownload: ScheduledVideoDownload): DownloadableScheduledVideo => ({
+  ...scheduledVideoDownload,
+  downloadSpeed: None.of(),
+  downloadHistory: []
+})
 
 const gatherDownloadHistory =
   (downloadProgress: DownloadProgress, scheduledVideoDownload: DownloadableScheduledVideo): number[] => {
@@ -55,14 +62,10 @@ const ScheduledVideos = () => {
   const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch(
     pageNumber => fetchScheduledVideos(None.of(), pageNumber, PAGE_SIZE, SortBy.Date, Ordering.Ascending),
     scheduledVideos => {
-      const downloadableScheduledVideoMap: Map<string, DownloadableScheduledVideo> = Map(
+      const downloadableScheduledVideoMap = Map(
         scheduledVideos.map((scheduledVideoDownload) => [
           scheduledVideoDownload.videoMetadata.id,
-          {
-            ...scheduledVideoDownload,
-            downloadSpeed: None.of(),
-            downloadHistory: []
-          }
+          toDownloadable(scheduledVideoDownload)
         ])
       )
 
@@ -92,21 +95,11 @@ const ScheduledVideos = () => {
     )
 
   const onScheduledVideoDownloadUpdate = (scheduledVideoDownload: ScheduledVideoDownload) =>
-    setDownloadableScheduledVideos(downloadableScheduledVideos => {
-      if ([SchedulingStatus.Completed, SchedulingStatus.Deleted].includes(scheduledVideoDownload.status)) {
-        return downloadableScheduledVideos.delete(scheduledVideoDownload.videoMetadata.id)
-      } else {
-        return downloadableScheduledVideos.set(
-          scheduledVideoDownload.videoMetadata.id,
-          {
-            ...scheduledVideoDownload,
-            downloadSpeed: None.of(),
-            downloadHistory: []
-          }
-        )
-      }
-    })
-
+    setDownloadableScheduledVideos(downloadableScheduledVideos =>
+      [SchedulingStatus.Completed, SchedulingStatus.Deleted].includes(scheduledVideoDownload.status)
+        ? downloadableScheduledVideos.delete(scheduledVideoDownload.videoMetadata.id)
+        : downloadableScheduledVideos.set(scheduledVideoDownload.videoMetadata.id, toDownloadable(scheduledVideoDownload))
+    )
 
   useEffect(() => {
     return scheduledVideoDownloadStream(
@@ -144,18 +137,12 @@ const ScheduledVideos = () => {
       const scheduledVideoDownload = await updateSchedulingStatus(videoId, schedulingStatus)
 
       setDownloadableScheduledVideos((downloadableScheduledVideos) =>
-        downloadableScheduledVideos.set(videoId, {
-          ...scheduledVideoDownload,
-          downloadSpeed: None.of(),
-          downloadHistory: []
-        })
+        downloadableScheduledVideos.set(videoId, toDownloadable(scheduledVideoDownload))
       )
     } catch (error) {
       notifyError("Failed to update the download status", error)
     }
   }
-
-
 
   return (
     <div className={styles.scheduledVideos}>

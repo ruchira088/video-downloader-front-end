@@ -1,5 +1,5 @@
 import React, { type FC, useEffect, useRef, useState } from "react"
-import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material"
+import { Button, Checkbox, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material"
 import { Video } from "~/models/Video"
 import { imageUrl, videoUrl } from "~/services/asset/AssetService"
 import { Snapshot } from "~/models/Snapshot"
@@ -11,11 +11,10 @@ import VideoMetadataCard from "~/components/video/video-metadata-card/VideoMetad
 import Timestamp from "~/components/timestamp/Timestamp"
 import { VideoMetadata } from "~/models/VideoMetadata"
 import { humanReadableSize, shortHumanReadableDuration } from "~/utils/Formatter"
-import { CircularProgress } from "@mui/material"
 
 import styles from "./VideoWatch.module.scss"
 import { Duration } from "luxon"
-import { Option } from "~/types/Option"
+import { None, Option, Some } from "~/types/Option"
 import { translate } from "~/services/sanitize/SanitizationService"
 import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
 import { useNavigate } from "react-router"
@@ -90,13 +89,15 @@ type Resolution = {
 
 type MetadataProps = {
   readonly video: Video
-  readonly resolution: Resolution | null
+  // Known only once the player has loaded the video's metadata.
+  readonly resolution: Option<Resolution>
 }
 
-const formatResolution = (resolution: Resolution | null): React.ReactNode => {
-  if (!resolution) return <CircularProgress size={16} />
-  return `${resolution.width}x${resolution.height}`
-}
+const formatResolution = (resolution: Option<Resolution>): React.ReactNode =>
+  resolution.fold<React.ReactNode>(
+    () => <CircularProgress size={16} />,
+    ({ width, height }) => `${width}x${height}`
+  )
 
 const Metadata: FC<MetadataProps> = props => (
   <div className={styles.metadataRow}>
@@ -130,7 +131,7 @@ type VideoWatchProps = {
 const VideoWatch: FC<VideoWatchProps> = props => {
   const videoPlayer = useRef<HTMLVideoElement | null>(null)
   const [isDeleteDialogVisible, setDeleteDialogVisibility] = useState<boolean>(false)
-  const [resolution, setResolution] = useState<Resolution | null>(null)
+  const [resolution, setResolution] = useState<Option<Resolution>>(None.of())
   const { safeMode } = useApplicationConfiguration()
   const navigate = useNavigate()
 
@@ -146,10 +147,10 @@ const VideoWatch: FC<VideoWatchProps> = props => {
   const handleLoadedMetadata = () => {
     void Option.fromNullable(videoPlayer.current)
       .forEach((videoElement: HTMLVideoElement) => {
-        setResolution({
+        setResolution(Some.of({
           width: videoElement.videoWidth,
           height: videoElement.videoHeight
-        })
+        }))
       })
   }
 

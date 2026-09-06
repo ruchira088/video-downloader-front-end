@@ -3,27 +3,13 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import ThemeSwitch from "~/components/quick-settings/switches/ThemeSwitch"
 import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some } from "~/types/Option"
 import React from "react"
+import { withApplicationConfiguration } from "../helpers"
 
-const renderWithContext = (theme: Theme, setTheme = vi.fn()) => {
-  const contextValue = {
-    safeMode: false,
-    theme,
-    setSafeMode: vi.fn(),
-    setTheme,
-  }
-
-  return {
-    ...render(
-      <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-        <ThemeSwitch />
-      </ApplicationConfigurationContext.Provider>
-    ),
-    setTheme,
-  }
-}
+const renderWithContext = (theme: Theme, setTheme = vi.fn()) => ({
+  ...render(withApplicationConfiguration(<ThemeSwitch />, { theme, setTheme })),
+  setTheme,
+})
 
 describe("ThemeSwitch", () => {
   test("should render with theme toggle button", () => {

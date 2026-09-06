@@ -1,4 +1,5 @@
 import React, { type FC, useRef, useEffect } from "react"
+import classNames from "classnames"
 import { IconButton } from "@mui/material"
 import Close from "@mui/icons-material/Close"
 import SkipPrevious from "@mui/icons-material/SkipPrevious"
@@ -52,10 +53,6 @@ const PlaylistPlayer: FC<PlaylistPlayerProps> = ({
 
   const upNextVideos = videos.slice(currentIndex + 1)
 
-  const handleVideoEnded = () => {
-    onNext()
-  }
-
   return (
     <div className={styles.playerOverlay}>
       <div className={styles.playerContainer}>
@@ -78,7 +75,7 @@ const PlaylistPlayer: FC<PlaylistPlayerProps> = ({
             autoPlay
             poster={thumbnailUrl}
             className={styles.video}
-            onEnded={handleVideoEnded}
+            onEnded={onNext}
           >
             <source src={videoSource} />
           </video>
@@ -96,7 +93,7 @@ const PlaylistPlayer: FC<PlaylistPlayerProps> = ({
             onClick={onShuffle}
             size="large"
             color={isShuffled ? "primary" : "default"}
-            className={isShuffled ? styles.shuffleActive : ""}
+            className={classNames({ [styles.shuffleActive]: isShuffled })}
           >
             <Shuffle fontSize="large" />
           </IconButton>

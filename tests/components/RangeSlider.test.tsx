@@ -8,7 +8,7 @@ import RangeDisplay, {
 } from "~/pages/authenticated/videos/components/RangeDisplay"
 import { Duration } from "luxon"
 import { Some, None } from "~/types/Option"
-import { Right } from "~/types/Either"
+import { Left, Right } from "~/types/Either"
 import type { Codec } from "~/models/Codec"
 import type { Range } from "~/models/Range"
 
@@ -190,160 +190,53 @@ describe("RangeSlider", () => {
   })
 
   describe("Slider Interactions", () => {
-    test("should render slider with correct structure", () => {
-      const onChange = vi.fn()
-      const props = {
-        ...createDefaultProps(),
-        onChange,
-      }
-      const { container } = render(<RangeSlider {...props} />)
+    // MUI drives keyboard changes through hidden range inputs, one per thumb; a change event on
+    // one of them commits a new value the way releasing a drag does.
+    const sliderInputs = (container: HTMLElement) => container.querySelectorAll("input[type='range']")
 
-      // Find the slider elements
-      const slider = container.querySelector('[class*="MuiSlider-root"]')
-      expect(slider).toBeInTheDocument()
-
-      const thumbs = container.querySelectorAll('[class*="MuiSlider-thumb"]')
-      expect(thumbs.length).toBeGreaterThan(0)
-
-      const rail = container.querySelector('[class*="MuiSlider-rail"]')
-      expect(rail).toBeInTheDocument()
-    })
-
-    test("should have correct slider max value based on codec", () => {
+    test("should commit the moved thumb through the codec", () => {
       const props = createDefaultProps()
       const { container } = render(<RangeSlider {...props} />)
 
-      // Slider should be present with correct structure
-      const slider = container.querySelector('[class*="MuiSlider-root"]')
-      expect(slider).toBeInTheDocument()
-    })
+      fireEvent.change(sliderInputs(container)[0], { target: { value: "25" } })
 
-    test("should handle slider value at maxValue boundary", () => {
-      const props = {
-        ...createDefaultProps(),
-        range: { min: 0, max: Some.of(100) } as Range<number>,
-        maxValue: 100,
-      }
-
-      render(<RangeSlider {...props} />)
-
-      // When max equals maxValue, it should show "Max" indicator
-      expect(screen.getByText("0")).toBeInTheDocument()
-    })
-
-    test("should handle None max value in slider", () => {
-      const props = {
-        ...createDefaultProps(),
-        range: { min: 25, max: None.of<number>() } as Range<number>,
-      }
-
-      render(<RangeSlider {...props} />)
-
-      // None max should show "Max" text
-      expect(screen.getByText("Max")).toBeInTheDocument()
+      expect(props.onChange).toHaveBeenCalledWith({ min: 25, max: Some.of(50) })
       expect(screen.getByText("25")).toBeInTheDocument()
     })
 
-    test("should convert slider array values to range", () => {
+    test("should report an unbounded maximum when the upper thumb reaches the end", () => {
       const props = createDefaultProps()
       const { container } = render(<RangeSlider {...props} />)
 
-      // Verify that slider has correct max value attribute
-      const slider = container.querySelector('[class*="MuiSlider"]')
-      expect(slider).toBeInTheDocument()
+      fireEvent.change(sliderInputs(container)[1], { target: { value: "100" } })
+
+      expect(props.onChange).toHaveBeenCalledWith({ min: 0, max: None.of() })
+      expect(screen.getByText("Max")).toBeInTheDocument()
     })
 
-    test("should use codec to encode maxValue for slider max", () => {
+    test("should size the slider from the encoded maximum", () => {
       // Custom codec that doubles values
       const doublingCodec: Codec<number, number> = {
         encode: (n) => n * 2,
         decode: (n) => Right.of(n / 2),
       }
 
-      const props = {
-        ...createDefaultProps(),
-        codec: doublingCodec,
-        maxValue: 50,
-      }
+      const { container } = render(<RangeSlider {...createDefaultProps()} codec={doublingCodec} maxValue={50} />)
 
-      render(<RangeSlider {...props} />)
-
-      // Component should render without error
-      expect(screen.getByText("Test Range")).toBeInTheDocument()
+      sliderInputs(container).forEach(input => expect(input).toHaveAttribute("max", "100"))
     })
 
-    test("should handle range at maxValue boundary showing None as Max", () => {
-      // When the slider max value equals the encoded maxValue,
-      // the range should show as unbounded (None)
-      const onChange = vi.fn()
-      const props = {
-        range: { min: 0, max: Some.of(100) } as Range<number>,
-        onChange,
-        maxValue: 100,
-        codec: numberCodec,
-        printer: numberPrinter,
-        title: "Boundary Test",
-      }
-
-      render(<RangeSlider {...props} />)
-
-      expect(screen.getByText("Boundary Test")).toBeInTheDocument()
-      expect(screen.getByText("0")).toBeInTheDocument()
-      expect(screen.getByText("100")).toBeInTheDocument()
-    })
-
-    test("should call onChange when slider value is committed", async () => {
-      const onChange = vi.fn()
-      const props = {
-        ...createDefaultProps(),
-        onChange,
-      }
-
-      const { container } = render(<RangeSlider {...props} />)
-
-      // Find the slider input elements
-      const sliderInputs = container.querySelectorAll("input[type='range']")
-
-      if (sliderInputs.length > 0) {
-        // Simulate change on the first input
-        fireEvent.change(sliderInputs[0], { target: { value: "25" } })
-      }
-
-      // Component should render without errors
-      expect(screen.getByText("Test Range")).toBeInTheDocument()
-    })
-
-    test("should update transient range during slider drag", () => {
-      const onChange = vi.fn()
-      const props = {
-        ...createDefaultProps(),
-        onChange,
-      }
-
-      const { container } = render(<RangeSlider {...props} />)
-
-      // Component should maintain its state during interactions
-      expect(container.querySelector('[class*="MuiSlider"]')).toBeInTheDocument()
-    })
-
-    test("should fallback to original range when decode fails", () => {
-      // Codec that might fail
-      const failingCodec: Codec<number, number> = {
+    test("should keep the committed range when a moved value cannot be decoded", () => {
+      const rejectingCodec: Codec<number, number> = {
         encode: (n) => n,
-        decode: (n) => Right.of(n),
+        decode: (n) => (n === 25 ? Left.of(new Error("rejected")) : Right.of(n)),
       }
+      const props = { ...createDefaultProps(), codec: rejectingCodec }
+      const { container } = render(<RangeSlider {...props} />)
 
-      const props = {
-        ...createDefaultProps(),
-        codec: failingCodec,
-        range: { min: 10, max: Some.of(50) } as Range<number>,
-      }
+      fireEvent.change(sliderInputs(container)[0], { target: { value: "25" } })
 
-      render(<RangeSlider {...props} />)
-
-      // Should still render with original range
-      expect(screen.getByText("10")).toBeInTheDocument()
-      expect(screen.getByText("50")).toBeInTheDocument()
+      expect(props.onChange).toHaveBeenCalledWith({ min: 0, max: Some.of(50) })
     })
   })
 

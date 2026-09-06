@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
-import { act, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import ServiceInformation from "~/pages/authenticated/service-information/ServiceInformation"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { DateTime } from "luxon"
@@ -264,9 +265,9 @@ describe("ServiceInformation", () => {
 
   test("should not render Other Folders section when there are no other folders", async () => {
     const { performHealthCheck } = await import("~/services/health/HealthCheckService")
-    const healthCheck = createMockHealthCheck()
-    healthCheck.fileRepository.otherVideoFolders = []
-    vi.mocked(performHealthCheck).mockResolvedValue(healthCheck)
+    vi.mocked(performHealthCheck).mockResolvedValue(
+      buildHealthCheck({ fileRepository: { otherVideoFolders: [] } })
+    )
 
     renderWithRouter()
 
@@ -275,5 +276,132 @@ describe("ServiceInformation", () => {
     })
 
     expect(screen.queryByText("Other Folders")).not.toBeInTheDocument()
+  })
+
+  test("should omit backend items whose value is absent", async () => {
+    const { retrieveBackendServiceInformation } = await import("~/services/health/HealthCheckService")
+    vi.mocked(retrieveBackendServiceInformation).mockResolvedValue(
+      buildBackendServiceInformation({ gitBranch: null, gitCommit: null, buildTimestamp: null })
+    )
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByText("Service Name:")).toBeInTheDocument()
+    })
+
+    // Only the frontend still reports these.
+    expect(screen.getAllByText("Git Branch:")).toHaveLength(1)
+    expect(screen.getAllByText("Git Commit:")).toHaveLength(1)
+    expect(screen.getAllByText("Build Timestamp:")).toHaveLength(1)
+  })
+
+  test("should keep the frontend section when backend information cannot be retrieved", async () => {
+    const { retrieveBackendServiceInformation } = await import("~/services/health/HealthCheckService")
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    vi.mocked(retrieveBackendServiceInformation).mockRejectedValue(new Error("backend down"))
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(consoleError).toHaveBeenCalledWith(
+        "Failed to retrieve backend service information",
+        expect.any(Error)
+      )
+    })
+    expect(screen.getByText("video-downloader-front-end")).toBeInTheDocument()
+    expect(screen.queryByText("Service Name:")).not.toBeInTheDocument()
+
+    consoleError.mockRestore()
+  })
+
+  test("should re-run the health check when the refresh button is clicked", async () => {
+    const { performHealthCheck } = await import("~/services/health/HealthCheckService")
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByText("Health Checks")).toBeInTheDocument()
+    })
+    expect(performHealthCheck).toHaveBeenCalledTimes(1)
+
+    await user.click(screen.getByTestId("ReplayIcon").closest("button")!)
+
+    await waitFor(() => {
+      expect(performHealthCheck).toHaveBeenCalledTimes(2)
+    })
+    // The button is usable again once the check has finished.
+    await waitFor(() => {
+      expect(screen.getByTestId("ReplayIcon").closest("button")).toBeEnabled()
+    })
+  })
+
+  test("should keep the last result and re-enable the refresh when a health check fails", async () => {
+    const { performHealthCheck } = await import("~/services/health/HealthCheckService")
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    vi.mocked(performHealthCheck)
+      .mockResolvedValueOnce(createMockHealthCheck())
+      .mockRejectedValueOnce(new Error("health check failed"))
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByText("Database")).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByTestId("ReplayIcon").closest("button")!)
+
+    await waitFor(() => {
+      expect(consoleError).toHaveBeenCalledWith("Failed to perform the health check", expect.any(Error))
+    })
+    expect(screen.getByText("Database")).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByTestId("ReplayIcon").closest("button")).toBeEnabled()
+    })
+
+    consoleError.mockRestore()
+  })
+
+  describe("API URL copy button", () => {
+    // user-event installs its own clipboard stub on setup, so these tests click with fireEvent
+    // and provide the clipboard themselves.
+    const stubClipboard = (writeText: (text: string) => Promise<void>) =>
+      Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true })
+
+    test("should copy the API URL and confirm it", async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined)
+      stubClipboard(writeText)
+
+      renderWithRouter()
+
+      fireEvent.click(screen.getByRole("button", { name: "Copy to clipboard" }))
+
+      expect(writeText).toHaveBeenCalledWith("https://api.example.com")
+      await waitFor(() => {
+        expect(screen.getByTestId("CheckIcon")).toBeInTheDocument()
+      })
+
+      // The confirmation is transient: the copy icon returns after a short while.
+      await act(async () => { vi.advanceTimersByTime(2000) })
+      expect(screen.getByTestId("ContentCopyIcon")).toBeInTheDocument()
+    })
+
+    test("should log rather than throw when the clipboard is unavailable", async () => {
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+      stubClipboard(vi.fn().mockRejectedValue(new Error("denied")))
+
+      renderWithRouter()
+
+      fireEvent.click(screen.getByRole("button", { name: "Copy to clipboard" }))
+
+      await waitFor(() => {
+        expect(consoleError).toHaveBeenCalledWith("Failed to copy to clipboard", expect.any(Error))
+      })
+      expect(screen.getByTestId("ContentCopyIcon")).toBeInTheDocument()
+
+      consoleError.mockRestore()
+    })
   })
 })

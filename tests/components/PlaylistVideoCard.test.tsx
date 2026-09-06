@@ -1,13 +1,11 @@
 import { describe, expect, test, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import PlaylistVideoCard from "~/pages/authenticated/playlists/components/PlaylistVideoCard"
-import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some } from "~/types/Option"
 import React from "react"
 import { DndContext } from "@dnd-kit/core"
 import type { Video } from "~/models/Video"
 import { buildVideo } from "../fixtures"
+import { withApplicationConfiguration } from "../helpers"
 
 vi.mock("~/services/asset/AssetService", () => ({
   imageUrl: vi.fn(() => "https://example.com/thumb.jpg")
@@ -17,13 +15,6 @@ const renderWithContext = (
   video: Video,
   props = {}
 ) => {
-  const contextValue = {
-    safeMode: false,
-    theme: Theme.Light,
-    setSafeMode: vi.fn(),
-    setTheme: vi.fn()
-  }
-
   const defaultProps = {
     video,
     index: 0,
@@ -35,9 +26,7 @@ const renderWithContext = (
 
   return render(
     <DndContext>
-      <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-        <PlaylistVideoCard {...defaultProps} />
-      </ApplicationConfigurationContext.Provider>
+      {withApplicationConfiguration(<PlaylistVideoCard {...defaultProps} />)}
     </DndContext>
   )
 }

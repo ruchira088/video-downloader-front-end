@@ -3,22 +3,11 @@ import { render, screen, waitFor, fireEvent, act } from "@testing-library/react"
 import Videos from "~/pages/authenticated/videos/Videos"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { Duration } from "luxon"
-import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some, None } from "~/types/Option"
+import { None } from "~/types/Option"
 import React from "react"
 import { buildVideo } from "../fixtures"
+import { triggerIntersection, withApplicationConfiguration } from "../helpers"
 import { intersectionObserverCallbacks } from "../setup"
-
-const triggerIntersection = async () => {
-  const callback = intersectionObserverCallbacks[intersectionObserverCallbacks.length - 1]
-  await act(async () => {
-    callback(
-      [{ isIntersecting: true } as IntersectionObserverEntry],
-      {} as IntersectionObserver
-    )
-  })
-}
 
 // The search debounce is wall-clock, so these waits must tolerate a heavily loaded suite.
 // waitFor polls, so a passing assertion still returns as soon as it holds.
@@ -38,22 +27,11 @@ vi.mock("~/components/helmet/Helmet", () => ({
 }))
 
 const renderWithRouter = (initialEntry: string = "/") => {
-  const contextValue = {
-    safeMode: false,
-    theme: Theme.Light,
-    setSafeMode: vi.fn(),
-    setTheme: vi.fn(),
-  }
-
   const router = createMemoryRouter(
     [
       {
         path: "/",
-        element: (
-          <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-            <Videos />
-          </ApplicationConfigurationContext.Provider>
-        ),
+        element: withApplicationConfiguration(<Videos />),
       },
     ],
     { initialEntries: [initialEntry] }
@@ -139,27 +117,6 @@ describe("Videos", () => {
     await waitFor(() => {
       expect(screen.getByText("Test Video")).toBeInTheDocument()
     })
-  })
-
-  test("should handle less than page size results", async () => {
-    const { searchVideos } = await import("~/services/video/VideoService")
-    vi.mocked(searchVideos).mockResolvedValue({
-      results: [
-        buildVideo({ id: "video-123", title: "Test Video" }),
-      ],
-      pageNumber: 0,
-      pageSize: 50,
-      searchTerm: None.of(),
-    })
-
-    renderWithRouter()
-
-    await waitFor(() => {
-      expect(screen.getByText("Test Video")).toBeInTheDocument()
-    })
-
-    // With less than page size results, hasMore should be false
-    expect(searchVideos).toHaveBeenCalled()
   })
 
   test("should call searchVideos with updated params when search term changes", async () => {

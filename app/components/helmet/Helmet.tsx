@@ -9,7 +9,7 @@ const Helmet: FC<HelmetProps> = props => {
     document.title = props.title
   }, [props.title])
 
-  return <></>
+  return null
 }
 
 export default Helmet

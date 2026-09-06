@@ -1,12 +1,10 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, act } from "@testing-library/react"
 import Preview from "~/components/schedule/preview/Preview"
-import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some } from "~/types/Option"
 import React from "react"
 import type { VideoMetadata } from "~/models/VideoMetadata"
 import { buildVideoMetadata } from "../fixtures"
+import { withApplicationConfiguration } from "../helpers"
 
 vi.mock("~/services/video/VideoService", () => ({
   metadata: vi.fn(),
@@ -20,20 +18,7 @@ import { metadata } from "~/services/video/VideoService"
 
 const mockMetadata = vi.mocked(metadata)
 
-const previewWithContext = (url: string) => {
-  const contextValue = {
-    safeMode: false,
-    theme: Theme.Light,
-    setSafeMode: vi.fn(),
-    setTheme: vi.fn(),
-  }
-
-  return (
-    <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-      <Preview url={url} />
-    </ApplicationConfigurationContext.Provider>
-  )
-}
+const previewWithContext = (url: string) => withApplicationConfiguration(<Preview url={url} />)
 
 const renderWithContext = (url: string) => render(previewWithContext(url))
 

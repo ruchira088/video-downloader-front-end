@@ -3,47 +3,22 @@ import { render, screen, waitFor, fireEvent, act } from "@testing-library/react"
 import ScheduledVideos from "~/pages/authenticated/downloading/ScheduledVideos"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { DateTime } from "luxon"
-import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some } from "~/types/Option"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
 import React from "react"
-import { buildScheduledVideoDownload, durationJson } from "../fixtures"
+import { buildScheduledVideoDownload, durationJson, type Json } from "../fixtures"
+import { triggerIntersection, withApplicationConfiguration } from "../helpers"
+import { intersectionObserverCallbacks } from "../setup"
 
-const createMockScheduledVideo = (id: string) =>
+const createMockScheduledVideo = (id: string, overrides: Json = {}) =>
   buildScheduledVideoDownload({
     id,
     title: `Test Video ${id}`,
     scheduledAt: "2023-10-15T10:00:00+00:00",
     status: SchedulingStatus.Active,
     downloadedBytes: 500000000,
-    videoMetadata: { duration: durationJson(300), size: 1000000000 }
+    videoMetadata: { duration: durationJson(300), size: 1000000000 },
+    ...overrides
   })
-
-// Capture-style IntersectionObserver for InfiniteScroll — allows tests below
-// to manually trigger intersection events to exercise loadMore.
-const localIntersectionCallbacks: IntersectionObserverCallback[] = []
-
-class MockIntersectionObserver {
-  observe = vi.fn()
-  unobserve = vi.fn()
-  disconnect = vi.fn()
-  takeRecords = vi.fn().mockReturnValue([])
-  constructor(callback: IntersectionObserverCallback) {
-    localIntersectionCallbacks.push(callback)
-  }
-}
-vi.stubGlobal("IntersectionObserver", MockIntersectionObserver)
-
-const triggerIntersection = async () => {
-  const callback = localIntersectionCallbacks[localIntersectionCallbacks.length - 1]
-  await act(async () => {
-    callback(
-      [{ isIntersecting: true } as IntersectionObserverEntry],
-      {} as IntersectionObserver
-    )
-  })
-}
 
 vi.mock("~/services/scheduling/SchedulingService", () => ({
   fetchScheduledVideos: vi.fn().mockResolvedValue([]),
@@ -74,21 +49,10 @@ vi.mock("~/components/scan/VideoScanButton", () => ({
 }))
 
 const renderWithContext = () => {
-  const contextValue = {
-    safeMode: false,
-    theme: Theme.Light,
-    setSafeMode: vi.fn(),
-    setTheme: vi.fn(),
-  }
-
   const router = createMemoryRouter([
     {
       path: "/",
-      element: (
-        <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-          <ScheduledVideos />
-        </ApplicationConfigurationContext.Provider>
-      ),
+      element: withApplicationConfiguration(<ScheduledVideos />),
     },
   ])
 
@@ -175,6 +139,17 @@ describe("ScheduledVideos", () => {
     })
   })
 
+  test("should show an empty message once the list has loaded with nothing in it", async () => {
+    const { fetchScheduledVideos } = await import("~/services/scheduling/SchedulingService")
+    vi.mocked(fetchScheduledVideos).mockResolvedValue([])
+
+    renderWithContext()
+
+    await waitFor(() => {
+      expect(screen.getByText("Nothing is downloading")).toBeInTheDocument()
+    })
+  })
+
   test("should call retryFailedScheduledVideos when retry all is clicked", async () => {
     const { retryFailedScheduledVideos } = await import("~/services/scheduling/SchedulingService")
 
@@ -215,11 +190,13 @@ describe("ScheduledVideos", () => {
     })
   })
 
-  test("should handle download progress updates", async () => {
+  test("should show the download speed once progress updates arrive", async () => {
     const { fetchScheduledVideos, scheduledVideoDownloadStream } = await import(
       "~/services/scheduling/SchedulingService"
     )
-    vi.mocked(fetchScheduledVideos).mockResolvedValue([createMockScheduledVideo("video-1")])
+    vi.mocked(fetchScheduledVideos).mockResolvedValue([
+      createMockScheduledVideo("video-1", { lastUpdatedAt: "2023-10-15T10:00:00+00:00" })
+    ])
 
     let onDownloadProgress: (progress: any) => void
     vi.mocked(scheduledVideoDownloadStream).mockImplementation((onProgress) => {
@@ -233,22 +210,20 @@ describe("ScheduledVideos", () => {
       expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
     })
 
-    // Simulate download progress update
+    // 100 MB more in 10 seconds is 10 MB/s.
     await act(async () => {
       onDownloadProgress!({
         videoId: "video-1",
         bytes: 600000000,
-        updatedAt: DateTime.now().plus({ seconds: 5 }),
+        updatedAt: DateTime.fromISO("2023-10-15T10:00:10+00:00"),
       })
     })
 
-    // Component should update without error
-    await waitFor(() => {
-      expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
-    })
+    expect(screen.getByText("10.00 MB/s")).toBeInTheDocument()
+    expect(screen.getByText("60 %")).toBeInTheDocument()
   })
 
-  test("should handle download progress with older timestamp (no update)", async () => {
+  test("should ignore download progress that is older than the last update", async () => {
     const { fetchScheduledVideos, scheduledVideoDownloadStream } = await import(
       "~/services/scheduling/SchedulingService"
     )
@@ -263,23 +238,20 @@ describe("ScheduledVideos", () => {
     renderWithContext()
 
     await waitFor(() => {
-      expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
+      expect(screen.getByText("50 %")).toBeInTheDocument()
     })
 
-    // Simulate download progress with older timestamp than the scheduled video's lastUpdatedAt
-    // This should trigger the branch that returns existing downloadHistory (line 41)
     await act(async () => {
       onDownloadProgress!({
         videoId: "video-1",
         bytes: 400000000,
-        updatedAt: DateTime.fromISO("2023-10-14T10:00:00Z"), // Older than scheduledVideo
+        updatedAt: DateTime.fromISO("2023-10-14T10:00:00Z"), // Older than the video's lastUpdatedAt
       })
     })
 
-    // Component should still display without changes
-    await waitFor(() => {
-      expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
-    })
+    // The bytes are adopted but no speed sample is recorded, so no rate is shown.
+    expect(screen.getByText("40 %")).toBeInTheDocument()
+    expect(screen.queryByText(/\/s/)).not.toBeInTheDocument()
   })
 
   test("should ignore download progress for non-existent video", async () => {
@@ -300,8 +272,6 @@ describe("ScheduledVideos", () => {
       expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
     })
 
-    // Simulate download progress for a video that doesn't exist in state
-    // This should trigger the None case (line 91)
     await act(async () => {
       onDownloadProgress!({
         videoId: "non-existent-video",
@@ -310,13 +280,11 @@ describe("ScheduledVideos", () => {
       })
     })
 
-    // Component should still display the existing video
-    await waitFor(() => {
-      expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
-    })
+    expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
+    expect(screen.queryByText(/non-existent-video/)).not.toBeInTheDocument()
   })
 
-  test("should handle scheduled video download updates", async () => {
+  test("should remove a video from the list when a stream update marks it completed", async () => {
     const { fetchScheduledVideos, scheduledVideoDownloadStream } = await import(
       "~/services/scheduling/SchedulingService"
     )
@@ -334,48 +302,12 @@ describe("ScheduledVideos", () => {
       expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
     })
 
-    // Simulate video being removed when completed
     await act(async () => {
-      onScheduledVideoDownloadUpdate!({
-        ...createMockScheduledVideo("video-1"),
-        status: SchedulingStatus.Completed,
-      })
+      onScheduledVideoDownloadUpdate!(createMockScheduledVideo("video-1", { status: SchedulingStatus.Completed }))
     })
 
     await waitFor(() => {
       expect(screen.queryByText(/Test Video video-1/)).not.toBeInTheDocument()
-    })
-  })
-
-  test("should handle status update from cards", async () => {
-    const { fetchScheduledVideos, updateSchedulingStatus } = await import(
-      "~/services/scheduling/SchedulingService"
-    )
-    vi.mocked(fetchScheduledVideos).mockResolvedValue([createMockScheduledVideo("video-1")])
-    vi.mocked(updateSchedulingStatus).mockResolvedValue(createMockScheduledVideo("video-1"))
-
-    renderWithContext()
-
-    await waitFor(() => {
-      expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
-    })
-
-    // The updateSchedulingStatus is called by the ScheduledVideoDownloadCard component
-    // Just verify the setup is correct
-    expect(fetchScheduledVideos).toHaveBeenCalled()
-  })
-
-  test("should handle less than page size results", async () => {
-    const { fetchScheduledVideos } = await import("~/services/scheduling/SchedulingService")
-    // Return less than PAGE_SIZE (50) to indicate no more pages
-    vi.mocked(fetchScheduledVideos).mockResolvedValue([
-      createMockScheduledVideo("video-1"),
-    ])
-
-    renderWithContext()
-
-    await waitFor(() => {
-      expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
     })
   })
 
@@ -384,17 +316,10 @@ describe("ScheduledVideos", () => {
       "~/services/scheduling/SchedulingService"
     )
 
-    // Create a video with Active status which has a "Pause" action
-    const activeVideo = {
-      ...createMockScheduledVideo("video-1"),
-      status: SchedulingStatus.Active,
-    }
-
-    vi.mocked(fetchScheduledVideos).mockResolvedValue([activeVideo])
-    vi.mocked(updateSchedulingStatus).mockResolvedValue({
-      ...activeVideo,
-      status: SchedulingStatus.Paused,
-    })
+    vi.mocked(fetchScheduledVideos).mockResolvedValue([createMockScheduledVideo("video-1")])
+    vi.mocked(updateSchedulingStatus).mockResolvedValue(
+      createMockScheduledVideo("video-1", { status: SchedulingStatus.Paused })
+    )
 
     renderWithContext()
 
@@ -402,9 +327,7 @@ describe("ScheduledVideos", () => {
       expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
     })
 
-    // Find and click the "Pause" button (Active -> Paused transition)
-    const pauseButton = screen.getByRole("button", { name: "Pause" })
-    fireEvent.click(pauseButton)
+    fireEvent.click(screen.getByRole("button", { name: "Pause" }))
 
     await waitFor(() => {
       expect(updateSchedulingStatus).toHaveBeenCalledWith("video-1", SchedulingStatus.Paused)
@@ -416,19 +339,12 @@ describe("ScheduledVideos", () => {
       "~/services/scheduling/SchedulingService"
     )
 
-    // Create a video with Paused status which has a "Resume" action
-    const pausedVideo = {
-      ...createMockScheduledVideo("video-1"),
-      status: SchedulingStatus.Paused,
-    }
-
-    const resumedVideo = {
-      ...pausedVideo,
-      status: SchedulingStatus.Queued,
-    }
-
-    vi.mocked(fetchScheduledVideos).mockResolvedValue([pausedVideo])
-    vi.mocked(updateSchedulingStatus).mockResolvedValue(resumedVideo)
+    vi.mocked(fetchScheduledVideos).mockResolvedValue([
+      createMockScheduledVideo("video-1", { status: SchedulingStatus.Paused })
+    ])
+    vi.mocked(updateSchedulingStatus).mockResolvedValue(
+      createMockScheduledVideo("video-1", { status: SchedulingStatus.Queued })
+    )
 
     renderWithContext()
 
@@ -437,18 +353,41 @@ describe("ScheduledVideos", () => {
       expect(screen.getByText("Paused")).toBeInTheDocument()
     })
 
-    // Find and click the "Resume" button (Paused -> Queued transition)
-    const resumeButton = screen.getByRole("button", { name: "Resume" })
-    fireEvent.click(resumeButton)
+    fireEvent.click(screen.getByRole("button", { name: "Resume" }))
 
     await waitFor(() => {
       expect(updateSchedulingStatus).toHaveBeenCalledWith("video-1", SchedulingStatus.Queued)
     })
 
-    // Verify the status is updated in the UI
     await waitFor(() => {
       expect(screen.getByText("Queued")).toBeInTheDocument()
     })
+  })
+
+  test("should tell the user when a status update fails", async () => {
+    const { fetchScheduledVideos, updateSchedulingStatus } = await import(
+      "~/services/scheduling/SchedulingService"
+    )
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+    vi.mocked(fetchScheduledVideos).mockResolvedValue([createMockScheduledVideo("video-1")])
+    vi.mocked(updateSchedulingStatus).mockRejectedValue(new Error("Update failed"))
+
+    renderWithContext()
+
+    await waitFor(() => {
+      expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole("button", { name: "Pause" }))
+
+    // Without a provider the notification degrades to a console error; the status is unchanged.
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to update the download status", expect.any(Error))
+    })
+    expect(screen.getByText("Active")).toBeInTheDocument()
+
+    consoleErrorSpy.mockRestore()
   })
 
   test("should handle video removal when status becomes Deleted via stream update", async () => {
@@ -469,12 +408,8 @@ describe("ScheduledVideos", () => {
       expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
     })
 
-    // Simulate video being removed when deleted
     await act(async () => {
-      onScheduledVideoDownloadUpdate!({
-        ...createMockScheduledVideo("video-1"),
-        status: SchedulingStatus.Deleted,
-      })
+      onScheduledVideoDownloadUpdate!(createMockScheduledVideo("video-1", { status: SchedulingStatus.Deleted }))
     })
 
     await waitFor(() => {
@@ -486,12 +421,7 @@ describe("ScheduledVideos", () => {
     const { fetchScheduledVideos, scheduledVideoDownloadStream } = await import(
       "~/services/scheduling/SchedulingService"
     )
-    vi.mocked(fetchScheduledVideos).mockResolvedValue([
-      {
-        ...createMockScheduledVideo("video-1"),
-        status: SchedulingStatus.Active,
-      }
-    ])
+    vi.mocked(fetchScheduledVideos).mockResolvedValue([createMockScheduledVideo("video-1")])
 
     let onScheduledVideoDownloadUpdate: (download: any) => void
     vi.mocked(scheduledVideoDownloadStream).mockImplementation((_, onUpdate) => {
@@ -506,12 +436,8 @@ describe("ScheduledVideos", () => {
       expect(screen.getByText("Active")).toBeInTheDocument()
     })
 
-    // Simulate status update to Paused (non-terminal status)
     await act(async () => {
-      onScheduledVideoDownloadUpdate!({
-        ...createMockScheduledVideo("video-1"),
-        status: SchedulingStatus.Paused,
-      })
+      onScheduledVideoDownloadUpdate!(createMockScheduledVideo("video-1", { status: SchedulingStatus.Paused }))
     })
 
     await waitFor(() => {
@@ -525,19 +451,15 @@ describe("ScheduledVideos", () => {
       "~/services/scheduling/SchedulingService"
     )
 
-    // Create a video with Error status which has a "Retry" action
-    const errorVideo = {
-      ...createMockScheduledVideo("video-1"),
-      status: SchedulingStatus.Error,
-      errorInfo: { message: "Download failed", stackTrace: [] },
-    }
-
-    vi.mocked(fetchScheduledVideos).mockResolvedValue([errorVideo])
-    vi.mocked(updateSchedulingStatus).mockResolvedValue({
-      ...errorVideo,
-      status: SchedulingStatus.Queued,
-      errorInfo: null,
-    })
+    vi.mocked(fetchScheduledVideos).mockResolvedValue([
+      createMockScheduledVideo("video-1", {
+        status: SchedulingStatus.Error,
+        errorInfo: { message: "Download failed", details: "" },
+      })
+    ])
+    vi.mocked(updateSchedulingStatus).mockResolvedValue(
+      createMockScheduledVideo("video-1", { status: SchedulingStatus.Queued })
+    )
 
     renderWithContext()
 
@@ -545,18 +467,36 @@ describe("ScheduledVideos", () => {
       expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
     })
 
-    // Find and click the "Retry" button (Error -> Queued transition)
-    const retryButton = screen.getByRole("button", { name: "Retry" })
-    fireEvent.click(retryButton)
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }))
 
     await waitFor(() => {
       expect(updateSchedulingStatus).toHaveBeenCalledWith("video-1", SchedulingStatus.Queued)
     })
   })
 
+  test("should delete the scheduled video when the card's delete is confirmed", async () => {
+    const { fetchScheduledVideos, deleteScheduledVideoById } = await import(
+      "~/services/scheduling/SchedulingService"
+    )
+    vi.mocked(fetchScheduledVideos).mockResolvedValue([createMockScheduledVideo("video-1")])
+
+    renderWithContext()
+
+    await waitFor(() => {
+      expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete scheduled video" }))
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }))
+
+    await waitFor(() => {
+      expect(deleteScheduledVideoById).toHaveBeenCalledWith("video-1")
+    })
+  })
+
   describe("Pagination", () => {
     beforeEach(() => {
-      localIntersectionCallbacks.length = 0
+      intersectionObserverCallbacks.length = 0
     })
 
     test("should fetch the next page when scroll trigger intersects", async () => {

@@ -4,17 +4,7 @@ import userEvent from "@testing-library/user-event"
 import LogoutButton from "~/components/quick-settings/switches/LogoutButton"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
-import { DateTime } from "luxon"
-import { Role } from "~/models/User"
-
-const mockUser = {
-  id: "user-123",
-  createdAt: DateTime.now(),
-  firstName: "Test",
-  lastName: "User",
-  email: "test@example.com",
-  role: Role.User,
-}
+import { buildUser } from "../fixtures"
 
 vi.mock("~/services/authentication/AuthenticationService", () => ({
   logout: vi.fn(),
@@ -55,7 +45,7 @@ describe("LogoutButton", () => {
 
   test("should call logout and navigate to sign-in page when clicked", async () => {
     const user = userEvent.setup()
-    mockLogout.mockResolvedValue(mockUser)
+    mockLogout.mockResolvedValue(buildUser())
 
     renderWithRouter()
 

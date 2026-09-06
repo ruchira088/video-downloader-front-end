@@ -1,13 +1,11 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import ScheduledVideoDownloadCard from "~/pages/authenticated/downloading/scheduled-video-download-card/ScheduledVideoDownloadCard"
-import { Some } from "~/types/Option"
-import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
 import { buildDownloadableScheduledVideo, durationJson } from "../fixtures"
+import { withApplicationConfiguration } from "../helpers"
 
 const createMockDownloadableScheduledVideo = (status: SchedulingStatus = SchedulingStatus.Active) =>
   buildDownloadableScheduledVideo({
@@ -43,24 +41,15 @@ const renderWithContext = (
   onDelete = vi.fn().mockResolvedValue(undefined),
   onUpdateStatus = vi.fn().mockResolvedValue(undefined)
 ) => {
-  const contextValue = {
-    safeMode: false,
-    theme: Theme.Light,
-    setSafeMode: vi.fn(),
-    setTheme: vi.fn(),
-  }
-
   const router = createMemoryRouter([
     {
       path: "/",
-      element: (
-        <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-          <ScheduledVideoDownloadCard
-            downloadableScheduledVideo={downloadableScheduledVideo}
-            onDelete={onDelete}
-            onUpdateStatus={onUpdateStatus}
-          />
-        </ApplicationConfigurationContext.Provider>
+      element: withApplicationConfiguration(
+        <ScheduledVideoDownloadCard
+          downloadableScheduledVideo={downloadableScheduledVideo}
+          onDelete={onDelete}
+          onUpdateStatus={onUpdateStatus}
+        />
       ),
     },
   ])

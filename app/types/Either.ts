@@ -39,7 +39,6 @@ export class Right<L, R> extends Either<L, R> {
     return Some.of(this.value)
   }
 
-
   static of<L, R>(value: R): Either<L, R> {
     return new Right(value)
   }

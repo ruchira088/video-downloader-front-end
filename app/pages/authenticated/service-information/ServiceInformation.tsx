@@ -43,7 +43,7 @@ interface ServiceInformationItem {
 export const ServiceInformationItem = (serviceInformationItem: ServiceInformationItem) =>
   serviceInformationItem.value
     .fold(
-      () => <div />,
+      () => null,
       (value) => (
         <div className={styles.serviceInformationItem}>
           <div className={styles.serviceInformationItemLabel}>{serviceInformationItem.label}:</div>
@@ -118,7 +118,7 @@ const FileRepositoryHealthCheck: FC<FileRepositoryHealthCheckProps> = props => (
             healthCheckStatusDetails={props.fileRepositoryHealthStatusDetails.videoFolder.healthStatusDetails}/>
         </div>
       </div>
-      {props.fileRepositoryHealthStatusDetails.otherVideoFolders && props.fileRepositoryHealthStatusDetails.otherVideoFolders.length > 0 && (
+      {props.fileRepositoryHealthStatusDetails.otherVideoFolders.length > 0 && (
         <div className={styles.healthCheckSection}>
           <div className={styles.healthCheckSectionTitle}>Other Folders</div>
           <div className={styles.healthCheckSectionContent}>
@@ -184,8 +184,12 @@ const HealthCheckInformation: FC<HealthCheckInformationProps> = props => {
 
   const handlePerformHealthCheck = async () => {
     setPerformingHealthCheck(true)
-    await props.performHealthCheck()
-    setPerformingHealthCheck(false)
+
+    try {
+      await props.performHealthCheck()
+    } finally {
+      setPerformingHealthCheck(false)
+    }
   }
 
   return (
@@ -225,20 +229,30 @@ const ServiceInformation = () => {
   const [backendInformation, setBackendInformation] = useState<Option<BackendServiceInformation>>(None.of())
   const [frontendInformation, setFrontendInformation] = useState(frontendServiceInformation(import.meta.env))
   const [healthCheckDetails, setHealthCheckDetails] = useState<Option<HealthCheckDetails>>(None.of())
-  const serverTimeOffset = useRef<Duration<boolean>>(Duration.fromMillis(0))
+  const serverTimeOffset = useRef<Duration>(Duration.fromMillis(0))
 
   const fetchBackendInformation = async () => {
-    const information = await retrieveBackendServiceInformation()
-    serverTimeOffset.current = information.currentTimestamp.diff(DateTime.now())
-    setBackendInformation(Some.of(information))
+    try {
+      const information = await retrieveBackendServiceInformation()
+      serverTimeOffset.current = information.currentTimestamp.diff(DateTime.now())
+      setBackendInformation(Some.of(information))
+    } catch (error) {
+      console.error("Failed to retrieve backend service information", error)
+    }
   }
 
+  // Absorbs its own failure: it runs from a poll and a button as well as on mount, and a failed
+  // check should leave the last good result on screen rather than reject unhandled.
   const fetchHealthCheckDetails = async () => {
-    const healthCheck = await performHealthCheck()
-    setHealthCheckDetails(Some.of({
-      ...healthCheck,
-      timestamp: DateTime.now()
-    }))
+    try {
+      const healthCheck = await performHealthCheck()
+      setHealthCheckDetails(Some.of({
+        ...healthCheck,
+        timestamp: DateTime.now()
+      }))
+    } catch (error) {
+      console.error("Failed to perform the health check", error)
+    }
   }
 
   useEffect(() => {
@@ -252,8 +266,7 @@ const ServiceInformation = () => {
 
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect
-    fetchBackendInformation()
-      .catch((error) => console.error("Failed to retrieve backend service information", error))
+    void fetchBackendInformation()
   }, [])
 
   useEffect(() => {

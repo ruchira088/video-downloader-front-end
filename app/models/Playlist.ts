@@ -8,7 +8,7 @@ export const Playlist = z.object({
   userId: z.string(),
   createdAt: ZodDateTime,
   title: z.string(),
-  description: z.string().nullable().optional(),
+  description: ZodOptional(z.string()),
   videos: z.array(Video),
   albumArt: ZodOptional(FileResource(FileResourceType.AlbumArt))
 })

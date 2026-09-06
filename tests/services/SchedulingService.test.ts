@@ -4,7 +4,7 @@ import { SortBy } from "~/models/SortBy"
 import { Ordering } from "~/models/Ordering"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
 import { WorkerStatus } from "~/models/WorkerStatus"
-import { EventStreamEventType } from "~/pages/authenticated/downloading/EventStreamEventType"
+import { EventStreamEventType } from "~/models/EventStreamEventType"
 
 // Mock ApiConfiguration
 vi.mock("~/services/ApiConfiguration", () => ({

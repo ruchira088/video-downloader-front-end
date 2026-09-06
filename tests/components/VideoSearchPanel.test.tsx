@@ -206,8 +206,11 @@ describe("VideoSearchPanel", () => {
         expect(consoleSpy).toHaveBeenCalled()
       })
 
+      // The list offers a way out rather than stalling on an empty panel.
+      expect(screen.getByRole("alert")).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: /retry/i })).toBeInTheDocument()
+
       consoleSpy.mockRestore()
     })
-
   })
 })

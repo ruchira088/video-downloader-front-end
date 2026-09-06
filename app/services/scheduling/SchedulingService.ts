@@ -10,7 +10,7 @@ import {Either} from "~/types/Either"
 import {zodParse} from "~/types/Zod"
 import {ListResponse} from "~/models/ListResponse"
 import {DownloadProgress} from "~/models/DownloadProgress"
-import {EventStreamEventType} from "~/pages/authenticated/downloading/EventStreamEventType"
+import {EventStreamEventType} from "~/models/EventStreamEventType"
 
 export const scheduledVideoDownloadStream = (
   onDownloadProgress: (downloadProgress: DownloadProgress) => void,
@@ -47,44 +47,38 @@ export const scheduledVideoDownloadStream = (
 
 export const scheduleVideo = async (videoSiteUrl: string): Promise<ScheduledVideoDownload> => {
   const response = await axiosClient.post("/schedule", { url: videoSiteUrl })
-  const scheduledVideoDownload = zodParse(ScheduledVideoDownload, response.data)
 
-  return scheduledVideoDownload
+  return zodParse(ScheduledVideoDownload, response.data)
 }
 
 export const updateSchedulingStatus = async (videoId: string, status: SchedulingStatus): Promise<ScheduledVideoDownload> => {
   const response = await axiosClient.put(`/schedule/id/${videoId}`, { status })
-  const scheduledVideoDownload = zodParse(ScheduledVideoDownload, response.data)
 
-  return scheduledVideoDownload
+  return zodParse(ScheduledVideoDownload, response.data)
 }
 
 export const retryFailedScheduledVideos = async (): Promise<ScheduledVideoDownload[]> => {
   const response = await axiosClient.post("/schedule/retry-failed")
-  const scheduledVideoDownloads: ListResponse<ScheduledVideoDownload> = zodParse(ListResponse(ScheduledVideoDownload), response.data)
 
-  return scheduledVideoDownloads.results
+  return zodParse(ListResponse(ScheduledVideoDownload), response.data).results
 }
 
 export const fetchWorkerStatus = async (): Promise<WorkerStatus> => {
   const response = await axiosClient.get("/schedule/worker-status")
-  const workerStatus = zodParse(WorkerStatusResult, response.data).workerStatus
 
-  return workerStatus
+  return zodParse(WorkerStatusResult, response.data).workerStatus
 }
 
 export const updateWorkerStatus = async (workerStatus: WorkerStatus): Promise<WorkerStatus> => {
   const response = await axiosClient.put("/schedule/worker-status", { workerStatus })
-  const result = zodParse(WorkerStatusResult, response.data).workerStatus
 
-  return result
+  return zodParse(WorkerStatusResult, response.data).workerStatus
 }
 
 export const deleteScheduledVideoById = async (videoId: string): Promise<ScheduledVideoDownload> => {
   const response = await axiosClient.delete(`/schedule/id/${videoId}`)
-  const scheduledVideoDownload = zodParse(ScheduledVideoDownload, response.data)
 
-  return scheduledVideoDownload
+  return zodParse(ScheduledVideoDownload, response.data)
 }
 
 export const fetchScheduledVideos = async (
@@ -112,7 +106,5 @@ export const fetchScheduledVideos = async (
     },
   })
 
-  const scheduledVideoDownloads = zodParse(ListResponse(ScheduledVideoDownload), response.data).results
-
-  return scheduledVideoDownloads
+  return zodParse(ListResponse(ScheduledVideoDownload), response.data).results
 }

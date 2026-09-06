@@ -1,14 +1,13 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
-import { render, screen, waitFor, act } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import Duplicates from "~/pages/authenticated/duplicates/Duplicates"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { DateTime } from "luxon"
-import { Theme } from "~/models/ApplicationConfiguration"
-import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
-import { Some } from "~/types/Option"
 import React from "react"
 import { buildVideo, durationJson } from "../fixtures"
+import { triggerIntersection, withApplicationConfiguration } from "../helpers"
+import { intersectionObserverCallbacks } from "../setup"
 
 const createMockVideo = (id: string, title: string = `Title ${id}`) =>
   buildVideo({
@@ -16,7 +15,6 @@ const createMockVideo = (id: string, title: string = `Title ${id}`) =>
     title,
     videoMetadata: { duration: durationJson(300), size: 1024 * 1024 * 100 }
   })
-import { intersectionObserverCallbacks } from "../setup"
 
 vi.mock("~/services/video/VideoService", () => ({
   fetchDuplicateVideos: vi.fn(),
@@ -50,21 +48,10 @@ const createDuplicateGroup = (groupId: string, videoIds: string[]) =>
   }))
 
 const renderPage = () => {
-  const contextValue = {
-    safeMode: false,
-    theme: Theme.Light,
-    setSafeMode: vi.fn(),
-    setTheme: vi.fn(),
-  }
-
   const router = createMemoryRouter([
     {
       path: "/",
-      element: (
-        <ApplicationConfigurationContext.Provider value={Some.of(contextValue)}>
-          <Duplicates />
-        </ApplicationConfigurationContext.Provider>
-      ),
+      element: withApplicationConfiguration(<Duplicates />),
     },
     {
       path: "/video/:videoId",
@@ -73,16 +60,6 @@ const renderPage = () => {
   ])
 
   return render(<RouterProvider router={router} />)
-}
-
-const triggerIntersection = async () => {
-  const callback = intersectionObserverCallbacks[intersectionObserverCallbacks.length - 1]
-  await act(async () => {
-    callback(
-      [{ isIntersecting: true } as IntersectionObserverEntry],
-      {} as IntersectionObserver
-    )
-  })
 }
 
 describe("Duplicates", () => {

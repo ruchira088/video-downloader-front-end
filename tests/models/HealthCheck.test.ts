@@ -89,7 +89,7 @@ describe("HealthCheck", () => {
       expect(result.otherVideoFolders).toHaveLength(1)
     })
 
-    test("should parse with null otherVideoFolders", () => {
+    test("should decode null otherVideoFolders as an empty list", () => {
       const data = {
         imageFolder: {
           filePath: "/images",
@@ -102,10 +102,10 @@ describe("HealthCheck", () => {
         otherVideoFolders: null,
       }
       const result = FileRepositoryHealthStatusDetails.parse(data)
-      expect(result.otherVideoFolders).toBeNull()
+      expect(result.otherVideoFolders).toEqual([])
     })
 
-    test("should parse with undefined otherVideoFolders", () => {
+    test("should decode missing otherVideoFolders as an empty list", () => {
       const data = {
         imageFolder: {
           filePath: "/images",
@@ -117,7 +117,7 @@ describe("HealthCheck", () => {
         },
       }
       const result = FileRepositoryHealthStatusDetails.parse(data)
-      expect(result.otherVideoFolders).toBeUndefined()
+      expect(result.otherVideoFolders).toEqual([])
     })
   })
 })
