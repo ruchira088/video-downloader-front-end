@@ -72,6 +72,10 @@ jobs:
     needs:
       - transpile-and-test
 
+    # Dependabot branches only need the test job; publishing bundles, images and a
+    # CloudFront distribution per dependency bump is wasted time and cost.
+    if: github.actor != 'dependabot[bot]'
+
     permissions:
       contents: read
       id-token: write
@@ -101,6 +105,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - transpile-and-test
+
+    if: github.actor != 'dependabot[bot]'
 
     permissions:
       contents: read
@@ -138,7 +144,7 @@ jobs:
     needs:
       - upload-bundle
 
-    if: github.ref != 'refs/heads/main'
+    if: github.ref != 'refs/heads/main' && github.actor != 'dependabot[bot]'
 
     concurrency:
       group: deploy-to-${{ github.ref }}

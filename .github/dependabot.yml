@@ -1,0 +1,45 @@
+version: 2
+
+# Minor and patch bumps are grouped into a single PR per ecosystem, matching the
+# "Update npm dependencies" commits this repo has always made by hand. Major bumps
+# stay separate so breaking changes are reviewed on their own.
+#
+# react-app-cdk-deploy is a git dependency (github:ruchira088/react-app-cdk-deploy#v1)
+# and is out of Dependabot's reach; it is still updated manually.
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Australia/Sydney
+    groups:
+      npm-dependencies:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: npm
+    directory: /cdk-deploy
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Australia/Sydney
+    groups:
+      cdk-deploy-dependencies:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Australia/Sydney
+    groups:
+      github-actions:
+        update-types:
+          - minor
+          - patch
