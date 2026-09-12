@@ -17,7 +17,7 @@
     "destroy": "npm run build && npm run cdk-destroy"
   },
   "devDependencies": {
-    "@types/node": "^24.10.1",
+    "@types/node": "^26.5.0",
     "typescript": "^7.0.2"
   },
   "dependencies": {
