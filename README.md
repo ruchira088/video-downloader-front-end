@@ -32,7 +32,7 @@ A modern, full-featured React web application for downloading and managing video
 | **Drag & Drop** | dnd-kit |
 | **Error Monitoring** | Sentry |
 | **Linting** | oxlint (type-aware, via tsgolint) |
-| **Testing** | Vitest 4, jsdom |
+| **Testing** | Vitest 5, jsdom |
 | **Deployment** | Docker, AWS CDK 2 |
 
 ## Prerequisites

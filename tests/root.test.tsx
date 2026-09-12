@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import App, { meta, links, Layout, HydrateFallback, ErrorBoundary } from "~/root"
-import { initSentry } from "~/services/Sentry"
 import React from "react"
 
 const mockIsRouteErrorResponse = vi.fn()
@@ -20,7 +19,8 @@ vi.mock("react-router", () => ({
   Links: () => <link data-testid="links" />,
   Meta: () => <meta data-testid="meta" />,
   Outlet: () => <div data-testid="outlet">Outlet</div>,
-  Scripts: () => <script data-testid="scripts" />,
+  // A real <script> element would trip React 19.3's "script tag while rendering" warning.
+  Scripts: () => null,
   ScrollRestoration: () => null,
 }))
 
@@ -36,8 +36,16 @@ describe("root", () => {
   })
 
   describe("Sentry initialization", () => {
-    test("should initialize Sentry at module scope", () => {
-      expect(initSentry).toHaveBeenCalled()
+    test("should initialize Sentry at module scope", async () => {
+      // The call made by the static import above is wiped by the automatic mock clearing that
+      // runs before each test, so evaluate the module afresh inside the test instead. The
+      // reset also re-runs the ~/services/Sentry mock factory, so read the spy from that
+      // fresh instance rather than a stale top-level import.
+      vi.resetModules()
+      const { initSentry } = await import("~/services/Sentry")
+      await import("~/root")
+
+      expect(initSentry).toHaveBeenCalledTimes(1)
     })
   })
 
