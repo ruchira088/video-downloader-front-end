@@ -23,7 +23,7 @@ Requires Node 24 (`engines.node: ^24.0.0`) and npm.
 - **Run tests matching a name:** `npx vitest run -t "should reset videos"`
 - `npm run typecheck` runs `react-router typegen && tsc` — the typegen step generates `.react-router/types` and `app/+types/*`, which route modules import. Running bare `tsc` will fail on missing generated types.
 - `npm run build` (and the `start*` scripts) first run `scripts/env-vars.mjs`, which regenerates `.env` with git branch/commit/timestamp via `simple-git`. Expect `.env` to change after a build.
-- Coverage thresholds are enforced in `vitest.config.ts` (statements 95, branches 90, functions 94, lines 96). They are a ratchet set just under what the suite achieves: raise them when coverage climbs, never lower them to make a build pass.
+- Coverage thresholds are enforced in `vitest.config.ts` (statements 96, branches 91, functions 96, lines 97). They are a ratchet set just under what the suite achieves: raise them when coverage climbs, never lower them to make a build pass.
 
 ## Architecture
 

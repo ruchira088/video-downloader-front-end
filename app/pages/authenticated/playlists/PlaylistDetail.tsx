@@ -23,7 +23,6 @@ import {
   arrayMove
 } from "@dnd-kit/sortable"
 import { Playlist } from "~/models/Playlist"
-import { Video } from "~/models/Video"
 import { None, Option, Some } from "~/types/Option"
 import {
   fetchPlaylistById,
@@ -45,20 +44,12 @@ import PlaylistVideoCard from "./components/PlaylistVideoCard"
 import VideoSearchPanel from "./components/VideoSearchPanel"
 import PlaylistPlayer from "./components/PlaylistPlayer"
 import DeletePlaylistDialog from "./components/DeletePlaylistDialog"
+import { usePlaylistPlayback } from "./usePlaylistPlayback"
 import type { Route } from "./+types/PlaylistDetail"
 
 import styles from "./PlaylistDetail.module.scss"
 
 type LoadFailure = "not-found" | "error"
-
-const shuffleArray = <T,>(array: T[]): T[] => {
-  const shuffled = [...array]
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-  }
-  return shuffled
-}
 
 const PlaylistDetail = (props: Route.ComponentProps) => {
   const navigate = useNavigate()
@@ -70,10 +61,6 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
   const [playlist, setPlaylist] = useState<Option<Playlist>>(None.of())
   const [isLoading, setIsLoading] = useState(true)
   const [loadFailure, setLoadFailure] = useState<Option<LoadFailure>>(None.of())
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isShuffled, setIsShuffled] = useState(false)
-  const [shuffledVideos, setShuffledVideos] = useState<Video[]>([])
   const [showAddVideos, setShowAddVideos] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isUploadingAlbumArt, setIsUploadingAlbumArt] = useState(false)
@@ -117,29 +104,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     void loadPlaylist()
   }, [loadPlaylist])
 
-  // Playback order: the shuffled order when shuffling, otherwise the playlist order.
-  // The card list below always renders the playlist order, so the two are only the same
-  // list when unshuffled — anything tying a card to the player must go via video id.
-  const displayedVideos = playlist
-    .map(p => (isShuffled ? shuffledVideos : p.videos))
-    .getOrElse(() => [])
-
-  const currentlyPlayingVideoId: Option<string> = isPlaying
-    ? Option.fromNullable(displayedVideos[currentIndex]).map(video => video.videoMetadata.id)
-    : None.of()
-
-  const handlePlayFromIndex = (index: number) => {
-    setCurrentIndex(index)
-    setIsPlaying(true)
-  }
-
-  const playVideo = (videoId: string) => {
-    const index = displayedVideos.findIndex(video => video.videoMetadata.id === videoId)
-
-    if (index !== -1) {
-      handlePlayFromIndex(index)
-    }
-  }
+  const playback = usePlaylistPlayback(playlist.map(p => p.videos).getOrElse(() => []))
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
@@ -202,9 +167,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     try {
       const updatedPlaylist = await removeVideoFromPlaylist(currentPlaylist, videoId)
       setPlaylist(Some.of(updatedPlaylist))
-      if (isShuffled) {
-        setShuffledVideos(prev => prev.filter(v => v.videoMetadata.id !== videoId))
-      }
+      playback.videoRemoved(videoId)
     } catch (error) {
       notifyError("Failed to remove the video from the playlist", error)
     }
@@ -217,11 +180,9 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     try {
       const updatedPlaylist = await addVideoToPlaylist(currentPlaylist, videoId)
       setPlaylist(Some.of(updatedPlaylist))
-      if (isShuffled) {
-        void Option.fromNullable(
-          updatedPlaylist.videos.find(v => v.videoMetadata.id === videoId)
-        ).forEach(addedVideo => setShuffledVideos(prev => [...prev, addedVideo]))
-      }
+      void Option.fromNullable(updatedPlaylist.videos.find(v => v.videoMetadata.id === videoId)).forEach(
+        playback.videoAdded
+      )
     } catch (error) {
       notifyError("Failed to add the video to the playlist", error)
     }
@@ -251,46 +212,6 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
       notifyError("Failed to remove the album art", error)
     }
   }
-
-  const handlePlay = () => {
-    if (displayedVideos.length > 0) {
-      setCurrentIndex(0)
-      setIsPlaying(true)
-    }
-  }
-
-  const handleShuffle = () => {
-    const videos = playlist.map(p => p.videos).getOrElse(() => [])
-    const nextPlaybackOrder = isShuffled ? videos : shuffleArray(videos)
-
-    setIsShuffled(!isShuffled)
-    setShuffledVideos(isShuffled ? [] : nextPlaybackOrder)
-
-    // Toggling shuffle re-indexes the playback order, so follow the video that is
-    // playing into its new position instead of jumping back to the top.
-    setCurrentIndex(
-      currentlyPlayingVideoId
-        .map(videoId => nextPlaybackOrder.findIndex(video => video.videoMetadata.id === videoId))
-        .filter(index => index !== -1)
-        .getOrElse(() => 0)
-    )
-  }
-
-  const handleNextVideo = () => {
-    if (currentIndex < displayedVideos.length - 1) {
-      setCurrentIndex(prev => prev + 1)
-    } else {
-      setIsPlaying(false)
-    }
-  }
-
-  const handlePreviousVideo = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1)
-    }
-  }
-
-  const handleClosePlayer = () => setIsPlaying(false)
 
   if (isLoading) {
     return (
@@ -387,8 +308,8 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
             variant="contained"
             color="primary"
             startIcon={<PlayArrow />}
-            onClick={handlePlay}
-            disabled={displayedVideos.length === 0}
+            onClick={playback.play}
+            disabled={playback.displayedVideos.length === 0}
           >
             Play
           </Button>
@@ -431,9 +352,9 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
                         video={video}
                         index={index}
                         onRemove={() => handleRemoveVideo(video.videoMetadata.id)}
-                        onPlay={() => playVideo(video.videoMetadata.id)}
+                        onPlay={() => playback.playVideo(video.videoMetadata.id)}
                         isCurrentlyPlaying={
-                          currentlyPlayingVideoId.toDefined() === video.videoMetadata.id
+                          playback.currentlyPlayingVideoId.toDefined() === video.videoMetadata.id
                         }
                       />
                     ))}
@@ -454,16 +375,16 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
           </div>
         </DndContext>
 
-        {isPlaying && displayedVideos.length > 0 && (
+        {playback.isPlaying && playback.displayedVideos.length > 0 && (
           <PlaylistPlayer
-            videos={displayedVideos}
-            currentIndex={currentIndex}
-            onNext={handleNextVideo}
-            onPrevious={handlePreviousVideo}
-            onClose={handleClosePlayer}
-            onIndexChange={setCurrentIndex}
-            isShuffled={isShuffled}
-            onShuffle={handleShuffle}
+            videos={playback.displayedVideos}
+            currentIndex={playback.currentIndex}
+            onNext={playback.next}
+            onPrevious={playback.previous}
+            onClose={playback.close}
+            onIndexChange={playback.setCurrentIndex}
+            isShuffled={playback.isShuffled}
+            onShuffle={playback.toggleShuffle}
           />
         )}
       </div>

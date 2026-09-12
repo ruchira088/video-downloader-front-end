@@ -34,10 +34,10 @@ export default defineConfig({
       // achieves, so a change that drops coverage fails CI. Raise them when real coverage
       // climbs; never lower them to make a build pass.
       thresholds: {
-        statements: 95,
-        branches: 90,
-        functions: 94,
-        lines: 96
+        statements: 96,
+        branches: 91,
+        functions: 96,
+        lines: 97
       }
     }
   },
