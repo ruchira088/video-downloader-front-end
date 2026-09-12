@@ -1,5 +1,6 @@
 import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
-import { LightMode, DarkMode } from "@mui/icons-material"
+import LightMode from "@mui/icons-material/LightMode"
+import DarkMode from "@mui/icons-material/DarkMode"
 import { Theme } from "~/models/ApplicationConfiguration"
 import QuickSettingsButton from "./QuickSettingsButton"
 

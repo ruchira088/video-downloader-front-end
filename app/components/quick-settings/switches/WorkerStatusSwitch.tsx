@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react"
 import { WorkerStatus } from "~/models/WorkerStatus"
 import { fetchWorkerStatus, updateWorkerStatus } from "~/services/scheduling/SchedulingService"
-import { PlayCircle, PauseCircle } from "@mui/icons-material"
+import PlayCircle from "@mui/icons-material/PlayCircle"
+import PauseCircle from "@mui/icons-material/PauseCircle"
 import QuickSettingsButton from "./QuickSettingsButton"
 import { None, type Option, Some } from "~/types/Option"
 

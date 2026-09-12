@@ -1,5 +1,6 @@
 import React from "react"
-import { VisibilityOff, Visibility } from "@mui/icons-material"
+import VisibilityOff from "@mui/icons-material/VisibilityOff"
+import Visibility from "@mui/icons-material/Visibility"
 import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
 import QuickSettingsButton from "./QuickSettingsButton"
 

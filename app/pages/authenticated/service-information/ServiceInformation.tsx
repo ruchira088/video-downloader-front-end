@@ -20,6 +20,7 @@ import PublicIcon from "@mui/icons-material/Public"
 import ImageIcon from "@mui/icons-material/Image"
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary"
 import FolderIcon from "@mui/icons-material/Folder"
+import Replay from "@mui/icons-material/Replay"
 import { None, type Option, Some } from "~/types/Option"
 import Helmet from "~/components/helmet/Helmet"
 import { DateTime, Duration } from "luxon"
@@ -33,7 +34,6 @@ import {
 } from "~/models/HealthCheck"
 import classNames from "classnames"
 import Timestamp from "~/components/timestamp/Timestamp"
-import { Replay } from "@mui/icons-material"
 
 interface ServiceInformationItem {
   readonly label: string
