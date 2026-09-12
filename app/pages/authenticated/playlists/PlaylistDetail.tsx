@@ -44,6 +44,7 @@ import EditableLabel from "~/components/editable-label/EditableLabel"
 import PlaylistVideoCard from "./components/PlaylistVideoCard"
 import VideoSearchPanel from "./components/VideoSearchPanel"
 import PlaylistPlayer from "./components/PlaylistPlayer"
+import DeletePlaylistDialog from "./components/DeletePlaylistDialog"
 import type { Route } from "./+types/PlaylistDetail"
 
 import styles from "./PlaylistDetail.module.scss"
@@ -74,6 +75,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
   const [isShuffled, setIsShuffled] = useState(false)
   const [shuffledVideos, setShuffledVideos] = useState<Video[]>([])
   const [showAddVideos, setShowAddVideos] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isUploadingAlbumArt, setIsUploadingAlbumArt] = useState(false)
 
   const sensors = useSensors(
@@ -185,13 +187,11 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
   }
 
   const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this playlist?")) {
-      try {
-        await deletePlaylist(playlistId)
-        void navigate("/playlists")
-      } catch (error) {
-        notifyError("Failed to delete the playlist", error)
-      }
+    try {
+      await deletePlaylist(playlistId)
+      void navigate("/playlists")
+    } catch (error) {
+      notifyError("Failed to delete the playlist", error)
     }
   }
 
@@ -313,7 +313,12 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
             <EditableLabel textValue={p.title} onUpdateText={handleUpdateTitle} />
           </div>
           <div className={styles.headerActions}>
-            <IconButton onClick={handleDelete} color="error" size="small" aria-label="Delete playlist">
+            <IconButton
+              onClick={() => setIsDeleteDialogOpen(true)}
+              color="error"
+              size="small"
+              aria-label="Delete playlist"
+            >
               <Delete />
             </IconButton>
           </div>
@@ -367,6 +372,13 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
             hidden
           />
         </div>
+
+        <DeletePlaylistDialog
+          isOpen={isDeleteDialogOpen}
+          playlist={p}
+          onClose={() => setIsDeleteDialogOpen(false)}
+          onDelete={handleDelete}
+        />
 
         {p.description.map(description => <p className={styles.description}>{description}</p>).toNullable()}
 

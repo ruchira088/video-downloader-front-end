@@ -114,7 +114,6 @@ beforeAll(() => {
 describe("PlaylistDetail", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.spyOn(window, "confirm").mockReturnValue(true)
     // The Add Videos panel paginates through searchVideos as soon as it mounts; without a
     // default the mock returns undefined and the panel's `.then` on it throws.
     mockSearchVideos.mockResolvedValue({ results: [], pageNumber: 0, pageSize: 50, searchTerm: None.of() })
@@ -247,7 +246,7 @@ describe("PlaylistDetail", () => {
       })
     })
 
-    test("should delete playlist when clicking delete button", async () => {
+    test("should delete playlist when the deletion is confirmed in the dialog", async () => {
       const user = userEvent.setup()
       mockFetchPlaylistById.mockResolvedValue(createMockPlaylist())
       mockDeletePlaylist.mockResolvedValue(createMockPlaylist())
@@ -258,15 +257,37 @@ describe("PlaylistDetail", () => {
         expect(screen.getByText("Test Playlist")).toBeInTheDocument()
       })
 
-      const deleteButtons = screen.getAllByRole("button")
-      const deleteButton = deleteButtons.find(btn => btn.querySelector('[data-testid="DeleteIcon"]'))
-      if (deleteButton) {
-        await user.click(deleteButton)
-      }
+      await user.click(screen.getByRole("button", { name: "Delete playlist" }))
+
+      expect(screen.getByText("Delete Playlist?")).toBeInTheDocument()
+      expect(mockDeletePlaylist).not.toHaveBeenCalled()
+
+      await user.click(screen.getByRole("button", { name: "Delete" }))
 
       await waitFor(() => {
         expect(mockDeletePlaylist).toHaveBeenCalledWith("playlist-123")
       })
+    })
+
+    test("should notify when deleting the playlist fails", async () => {
+      const user = userEvent.setup()
+      mockFetchPlaylistById.mockResolvedValue(createMockPlaylist())
+      mockDeletePlaylist.mockRejectedValue(new Error("Network error"))
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByText("Test Playlist")).toBeInTheDocument()
+      })
+
+      await user.click(screen.getByRole("button", { name: "Delete playlist" }))
+      await user.click(screen.getByRole("button", { name: "Delete" }))
+
+      await waitFor(() => {
+        expect(screen.getByRole("alert")).toHaveTextContent("Failed to delete the playlist")
+      })
+      // Still on the playlist page rather than navigated away
+      expect(screen.getByRole("button", { name: "Delete playlist" })).toBeInTheDocument()
     })
   })
 
@@ -297,9 +318,8 @@ describe("PlaylistDetail", () => {
   })
 
   describe("Delete Confirmation", () => {
-    test("should not delete playlist when confirm is cancelled", async () => {
+    test("should not delete playlist when the dialog is cancelled", async () => {
       const user = userEvent.setup()
-      vi.spyOn(window, "confirm").mockReturnValue(false)
       mockFetchPlaylistById.mockResolvedValue(createMockPlaylist())
 
       renderWithRouter()
@@ -308,12 +328,12 @@ describe("PlaylistDetail", () => {
         expect(screen.getByText("Test Playlist")).toBeInTheDocument()
       })
 
-      const deleteButtons = screen.getAllByRole("button")
-      const deleteButton = deleteButtons.find(btn => btn.querySelector('[data-testid="DeleteIcon"]'))
-      if (deleteButton) {
-        await user.click(deleteButton)
-      }
+      await user.click(screen.getByRole("button", { name: "Delete playlist" }))
+      await user.click(screen.getByRole("button", { name: "Cancel" }))
 
+      await waitFor(() => {
+        expect(screen.queryByText("Delete Playlist?")).not.toBeInTheDocument()
+      })
       expect(mockDeletePlaylist).not.toHaveBeenCalled()
     })
   })
