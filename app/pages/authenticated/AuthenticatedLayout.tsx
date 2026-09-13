@@ -4,6 +4,7 @@ import Header from "~/components/title-bar/Header"
 import { useRedirectOnAuth } from "~/pages/useRedirectOnAuth"
 import { LoadableComponent } from "~/components/hoc/loading/LoadableComponent"
 import { None, Some } from "~/types/Option"
+import styles from "./AuthenticatedLayout.module.scss"
 
 const AuthenticatedLayout = () => {
   const isVerified = useRedirectOnAuth(false)
@@ -17,7 +18,9 @@ const AuthenticatedLayout = () => {
           ? Some.of<ReactNode>(
             <>
               <Header />
-              <Outlet />
+              <div className={styles.content}>
+                <Outlet />
+              </div>
             </>
           )
           : None.of<ReactNode>()

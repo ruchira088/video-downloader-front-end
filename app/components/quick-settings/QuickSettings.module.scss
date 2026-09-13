@@ -3,3 +3,10 @@
   align-items: center;
   gap: 0.25em;
 }
+
+// Keep in step with MOBILE_MEDIA_QUERY in Navigator.tsx.
+@media (width <= 48em) {
+  .quickSettings {
+    gap: 0;
+  }
+}

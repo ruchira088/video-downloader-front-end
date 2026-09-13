@@ -16,11 +16,17 @@
   }
 }
 
-@media (width <= 35em) {
-  .header {
-    flex-direction: column;
+// Between the phone layout and ~1250px the icon tabs do not fit beside the logo and quick
+// settings, so they drop to a centred row of their own beneath them rather than wrapping
+// piecemeal.
+@media (48em < width <= 78em) {
+  .header > :nth-child(2) {
+    order: 1;
+    flex-basis: 100%;
+    justify-content: center;
   }
 }
+
 
 .headerLogo {
   display: flex;
@@ -45,4 +51,41 @@
   color: var(--text-color);
   font-size: 1.1em;
   font-weight: 600;
+}
+
+// Below this the Navigator becomes a fixed bottom bar, leaving the logo and quick settings
+// to share one row. Keep in step with MOBILE_MEDIA_QUERY in Navigator.tsx.
+@media (width <= 48em) {
+  .header {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 0.5em;
+
+    > :first-child {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    > :last-child {
+      flex: 0 0 auto;
+    }
+  }
+
+  // Compact enough for the logo, the wordmark and four buttons to share a 360px row;
+  // on anything narrower the wordmark ellipsises rather than the buttons wrapping.
+  .headerLogo {
+    min-width: 0;
+    gap: 0.5em;
+  }
+
+  .smallLogo {
+    width: 2.5em;
+    height: 2.5em;
+  }
+
+  .logoText {
+    font-size: 0.9375em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }

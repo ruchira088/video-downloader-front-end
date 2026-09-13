@@ -1,37 +1,111 @@
+// Inactive tabs sit back from the active one; the tokens only define the full text colour.
+$muted-text: color-mix(in srgb, var(--text-color) 62%, transparent);
+$hairline: color-mix(in srgb, var(--text-color) 14%, transparent);
+
+// Desktop: icon + label tabs, never squeezed. The logo and quick settings flex to fill the
+// header around this, so the tabs take exactly the width they need and never wrap.
 .navigator {
   display: flex;
-  flex: 1;
+  flex: 0 0 auto;
 }
 
 .navigatorTabs {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 1.5em;
+  gap: 0.125em;
 }
 
 .navigatorTab {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--text-color);
+  gap: 0.375em;
+  padding: 0.625em 0.625em;
+  font-size: 0.875em;
+  font-weight: 500;
+  color: $muted-text;
   cursor: pointer;
-  padding: 0.5em 0;
-  font-size: 0.9em;
   text-decoration: none;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.2s, color 0.2s;
+  white-space: nowrap;
+  transition: color 0.2s;
+
+  svg {
+    font-size: 1.125rem;
+  }
+
+  // The indicator is a child rather than a border so it can be inset to the label
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0.625em;
+    right: 0.625em;
+    bottom: 0;
+    height: 2px;
+    background: transparent;
+    transition: background-color 0.2s;
+  }
 
   &:hover:not(.isActive) {
     color: var(--primary-color);
-    border-bottom-color: color-mix(in srgb, var(--primary-color) 40%, transparent);
+
+    &::after {
+      background: color-mix(in srgb, var(--primary-color) 40%, transparent);
+    }
   }
 
   &.isActive {
     font-weight: 600;
     color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
+
+    &::after {
+      background: var(--primary-color);
+    }
+  }
+}
+
+// Mobile: a fixed bottom bar with the four primary pages and a "More" overflow menu.
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+  background-color: var(--card-background-color);
+  border-top: 1px solid $hairline;
+  box-shadow: var(--card-shadow);
+}
+
+.bottomBarTab {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0.625em 0 0.75em;
+  font-size: 0.6875em;
+  font-weight: 500;
+  font-family: inherit;
+  color: $muted-text;
+  text-decoration: none;
+  transition: color 0.2s;
+
+  svg {
+    font-size: 1.5rem;
+  }
+
+  &.isActive {
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+}
+
+.overflowMenuItem {
+  gap: 0.75em;
+
+  svg {
+    font-size: 1.25rem;
+    opacity: 0.8;
   }
 }
