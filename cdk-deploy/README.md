@@ -23,6 +23,11 @@ no enums, namespaces, parameter properties or runtime decorators.
 
 The package is declared `"type": "module"`, so `tsc` emits ESM under `module: NodeNext`.
 
+`react-app-cdk-deploy` is a git dependency (`github:ruchira088/react-app-cdk-deploy#v1`). npm 12
+refuses git dependencies by default (`allow-git=none`), so the checked-in `.npmrc` sets
+`allow-git=root`, which permits git dependencies declared in this `package.json` but still rejects
+any that a transitive dependency might introduce.
+
 ## Useful commands
 
 | Command | Description |
