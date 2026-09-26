@@ -10,7 +10,12 @@ vi.mock("~/services/http/HttpClient", () => ({
   },
 }))
 
+vi.mock("~/services/fallback/FallbackService", () => ({
+  enrolInFallback: vi.fn(),
+}))
+
 import { axiosClient } from "~/services/http/HttpClient"
+import { enrolInFallback } from "~/services/fallback/FallbackService"
 import {
   login,
   logout,
@@ -78,6 +83,22 @@ describe("AuthenticationService", () => {
       mockAxiosPost.mockRejectedValue(new Error("Network error"))
 
       await expect(login("test@example.com", "password")).rejects.toThrow("Network error")
+    })
+
+    test("should enrol the user in the fallback API once the main API accepts the credentials", async () => {
+      mockAxiosPost.mockResolvedValue({ data: mockTokenData })
+
+      await login("test@example.com", "password123")
+
+      expect(vi.mocked(enrolInFallback)).toHaveBeenCalledWith("test@example.com", "password123")
+    })
+
+    test("should not enrol the user in the fallback API when the main API rejects the credentials", async () => {
+      mockAxiosPost.mockRejectedValue(new Error("Request failed with status code 401"))
+
+      await expect(login("test@example.com", "wrong")).rejects.toThrow()
+
+      expect(vi.mocked(enrolInFallback)).not.toHaveBeenCalled()
     })
 
     test("should persist the token without the secret", async () => {

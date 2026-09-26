@@ -93,6 +93,7 @@ Build-time environment variables are auto-generated via `scripts/env-vars.mjs`:
 | Variable | Description |
 |----------|-------------|
 | `VITE_API_URL` | Backend API endpoint |
+| `VITE_FALLBACK_API_URL` | Fallback API endpoint, for local development (see below) |
 | `VITE_GIT_BRANCH` | Current git branch |
 | `VITE_GIT_COMMIT` | Git commit hash |
 | `VITE_BUILD_TIMESTAMP` | Build timestamp |
@@ -105,6 +106,17 @@ The application determines the backend API URL through:
 2. **Environment Variable** - `VITE_API_URL`
 3. **Host Mapping** - Predefined domain mappings
 4. **Auto-inference** - `${protocol}//api.${host}`
+
+### Fallback API
+
+After every successful sign-in, the app sends the same email and password to the fallback API's `POST /user` in the
+background (`app/services/fallback/FallbackService.ts`). The fallback serves users while the main API is down, but can
+only create an account by checking credentials against the main API, so this enrols each user ahead of time and keeps
+their name, role and password up to date there. It never delays or fails a sign-in.
+
+The fallback API is `https://fallback-api.video.ruchij.com` in production and
+`https://staging.fallback-api.video.ruchij.com` for staging and branch deployments. Local development calls none,
+unless `VITE_FALLBACK_API_URL` is set.
 
 ### Application Settings
 

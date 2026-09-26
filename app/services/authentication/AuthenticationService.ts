@@ -1,4 +1,5 @@
 import { axiosClient } from "~/services/http/HttpClient"
+import { enrolInFallback } from "~/services/fallback/FallbackService"
 import { AuthenticationToken, StoredAuthenticationToken } from "~/models/AuthenticationToken"
 import { type KeySpace, LocalKeyValueStore } from "~/services/kv-store/KeyValueStore"
 import { User } from "~/models/User"
@@ -43,6 +44,9 @@ export const login = async (email: string, password: string): Promise<Authentica
   // a "logged in" marker and the secret would be gratuitous XSS-stealable material.
   const { secret: _secret, ...storedAuthenticationToken } = authenticationToken
   authenticationKeyValueStore.put(AuthenticationKey, storedAuthenticationToken)
+
+  // In the background: signing in never waits for the fallback, nor fails because of it
+  void enrolInFallback(email, password)
 
   return authenticationToken
 }
