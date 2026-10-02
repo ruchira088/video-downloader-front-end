@@ -1,14 +1,14 @@
-import SimpleGit from "simple-git"
+import { simpleGit } from "simple-git"
 import { writeFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { DateTime } from "luxon"
 
 const getGitInformation = async () => {
   try {
-    const simpleGit = SimpleGit()
+    const git = simpleGit()
 
-    const gitBranch = await simpleGit.branch()
-    const gitCommitHash = await simpleGit.revparse(["--short", "HEAD"])
+    const gitBranch = await git.branch()
+    const gitCommitHash = await git.revparse(["--short", "HEAD"])
 
     return { branch: gitBranch.current, commit: gitCommitHash }
   } catch (error) {
