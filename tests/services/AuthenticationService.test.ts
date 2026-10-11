@@ -151,7 +151,10 @@ describe("AuthenticationService", () => {
 
       await getAuthenticatedUser()
 
-      expect(mockAxiosGet).toHaveBeenCalledWith("/authentication/user", { skipUnauthenticatedRedirect: true })
+      expect(mockAxiosGet).toHaveBeenCalledWith(
+        "/authentication/user",
+        { skipUnauthenticatedRedirect: true, timeout: 15_000 }
+      )
     })
 
     test("should return parsed user", async () => {

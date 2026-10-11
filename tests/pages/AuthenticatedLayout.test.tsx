@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import AuthenticatedLayout from "~/pages/authenticated/AuthenticatedLayout"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
@@ -14,6 +14,22 @@ const createMockToken = (expiresAt: DateTime = DateTime.now().plus({ hours: 1 })
   })
 
 const createMockUser = () => buildUser()
+
+const httpError = (status: number) =>
+  Object.assign(new Error("Request failed"), { isAxiosError: true, response: { status } })
+
+const renderLayout = () =>
+  render(
+    <RouterProvider
+      router={createMemoryRouter([
+        {
+          path: "/",
+          element: <AuthenticatedLayout />,
+          children: [{ index: true, element: <div data-testid="child">Child Content</div> }],
+        },
+      ])}
+    />
+  )
 
 const mockNavigate = vi.fn()
 
@@ -95,7 +111,8 @@ describe("AuthenticatedLayout", () => {
 
     render(<RouterProvider router={router} />)
 
-    expect(screen.getByRole("progressbar")).toBeInTheDocument()
+    expect(screen.getByRole("progressbar", { name: "Loading" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Video Downloader" })).toBeInTheDocument()
     expect(screen.queryByTestId("header")).not.toBeInTheDocument()
     expect(screen.queryByTestId("child")).not.toBeInTheDocument()
   })
@@ -159,11 +176,11 @@ describe("AuthenticatedLayout", () => {
     })
   })
 
-  test("should redirect to sign-in when getAuthenticatedUser fails", async () => {
+  test("should redirect to sign-in when the session check returns 401", async () => {
     const { getAuthenticationToken, getAuthenticatedUser, removeAuthenticationToken } =
       await import("~/services/authentication/AuthenticationService")
     vi.mocked(getAuthenticationToken).mockReturnValue(Some.of(createMockToken()))
-    vi.mocked(getAuthenticatedUser).mockRejectedValue(new Error("Auth failed"))
+    vi.mocked(getAuthenticatedUser).mockRejectedValue(httpError(401))
 
     const router = createMemoryRouter([
       {
@@ -241,5 +258,47 @@ describe("AuthenticatedLayout", () => {
       expect(getAuthenticationToken).toHaveBeenCalled()
       expect(getAuthenticatedUser).toHaveBeenCalled()
     })
+  })
+
+  test.each([
+    ["a network error", new Error("Network Error")],
+    ["a server error", httpError(503)],
+  ])("should keep the token and show a retry screen when the session check fails with %s", async (_, error) => {
+    const { getAuthenticationToken, getAuthenticatedUser, removeAuthenticationToken } =
+      await import("~/services/authentication/AuthenticationService")
+    vi.mocked(getAuthenticationToken).mockReturnValue(Some.of(createMockToken()))
+    vi.mocked(getAuthenticatedUser).mockRejectedValue(error)
+
+    renderLayout()
+
+    expect(await screen.findByRole("heading", { name: "Unable to connect" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument()
+    expect(removeAuthenticationToken).not.toHaveBeenCalled()
+    expect(mockNavigate).not.toHaveBeenCalled()
+    expect(screen.queryByTestId("header")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("child")).not.toBeInTheDocument()
+  })
+
+  test("should re-check the session and render the content when retry succeeds", async () => {
+    const { getAuthenticationToken, getAuthenticatedUser } = await import(
+      "~/services/authentication/AuthenticationService"
+    )
+    vi.mocked(getAuthenticationToken).mockReturnValue(Some.of(createMockToken()))
+    vi.mocked(getAuthenticatedUser).mockRejectedValueOnce(new Error("Network Error"))
+
+    renderLayout()
+
+    const retryButton = await screen.findByRole("button", { name: "Retry" })
+    let resolveUser: (user: ReturnType<typeof createMockUser>) => void = () => {}
+    vi.mocked(getAuthenticatedUser).mockReturnValueOnce(new Promise(resolve => { resolveUser = resolve }))
+    fireEvent.click(retryButton)
+
+    expect(screen.getByRole("progressbar", { name: "Loading" })).toBeInTheDocument()
+
+    resolveUser(createMockUser())
+
+    expect(await screen.findByTestId("child")).toBeInTheDocument()
+    expect(screen.getByTestId("header")).toBeInTheDocument()
+    expect(getAuthenticatedUser).toHaveBeenCalledTimes(2)
   })
 })

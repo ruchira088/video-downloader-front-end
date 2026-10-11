@@ -132,6 +132,11 @@ body {
   background-color: #d80027;
   color: #fff;
   font-weight: 600;
+  // Also styles the Retry <button> on the authenticated layout's unreachable screen.
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .error-stack {

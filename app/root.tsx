@@ -5,7 +5,7 @@ import type { Route } from "./+types/root"
 import "./index.scss"
 import { ApplicationConfigurationProvider } from "~/providers/ApplicationConfigurationProvider"
 import { NotificationProvider } from "~/providers/NotificationProvider"
-import smallLogo from "~/images/small-logo.svg"
+import { LoadingScreen } from "~/components/loading/LoadingScreen"
 import { initSentry } from "~/services/Sentry"
 
 // Initialize at module scope so module-evaluation, hydration, and first-render errors are
@@ -63,20 +63,7 @@ export default function App() {
 }
 
 export function HydrateFallback() {
-  return (
-    <div className="loading-screen">
-      <div className="loading-content">
-        <div className="loading-logo-container">
-          <img src={smallLogo} alt="Video Downloader" className="loading-logo" />
-          <div className="loading-ring"></div>
-        </div>
-        <h1 className="loading-title">Video Downloader</h1>
-        <div className="loading-bar-container">
-          <div className="loading-bar"></div>
-        </div>
-      </div>
-    </div>
-  )
+  return <LoadingScreen />
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

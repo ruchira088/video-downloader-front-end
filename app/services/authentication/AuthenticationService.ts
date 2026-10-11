@@ -51,10 +51,16 @@ export const login = async (email: string, password: string): Promise<Authentica
   return authenticationToken
 }
 
+const SESSION_CHECK_TIMEOUT_MS = 15_000
+
 export const getAuthenticatedUser = async (): Promise<User> => {
   // A 401 here is an expected answer ("not signed in") handled by the caller,
-  // so the interceptor must not hard-redirect to the sign-in page.
-  const response = await axiosClient.get("/authentication/user", { skipUnauthenticatedRedirect: true })
+  // so the interceptor must not hard-redirect to the sign-in page. The timeout bounds how long
+  // the authenticated layout's loading screen can wait on a stalled connection.
+  const response = await axiosClient.get(
+    "/authentication/user",
+    { skipUnauthenticatedRedirect: true, timeout: SESSION_CHECK_TIMEOUT_MS }
+  )
   return zodParse(User, response.data)
 }
 
