@@ -25,6 +25,6 @@
     "react-app-cdk-deploy": "github:ruchira088/react-app-cdk-deploy#v1"
   },
   "allowScripts": {
-    "react-app-cdk-deploy@1.1.8": true
+    "react-app-cdk-deploy@1.1.9": true
   }
 }
