@@ -46,6 +46,7 @@ const DraggableSearchVideoCard: FC<DraggableSearchVideoCardProps> = ({
         color="primary"
         size="small"
         className={styles.addButton}
+        aria-label={`Add ${title} to playlist`}
       >
         <Add />
       </IconButton>

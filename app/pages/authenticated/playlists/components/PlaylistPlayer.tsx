@@ -67,7 +67,7 @@ const PlaylistPlayer: FC<PlaylistPlayerProps> = ({
             </span>
             <h3 className={styles.title}>{title}</h3>
           </div>
-          <IconButton onClick={onClose} size="small">
+          <IconButton onClick={onClose} size="small" aria-label="Close player">
             <Close />
           </IconButton>
         </div>
@@ -90,12 +90,16 @@ const PlaylistPlayer: FC<PlaylistPlayerProps> = ({
             onClick={onPrevious}
             disabled={currentIndex === 0}
             size="large"
+            aria-label="Previous video"
           >
             <SkipPrevious fontSize="large" />
           </IconButton>
           <IconButton
             onClick={onShuffle}
             size="large"
+            aria-label="Shuffle"
+            // A toggle, so assistive tech announces whether shuffle is on rather than just "Shuffle".
+            aria-pressed={isShuffled}
             color={isShuffled ? "primary" : "default"}
             className={classNames({ [styles.shuffleActive]: isShuffled })}
           >
@@ -105,6 +109,7 @@ const PlaylistPlayer: FC<PlaylistPlayerProps> = ({
             onClick={onNext}
             disabled={currentIndex >= videos.length - 1}
             size="large"
+            aria-label="Next video"
           >
             <SkipNext fontSize="large" />
           </IconButton>

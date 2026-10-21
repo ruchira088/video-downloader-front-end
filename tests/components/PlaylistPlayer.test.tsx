@@ -101,7 +101,7 @@ describe("PlaylistPlayer", () => {
       const onClose = vi.fn()
       render(<PlaylistPlayer {...defaultProps} onClose={onClose} />)
 
-      const closeButton = screen.getAllByRole("button")[0]
+      const closeButton = screen.getByRole("button", { name: "Close player" })
       await user.click(closeButton)
 
       expect(onClose).toHaveBeenCalled()
@@ -112,7 +112,7 @@ describe("PlaylistPlayer", () => {
       const onShuffle = vi.fn()
       render(<PlaylistPlayer {...defaultProps} onShuffle={onShuffle} />)
 
-      const shuffleButton = screen.getAllByRole("button")[2]
+      const shuffleButton = screen.getByRole("button", { name: "Shuffle" })
       await user.click(shuffleButton)
 
       expect(onShuffle).toHaveBeenCalled()
@@ -123,7 +123,7 @@ describe("PlaylistPlayer", () => {
       const onNext = vi.fn()
       render(<PlaylistPlayer {...defaultProps} onNext={onNext} />)
 
-      const nextButton = screen.getAllByRole("button")[3]
+      const nextButton = screen.getByRole("button", { name: "Next video" })
       await user.click(nextButton)
 
       expect(onNext).toHaveBeenCalled()
@@ -134,10 +134,20 @@ describe("PlaylistPlayer", () => {
       const onPrevious = vi.fn()
       render(<PlaylistPlayer {...defaultProps} currentIndex={1} onPrevious={onPrevious} />)
 
-      const prevButton = screen.getAllByRole("button")[1]
+      const prevButton = screen.getByRole("button", { name: "Previous video" })
       await user.click(prevButton)
 
       expect(onPrevious).toHaveBeenCalled()
+    })
+  })
+
+  describe("Accessibility", () => {
+    test("should announce whether shuffle is on", () => {
+      const { rerender } = render(<PlaylistPlayer {...defaultProps} isShuffled={false} />)
+      expect(screen.getByRole("button", { name: "Shuffle" })).toHaveAttribute("aria-pressed", "false")
+
+      rerender(<PlaylistPlayer {...defaultProps} isShuffled={true} />)
+      expect(screen.getByRole("button", { name: "Shuffle" })).toHaveAttribute("aria-pressed", "true")
     })
   })
 

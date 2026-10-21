@@ -100,7 +100,7 @@ describe("DraggableSearchVideoCard", () => {
         />
       )
 
-      expect(screen.getByRole("button")).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Add Test Video Title to playlist" })).toBeInTheDocument()
     })
   })
 
