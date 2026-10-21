@@ -5,6 +5,7 @@ import VideoSearchPanel from "~/pages/authenticated/playlists/components/VideoSe
 import React from "react"
 import { buildVideo } from "../fixtures"
 import { None } from "~/types/Option"
+import { triggerIntersection } from "../helpers"
 
 vi.mock("~/services/video/VideoService", () => ({
   searchVideos: vi.fn(),
@@ -211,6 +212,35 @@ describe("VideoSearchPanel", () => {
       expect(screen.getByRole("button", { name: /retry/i })).toBeInTheDocument()
 
       consoleSpy.mockRestore()
+    })
+  })
+
+  describe("Pagination", () => {
+    test("should not show a video twice when a later page repeats it", async () => {
+      const firstPage = Array.from({ length: 20 }, (_, i) => buildVideo({ id: `video-${i}`, title: `Video ${i}` }))
+      mockSearchVideos
+        .mockResolvedValueOnce({ results: firstPage, pageNumber: 0, pageSize: 20, searchTerm: None.of() })
+        .mockResolvedValueOnce({
+          // A newly downloaded video shifted the offsets, so the last video of page 0 repeats.
+          results: [buildVideo({ id: "video-19", title: "Video 19" }), buildVideo({ id: "video-20", title: "Video 20" })],
+          pageNumber: 1,
+          pageSize: 20,
+          searchTerm: None.of(),
+        })
+
+      render(<VideoSearchPanel onVideoSelect={mockOnVideoSelect} existingVideoIds={[]} />)
+
+      await act(async () => { vi.advanceTimersByTime(300) })
+      await waitFor(() => {
+        expect(screen.getByText("Video 19")).toBeInTheDocument()
+      })
+
+      await triggerIntersection()
+
+      await waitFor(() => {
+        expect(screen.getByText("Video 20")).toBeInTheDocument()
+      })
+      expect(screen.getAllByText("Video 19")).toHaveLength(1)
     })
   })
 })

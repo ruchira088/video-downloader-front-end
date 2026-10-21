@@ -337,6 +337,61 @@ describe("ServiceInformation", () => {
     })
   })
 
+  test("should not let a slow polled health check overwrite a newer manual result", async () => {
+    const { performHealthCheck } = await import("~/services/health/HealthCheckService")
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    let resolvePolledCheck: (healthCheck: ReturnType<typeof createMockHealthCheck>) => void = () => {}
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByText("Database")).toBeInTheDocument()
+    })
+
+    vi.mocked(performHealthCheck)
+      .mockReturnValueOnce(new Promise((resolve) => { resolvePolledCheck = resolve }))
+      .mockResolvedValueOnce(createMockHealthCheck(false))
+    await act(async () => { vi.advanceTimersByTime(30_000) })
+    expect(performHealthCheck).toHaveBeenCalledTimes(2)
+
+    await user.click(screen.getByTestId("ReplayIcon").closest("button")!)
+    await waitFor(() => {
+      expect(screen.getByText("Unhealthy")).toBeInTheDocument()
+    })
+
+    await act(async () => resolvePolledCheck(createMockHealthCheck(true)))
+
+    expect(screen.getByText("Unhealthy")).toBeInTheDocument()
+  })
+
+  test("should still show a slow polled result when the newer manual check fails", async () => {
+    const { performHealthCheck } = await import("~/services/health/HealthCheckService")
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    let resolvePolledCheck: (healthCheck: ReturnType<typeof createMockHealthCheck>) => void = () => {}
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByText("Database")).toBeInTheDocument()
+    })
+    expect(screen.queryByText("Unhealthy")).not.toBeInTheDocument()
+
+    vi.mocked(performHealthCheck)
+      .mockReturnValueOnce(new Promise((resolve) => { resolvePolledCheck = resolve }))
+      .mockRejectedValueOnce(new Error("health check failed"))
+    await act(async () => { vi.advanceTimersByTime(30_000) })
+    await user.click(screen.getByTestId("ReplayIcon").closest("button")!)
+    await waitFor(() => {
+      expect(consoleError).toHaveBeenCalledWith("Failed to perform the health check", expect.any(Error))
+    })
+
+    await act(async () => resolvePolledCheck(createMockHealthCheck(false)))
+
+    expect(screen.getByText("Unhealthy")).toBeInTheDocument()
+    consoleError.mockRestore()
+  })
+
   test("should keep the last result and re-enable the refresh when a health check fails", async () => {
     const { performHealthCheck } = await import("~/services/health/HealthCheckService")
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})

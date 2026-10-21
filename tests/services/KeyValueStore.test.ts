@@ -179,6 +179,34 @@ describe("LocalKeyValueStore", () => {
     })
   })
 
+  describe("when storage is unavailable", () => {
+    const blocked = () => {
+      throw new DOMException("The operation is insecure.", "SecurityError")
+    }
+
+    test("should read as empty rather than throw", () => {
+      localStorageMock.getItem.mockImplementationOnce(blocked)
+
+      expect(store.get("key1").isEmpty()).toBe(true)
+    })
+
+    test("should report a failed write rather than throw", () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      localStorageMock.setItem.mockImplementationOnce(blocked)
+
+      expect(() => store.put("key1", { name: "test", value: 1 })).not.toThrow()
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Unable to write TestStore-key1 to local storage", expect.any(Error))
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    test("should not throw when removing", () => {
+      localStorageMock.removeItem.mockImplementationOnce(blocked)
+
+      expect(() => store.remove("key1")).not.toThrow()
+    })
+  })
+
   describe("put-get round trip", () => {
     test("should retrieve exactly what was stored", () => {
       const original = { name: "round-trip", value: 123 }

@@ -9,6 +9,7 @@ import { buildAuthenticationToken } from "../fixtures"
 // Mock the authentication service
 vi.mock("~/services/authentication/AuthenticationService", () => ({
   login: vi.fn(),
+  REDIRECT_QUERY_PARAMETER: "redirect",
 }))
 
 import { login } from "~/services/authentication/AuthenticationService"
@@ -28,6 +29,22 @@ describe("LoginForm", () => {
   })
 
   describe("Initial Render", () => {
+    test("should keep the return page on the link to sign up", () => {
+      render(
+        <MemoryRouter initialEntries={["/sign-in?redirect=%2Fvideo%2Fabc"]}>
+          <LoginForm onAuthenticate={mockOnAuthenticate} />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByRole("link", { name: /sign up/i })).toHaveAttribute("href", "/sign-up?redirect=%2Fvideo%2Fabc")
+    })
+
+    test("should link to sign up without a return page when there is none", () => {
+      renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
+
+      expect(screen.getByRole("link", { name: /sign up/i })).toHaveAttribute("href", "/sign-up")
+    })
+
     test("should render email input", () => {
       renderWithRouter(<LoginForm onAuthenticate={mockOnAuthenticate} />)
 

@@ -12,6 +12,7 @@ vi.mock("~/services/user/UserService", () => ({
 
 vi.mock("~/services/authentication/AuthenticationService", () => ({
   login: vi.fn(),
+  REDIRECT_QUERY_PARAMETER: "redirect",
 }))
 
 import { createUser } from "~/services/user/UserService"
@@ -327,6 +328,28 @@ describe("SignupForm", () => {
   })
 
   describe("Successful Signup", () => {
+    test("should tell the user to sign in when the account was created but signing in failed", async () => {
+      const user = userEvent.setup()
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      mockCreateUser.mockResolvedValue(mockUser)
+      mockLogin.mockRejectedValue(new Error("Network Error"))
+      renderWithRouter(<SignupForm onSignup={mockOnSignup} />)
+
+      await user.type(screen.getByLabelText("First Name"), "John")
+      await user.type(screen.getByLabelText("Last Name"), "Doe")
+      await user.type(screen.getByLabelText("Email"), "john@example.com")
+      await user.type(screen.getByLabelText("Password"), "password123")
+      await user.type(screen.getByLabelText("Confirm Password"), "password123")
+      await user.click(screen.getByRole("button", { name: /sign up/i }))
+
+      expect(await screen.findByText(/Your account was created, but signing in failed\. Please sign in\./))
+        .toBeInTheDocument()
+      expect(screen.queryByText("Network Error")).not.toBeInTheDocument()
+      expect(mockOnSignup).not.toHaveBeenCalled()
+
+      consoleErrorSpy.mockRestore()
+    })
+
     test("should call createUser and login on successful signup", async () => {
       const user = userEvent.setup()
       mockCreateUser.mockResolvedValue(mockUser)

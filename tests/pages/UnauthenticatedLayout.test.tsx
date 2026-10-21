@@ -29,6 +29,7 @@ vi.mock("~/services/authentication/AuthenticationService", () => ({
   getAuthenticationToken: vi.fn(),
   getAuthenticatedUser: vi.fn(),
   removeAuthenticationToken: vi.fn(),
+  REDIRECT_QUERY_PARAMETER: "redirect",
 }))
 
 describe("UnauthenticatedLayout", () => {
@@ -105,6 +106,27 @@ describe("UnauthenticatedLayout", () => {
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith("/")
     })
+  })
+
+  test.each([
+    ["/video/abc?timestamp=30", "/video/abc?timestamp=30"],
+    ["https://evil.example", "/"],
+  ])("should honour a safe ?redirect=%s when already authenticated", async (redirect, expected) => {
+    const { getAuthenticationToken, getAuthenticatedUser } = await import("~/services/authentication/AuthenticationService")
+    vi.mocked(getAuthenticationToken).mockReturnValue(Some.of(createMockToken()))
+    vi.mocked(getAuthenticatedUser).mockResolvedValue(createMockUser())
+    window.history.pushState({}, "", `/sign-in?redirect=${encodeURIComponent(redirect)}`)
+
+    const router = createMemoryRouter([
+      { path: "/", element: <UnauthenticatedLayout />, children: [{ index: true, element: <div>Child</div> }] },
+    ])
+
+    render(<RouterProvider router={router} />)
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(expected)
+    })
+    window.history.pushState({}, "", "/")
   })
 
   test("should stay on page when token exists but getAuthenticatedUser fails", async () => {

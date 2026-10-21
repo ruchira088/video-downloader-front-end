@@ -230,6 +230,8 @@ const ServiceInformation = () => {
   const [frontendInformation, setFrontendInformation] = useState(frontendServiceInformation(import.meta.env))
   const [healthCheckDetails, setHealthCheckDetails] = useState<Option<HealthCheckDetails>>(None.of())
   const serverTimeOffset = useRef<Duration>(Duration.fromMillis(0))
+  const latestHealthCheckRequest = useRef(0)
+  const shownHealthCheckRequest = useRef(0)
 
   const fetchBackendInformation = async () => {
     try {
@@ -244,8 +246,19 @@ const ServiceInformation = () => {
   // Absorbs its own failure: it runs from a poll and a button as well as on mount, and a failed
   // check should leave the last good result on screen rather than reject unhandled.
   const fetchHealthCheckDetails = async () => {
+    // The poll and the refresh button can overlap. A result older than the one on screen is
+    // dropped, but one whose newer successor failed still counts.
+    const healthCheckRequest = ++latestHealthCheckRequest.current
+
     try {
       const healthCheck = await performHealthCheck()
+
+      if (healthCheckRequest < shownHealthCheckRequest.current) {
+        return
+      }
+
+      shownHealthCheckRequest.current = healthCheckRequest
+
       setHealthCheckDetails(Some.of({
         ...healthCheck,
         timestamp: DateTime.now()

@@ -148,7 +148,7 @@ describe("CreatePlaylistDialog", () => {
     fireEvent.click(createButton)
 
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalled()
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to create the playlist", expect.any(Error))
     })
 
     expect(onPlaylistCreated).not.toHaveBeenCalled()

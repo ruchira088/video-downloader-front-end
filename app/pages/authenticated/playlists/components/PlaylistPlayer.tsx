@@ -37,13 +37,17 @@ const PlaylistPlayer: FC<PlaylistPlayerProps> = ({
   const { safeMode } = useApplicationConfiguration()
   const videoRef = useRef<HTMLVideoElement>(null)
   const currentVideo = videos[currentIndex]
+  const currentVideoId = currentVideo?.videoMetadata.id
 
+  // Keyed on the video rather than the index: a queue edit can put a different video at the
+  // same index (which needs a reload), or move the playing video to a new one (which must not
+  // restart it). Changing <source> alone doesn't make the element load the new file.
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.load()
       videoRef.current.play().catch(() => {})
     }
-  }, [currentIndex])
+  }, [currentVideoId])
 
   if (!currentVideo) return null
 

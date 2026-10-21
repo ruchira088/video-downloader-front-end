@@ -1,4 +1,4 @@
-import React, { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import React, { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { None, Option, Some } from "~/types/Option"
 import { localStorageConfigurationService } from "~/services/config/ConfigurationService"
 import { type ApplicationConfiguration, Theme } from "~/models/ApplicationConfiguration"
@@ -20,16 +20,19 @@ export const ApplicationConfigurationContext =
 
 export const ApplicationConfigurationProvider: FC<ApplicationConfigurationContextProps> = props => {
   const [applicationConfiguration, setApplicationConfiguration] = useState<Option<ApplicationConfiguration>>(None.of())
+  // Only a choice the user made is saved. Saving the loaded default would pin the OS colour
+  // scheme of the first visit, so later changes to it would be ignored.
+  const hasUserChanges = useRef(false)
 
-  const setSafeMode = useCallback((safeMode: boolean) => setApplicationConfiguration((prev) => prev.map(config => ({
-    ...config,
-    safeMode
-  }))), [])
+  const setSafeMode = useCallback((safeMode: boolean) => {
+    hasUserChanges.current = true
+    setApplicationConfiguration((prev) => prev.map(config => ({ ...config, safeMode })))
+  }, [])
 
-  const setTheme = useCallback(
-    (theme: Theme) => setApplicationConfiguration((prev) => prev.map(config => ({ ...config, theme }))),
-    []
-  )
+  const setTheme = useCallback((theme: Theme) => {
+    hasUserChanges.current = true
+    setApplicationConfiguration((prev) => prev.map(config => ({ ...config, theme })))
+  }, [])
 
   // Rebuilding the MUI theme, and the context value, on every render would re-render every
   // consumer of either for changes that have nothing to do with configuration.
@@ -60,7 +63,10 @@ export const ApplicationConfigurationProvider: FC<ApplicationConfigurationContex
   useEffect(() => {
     void applicationConfiguration.forEach(appConfig => {
       document.body.setAttribute("data-theme", appConfig.theme)
-      void localStorageConfigurationService.setApplicationConfiguration(appConfig)
+
+      if (hasUserChanges.current) {
+        void localStorageConfigurationService.setApplicationConfiguration(appConfig)
+      }
     })
   }, [applicationConfiguration])
 

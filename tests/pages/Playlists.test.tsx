@@ -191,6 +191,27 @@ describe("Playlists", () => {
       expect(screen.getByText("Playlist 1")).toBeInTheDocument()
     })
 
+    test("should not duplicate a playlist that a later page repeats", async () => {
+      // Prepending a created playlist shifts the server's offsets, so the next page repeats the
+      // last playlist of the previous one.
+      mockFetchPlaylists
+        .mockResolvedValueOnce(playlistPage(1, 50))
+        .mockResolvedValueOnce(playlistPage(50, 10))
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByText("Playlist 1")).toBeInTheDocument()
+      })
+
+      await triggerIntersection()
+
+      await waitFor(() => {
+        expect(screen.getByText("Playlist 59")).toBeInTheDocument()
+      })
+      expect(screen.getAllByText("Playlist 50")).toHaveLength(1)
+    })
+
     test("should show the end message once every playlist has been loaded", async () => {
       mockFetchPlaylists.mockResolvedValue(playlistPage(1, 10))
 

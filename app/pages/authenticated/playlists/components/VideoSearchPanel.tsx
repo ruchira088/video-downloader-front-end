@@ -3,7 +3,7 @@ import { Video } from "~/models/Video"
 import { searchVideos } from "~/services/video/VideoService"
 import { SortBy } from "~/models/SortBy"
 import { Ordering } from "~/models/Ordering"
-import { None, Some, type Option } from "~/types/Option"
+import { None, type Option } from "~/types/Option"
 import { Duration } from "luxon"
 import { type DurationRange } from "~/models/DurationRange"
 import { type Range } from "~/models/Range"
@@ -42,7 +42,8 @@ const VideoSearchPanel: FC<VideoSearchPanelProps> = ({ onVideoSelect, existingVi
   const [sizeRange, setSizeRange] = useState<Range<number>>(DEFAULT_SIZE_RANGE)
   const [videoSites, setVideoSites] = useState<string[]>([])
   const [videos, setVideos] = useState<Video[]>([])
-  const [addingVideoId, setAddingVideoId] = useState<Option<string>>(None.of())
+  // Adds queue behind one another, so several can be pending at once.
+  const [addingVideoIds, setAddingVideoIds] = useState<ReadonlySet<string>>(new Set())
 
   const debouncedSearchTerm = useDebouncedValue(searchTerm, SEARCH_DEBOUNCE_MS)
 
@@ -60,7 +61,13 @@ const VideoSearchPanel: FC<VideoSearchPanelProps> = ({ onVideoSelect, existingVi
         signal
       ).then(result => result.results),
     (results, pageNumber) =>
-      setVideos(videos => (pageNumber === 0 ? results : videos.concat(results))),
+      setVideos(videos => {
+        if (pageNumber === 0) return results
+
+        // Offsets shift as downloads complete, so a later page can repeat a video already shown.
+        const shownIds = new Set(videos.map(video => video.videoMetadata.id))
+        return videos.concat(results.filter(video => !shownIds.has(video.videoMetadata.id)))
+      }),
     {
       pageSize: PAGE_SIZE,
       resetDeps: [debouncedSearchTerm, sortBy, ordering, durationRange, sizeRange, videoSites]
@@ -68,11 +75,15 @@ const VideoSearchPanel: FC<VideoSearchPanelProps> = ({ onVideoSelect, existingVi
   )
 
   const handleAddVideo = async (videoId: string) => {
-    setAddingVideoId(Some.of(videoId))
+    setAddingVideoIds(ids => new Set(ids).add(videoId))
     try {
       await onVideoSelect(videoId)
     } finally {
-      setAddingVideoId(None.of())
+      setAddingVideoIds(ids => {
+        const remaining = new Set(ids)
+        remaining.delete(videoId)
+        return remaining
+      })
     }
   }
 
@@ -120,7 +131,7 @@ const VideoSearchPanel: FC<VideoSearchPanelProps> = ({ onVideoSelect, existingVi
               key={videoId}
               video={video}
               onAdd={() => handleAddVideo(videoId)}
-              isAdding={addingVideoId.toNullable() === videoId}
+              isAdding={addingVideoIds.has(videoId)}
             />
           )
         })}

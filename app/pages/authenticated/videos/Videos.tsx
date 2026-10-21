@@ -27,12 +27,15 @@ import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
 import { usePaginatedFetch } from "~/components/infinite-scroll/usePaginatedFetch"
 import type { Ordering } from "~/models/Ordering"
 import Helmet from "~/components/helmet/Helmet"
+import { translate } from "~/services/sanitize/SanitizationService"
+import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
 
 const PAGE_SIZE = 50
 const SEARCH_DEBOUNCE_MS = 350
 
 const Videos = () => {
   const [queryParams, setQueryParams] = useSearchParams()
+  const { safeMode } = useApplicationConfiguration()
 
   const [videos, setVideos] = useState<Video[]>([])
   const videoSites: string[] = useParsedSearchParam(queryParams, VideoSitesSearchParam)
@@ -50,19 +53,41 @@ const Videos = () => {
 
   // Adopt the URL's value when it changes from outside the field (back/forward, a shared link).
   // Adjusting during render re-renders before paint, so the field never flashes the stale term.
+  // A URL that settles on the debounced term is this field's own write landing; the user may
+  // have typed on since it was issued, so that change is not adopted.
   const [urlSearchTerm, setUrlSearchTerm] = useState(searchTermValue)
 
   if (searchTermValue !== urlSearchTerm) {
     setUrlSearchTerm(searchTermValue)
-    setSearchInput(searchTermValue)
+
+    if (searchTermValue !== debouncedSearchInput) {
+      setSearchInput(searchTermValue)
+    }
   }
 
   const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch<Video>(
     (pageNumber, signal) =>
       searchVideos(searchTerm, durationRange, sizeRange, videoSites, pageNumber, PAGE_SIZE, sortBy, ordering, signal)
-        .then(result => result.results),
+        .then(result => result.results)
+        .catch((error: unknown) => {
+          // The previous query's results stay up until page 0 of a new one lands. If it fails
+          // instead, clear them: they no longer match the search shown above them.
+          if (pageNumber === 0 && !signal.aborted) {
+            setVideos([])
+          }
+          throw error
+        }),
     (results, pageNumber) =>
-      setVideos(videos => (pageNumber === 0 ? results : videos.concat(results))),
+      setVideos(videos => {
+        if (pageNumber === 0) {
+          return results
+        }
+
+        // Offset paging shifts when a video is added mid-scroll, so a page can repeat the
+        // previous page's last videos.
+        const loadedVideoIds = new Set(videos.map(video => video.videoMetadata.id))
+        return videos.concat(results.filter(video => !loadedVideoIds.has(video.videoMetadata.id)))
+      }),
     { pageSize: PAGE_SIZE, resetDeps: [videoSites, sortBy, searchTerm, durationRange, sizeRange, ordering] }
   )
 
@@ -118,7 +143,8 @@ const Videos = () => {
     <div className={styles.videosPage}>
       <Helmet title="Videos"/>
       <VideoSearch
-        videoTitles={videos.map((video) => video.videoMetadata.title).slice(0, 10)}
+        // Shown as suggestions, so they go through safe mode like every other displayed title.
+        videoTitles={videos.slice(0, 10).map((video) => translate(video.videoMetadata.title, safeMode))}
         searchTerm={maybeString(searchInput)}
         onSearchTermChange={(value: Option<string>) => setSearchInput(value.getOrElse(() => ""))}
         sortBy={sortBy}

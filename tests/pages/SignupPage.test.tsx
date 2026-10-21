@@ -12,6 +12,7 @@ vi.mock("~/services/user/UserService", () => ({
 
 vi.mock("~/services/authentication/AuthenticationService", () => ({
   login: vi.fn(),
+  REDIRECT_QUERY_PARAMETER: "redirect",
 }))
 
 import { createUser } from "~/services/user/UserService"
@@ -29,6 +30,10 @@ const renderWithRouter = (initialPath: string = "/sign-up") => {
     {
       path: "/",
       element: <div>Home Page</div>,
+    },
+    {
+      path: "/playlists",
+      element: <div>Playlists Page</div>,
     },
   ]
   const router = createMemoryRouter(routes, {
@@ -95,6 +100,31 @@ describe("SignupPage", () => {
     renderWithRouter()
 
     expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute("href", "/sign-in")
+  })
+
+  test("should keep the return page on the link to sign in", () => {
+    renderWithRouter("/sign-up?redirect=%2Fvideo%2Fabc")
+
+    expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute("href", "/sign-in?redirect=%2Fvideo%2Fabc")
+  })
+
+  test("should return to the page that sent the user to sign in, once signed up", async () => {
+    const user = userEvent.setup()
+    mockCreateUser.mockResolvedValue(buildUser())
+    mockLogin.mockResolvedValue(buildAuthenticationToken())
+
+    renderWithRouter("/sign-up?redirect=%2Fplaylists")
+
+    await user.type(screen.getByLabelText("First Name"), "Test")
+    await user.type(screen.getByLabelText("Last Name"), "User")
+    await user.type(screen.getByLabelText("Email"), "test@example.com")
+    await user.type(screen.getByLabelText("Password"), "password123")
+    await user.type(screen.getByLabelText("Confirm Password"), "password123")
+    await user.click(screen.getByRole("button", { name: /sign up/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Playlists Page")).toBeInTheDocument()
+    })
   })
 
   test("should navigate to home page after successful signup", async () => {

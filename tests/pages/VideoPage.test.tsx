@@ -162,6 +162,16 @@ describe("VideoPage", () => {
     })
   })
 
+  test.each(["abc", "", "-30"])("defaults the timestamp to 0 when the query parameter is %j", async (timestamp) => {
+    mockFetchVideoById.mockResolvedValue(buildVideo({ id: "video-123", title: "My Video" }))
+
+    renderVideoPage("video-123", `/video/video-123?timestamp=${timestamp}`)
+
+    await waitFor(() => {
+      expect(screen.getByTestId("timestamp-seconds")).toHaveTextContent("0")
+    })
+  })
+
   test("defaults the timestamp to 0 when the query parameter is absent", async () => {
     mockFetchVideoById.mockResolvedValue(buildVideo({ id: "video-123", title: "My Video" }))
 

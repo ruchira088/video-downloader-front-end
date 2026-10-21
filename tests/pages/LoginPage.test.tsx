@@ -88,4 +88,29 @@ describe("LoginPage", () => {
 
     expect(mockNavigate).toHaveBeenCalledWith("/")
   })
+
+  // Browsers treat a backslash as a slash and strip tabs, so each of these resolves to https://evil.example.
+  test.each(["/\\evil.example", "/\\/evil.example", "/\t/evil.example"])(
+    "should fall back to home when the redirect %j resolves off-site",
+    (redirect) => {
+      mockSearchParams = new URLSearchParams()
+      mockSearchParams.set("redirect", redirect.replace("\\t", "\t"))
+
+      renderLoginPage()
+
+      fireEvent.click(screen.getByTestId("login-button"))
+
+      expect(mockNavigate).toHaveBeenCalledWith("/")
+    }
+  )
+
+  test("should keep the query string of an in-app redirect", () => {
+    mockSearchParams = new URLSearchParams("?redirect=" + encodeURIComponent("/video/abc?timestamp=30"))
+
+    renderLoginPage()
+
+    fireEvent.click(screen.getByTestId("login-button"))
+
+    expect(mockNavigate).toHaveBeenCalledWith("/video/abc?timestamp=30")
+  })
 })

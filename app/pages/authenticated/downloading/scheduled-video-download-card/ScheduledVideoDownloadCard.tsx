@@ -100,26 +100,42 @@ type ScheduledVideoDeleteDialogProps = {
   readonly videoMetadata: VideoMetadata
 }
 
-const ScheduledVideoDeleteDialog: FC<ScheduledVideoDeleteDialogProps> = props => (
-  <Dialog open={props.isVisible} onClose={props.onClose}>
-    <DialogTitle>Delete Scheduled Video?</DialogTitle>
-    <DialogContent>
-      <VideoMetadataCard videoMetadata={props.videoMetadata} disableSnapshots={true} />
-    </DialogContent>
-    <DialogActions>
-      <Button
-        color="secondary"
-        variant="contained"
-        onClick={() => props.onDelete().catch(console.error).finally(props.onClose)}
-      >
-        Delete
-      </Button>
-      <Button variant="contained" onClick={props.onClose}>
-        Cancel
-      </Button>
-    </DialogActions>
-  </Dialog>
-)
+const ScheduledVideoDeleteDialog: FC<ScheduledVideoDeleteDialogProps> = props => {
+  // Guards against a second click sending a second DELETE while the first is in flight.
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleDelete = () => {
+    setIsDeleting(true)
+    void props.onDelete()
+      .catch(console.error)
+      .finally(() => {
+        setIsDeleting(false)
+        props.onClose()
+      })
+  }
+
+  return (
+    <Dialog open={props.isVisible} onClose={isDeleting ? undefined : props.onClose}>
+      <DialogTitle>Delete Scheduled Video?</DialogTitle>
+      <DialogContent>
+        <VideoMetadataCard videoMetadata={props.videoMetadata} disableSnapshots={true} />
+      </DialogContent>
+      <DialogActions>
+        <Button
+          color="secondary"
+          variant="contained"
+          onClick={handleDelete}
+          disabled={isDeleting}
+        >
+          {isDeleting ? "Deleting..." : "Delete"}
+        </Button>
+        <Button variant="contained" onClick={props.onClose} disabled={isDeleting}>
+          Cancel
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
 
 type ActionsProps = {
   readonly scheduleVideoDownload: ScheduledVideoDownload

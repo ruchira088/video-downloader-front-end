@@ -97,6 +97,8 @@ describe("ApplicationConfigurationProvider", () => {
       expect(screen.getByTestId("theme")).toHaveTextContent("dark")
       expect(screen.getByTestId("safeMode")).toHaveTextContent("true")
     })
+    // Saving the default would pin today's OS colour scheme and ignore later changes to it.
+    expect(mockSetApplicationConfiguration).not.toHaveBeenCalled()
   })
 
   test("should load saved config when it exists", async () => {

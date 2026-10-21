@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Video } from "~/models/Video"
-import { None, Option } from "~/types/Option"
+import { None, Option, Some } from "~/types/Option"
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const shuffled = [...array]
@@ -21,81 +21,83 @@ const indexOfVideo = (videos: Video[], videoId: string) =>
  * `videos` is the playlist order. The queue the player walks is `displayedVideos`, which is
  * only the same list when unshuffled — anything tying a playlist card to the player must go
  * via video id, which is why `currentlyPlayingVideoId` is exposed rather than an index.
+ *
+ * The playing video is tracked by id, not by queue position: reordering the playlist or
+ * removing an earlier video shifts positions, and the player must stay on the same video.
  */
 export const usePlaylistPlayback = (videos: Video[]) => {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [playingVideoId, setPlayingVideoId] = useState<Option<string>>(None.of())
   const [isShuffled, setIsShuffled] = useState(false)
   const [shuffledVideos, setShuffledVideos] = useState<Video[]>([])
 
   const displayedVideos = isShuffled ? shuffledVideos : videos
 
-  const currentlyPlayingVideoId: Option<string> = isPlaying
-    ? Option.fromNullable(displayedVideos[currentIndex]).map(video => video.videoMetadata.id)
-    : None.of()
+  // None when stopped, or when the playing video is no longer in the queue.
+  const playingIndex: Option<number> = playingVideoId
+    .map(videoId => indexOfVideo(displayedVideos, videoId))
+    .filter(index => index !== -1)
 
-  const playFromIndex = (index: number) => {
-    setCurrentIndex(index)
-    setIsPlaying(true)
-  }
+  const isPlaying = !playingIndex.isEmpty()
+  const currentIndex = playingIndex.getOrElse(() => 0)
+  const currentlyPlayingVideoId: Option<string> = playingIndex.flatMap(() => playingVideoId)
 
-  const play = () => {
-    if (displayedVideos.length > 0) {
-      playFromIndex(0)
-    }
-  }
+  // videoAdded/videoRemoved run after a queued request resolves, through the callbacks of the
+  // render in which the user clicked, so they read the queue as it is now from here instead.
+  const latest = useRef({ isShuffled, displayedVideos, playingVideoId })
+  useEffect(() => {
+    latest.current = { isShuffled, displayedVideos, playingVideoId }
+  })
+
+  const playFromIndex = (index: number) =>
+    setPlayingVideoId(Option.fromNullable(displayedVideos[index]).map(video => video.videoMetadata.id))
+
+  const play = () => playFromIndex(0)
 
   const playVideo = (videoId: string) => {
-    const index = indexOfVideo(displayedVideos, videoId)
-
-    if (index !== -1) {
-      playFromIndex(index)
+    if (indexOfVideo(displayedVideos, videoId) !== -1) {
+      setPlayingVideoId(Some.of(videoId))
     }
   }
 
-  const next = () => {
-    if (currentIndex < displayedVideos.length - 1) {
-      setCurrentIndex(prev => prev + 1)
-    } else {
-      setIsPlaying(false)
-    }
-  }
+  // Past the last video there is nothing at currentIndex + 1, so playback stops.
+  const next = () => playFromIndex(currentIndex + 1)
 
   const previous = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1)
+      playFromIndex(currentIndex - 1)
     }
   }
 
-  const close = () => setIsPlaying(false)
+  const close = () => setPlayingVideoId(None.of())
 
   const toggleShuffle = () => {
-    const nextPlaybackOrder = isShuffled ? videos : shuffleArray(videos)
-
     setIsShuffled(!isShuffled)
-    setShuffledVideos(isShuffled ? [] : nextPlaybackOrder)
-
-    // Toggling shuffle re-indexes the playback order, so follow the video that is
-    // playing into its new position instead of jumping back to the top.
-    setCurrentIndex(
-      currentlyPlayingVideoId
-        .map(videoId => indexOfVideo(nextPlaybackOrder, videoId))
-        .filter(index => index !== -1)
-        .getOrElse(() => 0)
-    )
+    setShuffledVideos(isShuffled ? [] : shuffleArray(videos))
   }
 
   // The shuffled queue is a snapshot, so playlist membership changes have to be mirrored
   // into it by hand; the unshuffled queue is `videos` itself and needs nothing.
   const videoRemoved = (videoId: string) => {
+    const { isShuffled, displayedVideos, playingVideoId } = latest.current
+
     if (isShuffled) {
       setShuffledVideos(prev => prev.filter(video => video.videoMetadata.id !== videoId))
+    }
+
+    // Removing the playing video moves on to the one after it, or stops at the end of the queue.
+    if (playingVideoId.toNullable() === videoId) {
+      setPlayingVideoId(
+        Option.fromNullable(displayedVideos[indexOfVideo(displayedVideos, videoId) + 1])
+          .map(video => video.videoMetadata.id)
+      )
     }
   }
 
   const videoAdded = (video: Video) => {
-    if (isShuffled) {
-      setShuffledVideos(prev => [...prev, video])
+    if (latest.current.isShuffled) {
+      setShuffledVideos(prev =>
+        indexOfVideo(prev, video.videoMetadata.id) === -1 ? [...prev, video] : prev
+      )
     }
   }
 
@@ -111,7 +113,7 @@ export const usePlaylistPlayback = (videos: Video[]) => {
     previous,
     close,
     toggleShuffle,
-    setCurrentIndex,
+    setCurrentIndex: playFromIndex,
     videoRemoved,
     videoAdded
   }

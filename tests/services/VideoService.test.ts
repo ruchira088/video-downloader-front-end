@@ -155,6 +155,14 @@ describe("VideoService", () => {
       expect(mockAxiosGet).toHaveBeenCalledWith("/videos/id/video-123")
     })
 
+    test("should encode the video ID so a crafted route param cannot traverse to another API path", async () => {
+      mockAxiosGet.mockResolvedValue({ data: videoJson({ id: "video-123" }) })
+
+      await fetchVideoById("../../admin")
+
+      expect(mockAxiosGet).toHaveBeenCalledWith("/videos/id/..%2F..%2Fadmin")
+    })
+
     test("should return parsed video", async () => {
       mockAxiosGet.mockResolvedValue({ data: videoJson({ id: "video-123", title: "Test Video" }) })
 

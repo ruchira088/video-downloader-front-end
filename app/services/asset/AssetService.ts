@@ -5,7 +5,7 @@ import { type FileResource, FileResourceType } from "~/models/FileResource"
 export type AssetUrl = string
 
 const assetUrl = (fileResource: FileResource<FileResourceType>): AssetUrl =>
-  `${apiConfiguration.baseUrl}/assets/${fileResource.type}/id/${fileResource.id}`
+  `${apiConfiguration.baseUrl}/assets/${fileResource.type}/id/${encodeURIComponent(fileResource.id)}`
 
 export const videoUrl = assetUrl
 

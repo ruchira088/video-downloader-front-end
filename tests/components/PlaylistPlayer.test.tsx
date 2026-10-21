@@ -39,6 +39,27 @@ describe("PlaylistPlayer", () => {
     vi.clearAllMocks()
   })
 
+  describe("Media loading", () => {
+    test("should reload the media when a different video moves into the current position", () => {
+      const { rerender } = render(<PlaylistPlayer {...defaultProps} currentIndex={1} />)
+      vi.mocked(window.HTMLMediaElement.prototype.load).mockClear()
+
+      rerender(<PlaylistPlayer {...defaultProps} videos={defaultProps.videos.slice(1)} currentIndex={1} />)
+
+      expect(screen.getByText("Third Video")).toBeInTheDocument()
+      expect(window.HTMLMediaElement.prototype.load).toHaveBeenCalledTimes(1)
+    })
+
+    test("should not reload the media when the same video moves to a new position", () => {
+      const { rerender } = render(<PlaylistPlayer {...defaultProps} currentIndex={1} />)
+      vi.mocked(window.HTMLMediaElement.prototype.load).mockClear()
+
+      rerender(<PlaylistPlayer {...defaultProps} videos={defaultProps.videos.slice(1)} currentIndex={0} />)
+
+      expect(window.HTMLMediaElement.prototype.load).not.toHaveBeenCalled()
+    })
+  })
+
   describe("Display", () => {
     test("should display current video title", () => {
       render(<PlaylistPlayer {...defaultProps} />)

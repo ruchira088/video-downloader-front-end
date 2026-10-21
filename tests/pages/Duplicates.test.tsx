@@ -81,6 +81,43 @@ describe("Duplicates", () => {
     })
   })
 
+  test("should not claim there are no duplicates while more pages remain to be checked", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    // A full page (so hasMore stays true) whose every group loses a video and is dropped.
+    const fullPage = Object.fromEntries(
+      Array.from({ length: 25 }, (_, index) => [
+        `group-${index}`,
+        createDuplicateGroup(`group-${index}`, [`video-${index}`, `missing-${index}`]),
+      ])
+    )
+    mockFetchDuplicateVideos.mockResolvedValueOnce(fullPage).mockReturnValue(new Promise(() => {}))
+    mockFetchVideoById.mockImplementation((videoId: string) =>
+      videoId.startsWith("missing") ? Promise.reject(new Error("gone")) : Promise.resolve(createMockVideo(videoId))
+    )
+
+    renderPage()
+
+    await waitFor(() => expect(mockFetchVideoById).toHaveBeenCalledTimes(50))
+    await waitFor(() => expect(mockFetchDuplicateVideos).toHaveBeenCalledTimes(1))
+    expect(screen.queryByText("No duplicate videos found")).not.toBeInTheDocument()
+
+    consoleError.mockRestore()
+  })
+
+  test("should not claim there are no duplicates when the first page failed to load", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    mockFetchDuplicateVideos.mockRejectedValue(new Error("network down"))
+
+    renderPage()
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /retry/i })).toBeInTheDocument()
+    })
+    expect(screen.queryByText("No duplicate videos found")).not.toBeInTheDocument()
+
+    consoleError.mockRestore()
+  })
+
   test("should render duplicate groups with video cards", async () => {
     mockFetchDuplicateVideos.mockResolvedValue({
       "group-1": createDuplicateGroup("group-1", ["video-1", "video-2"]),

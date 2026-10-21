@@ -2,7 +2,7 @@ import { describe, expect, test, vi, beforeEach, afterEach } from "vitest"
 import { Some, None } from "~/types/Option"
 import { SortBy } from "~/models/SortBy"
 import { Ordering } from "~/models/Ordering"
-import { SchedulingStatus } from "~/models/SchedulingStatus"
+import { SchedulingStatus, isFinishedStatus } from "~/models/SchedulingStatus"
 import { WorkerStatus } from "~/models/WorkerStatus"
 import { EventStreamEventType } from "~/models/EventStreamEventType"
 
@@ -29,6 +29,8 @@ let mockEventSourceInstance: {
   withCredentials: boolean
   listeners: Map<string, ((event: MessageEvent) => void)[]>
   onerror: ((event: Event) => void) | null
+  onopen: ((event: Event) => void) | null
+  readyState: number
   close: ReturnType<typeof vi.fn>
   addEventListener: (type: string, listener: (event: MessageEvent) => void) => void
   removeEventListener: (type: string, listener: (event: MessageEvent) => void) => void
@@ -43,6 +45,8 @@ const createMockEventSource = () => {
     withCredentials: false,
     listeners,
     onerror: null as ((event: Event) => void) | null,
+    onopen: null as ((event: Event) => void) | null,
+    readyState: 0,
     close: vi.fn(),
     addEventListener(type: string, listener: (event: MessageEvent) => void) {
       if (!listeners.has(type)) {
@@ -101,6 +105,7 @@ import {
   deleteScheduledVideoById,
   fetchScheduledVideos,
   scheduledVideoDownloadStream,
+  StreamConnection,
 } from "~/services/scheduling/SchedulingService"
 import { scheduledVideoDownloadJson } from "../fixtures"
 
@@ -190,6 +195,14 @@ describe("SchedulingService", () => {
       expect(mockAxiosDelete).toHaveBeenCalledWith("/schedule/id/video-123")
       expect(result.videoMetadata.id).toBe("video-123")
     })
+
+    test("should encode the video ID", async () => {
+      mockAxiosDelete.mockResolvedValue({ data: scheduledVideoDownloadJson({ id: "video-123" }) })
+
+      await deleteScheduledVideoById("a/b?c")
+
+      expect(mockAxiosDelete).toHaveBeenCalledWith("/schedule/id/a%2Fb%3Fc")
+    })
   })
 
   describe("fetchScheduledVideos", () => {
@@ -250,6 +263,19 @@ describe("SchedulingService", () => {
       expect(params.status).toContain(SchedulingStatus.Error)
       expect(params.status).toContain(SchedulingStatus.Queued)
       expect(params.status).toContain(SchedulingStatus.Paused)
+    })
+
+    test("should request every status the live stream keeps on the page", async () => {
+      mockAxiosGet.mockResolvedValue({ data: { results: [] } })
+
+      await fetchScheduledVideos(None.of(), 0, 10, SortBy.Date, Ordering.Descending)
+
+      const params = mockAxiosGet.mock.calls[0][1]?.params as Record<string, string>
+      expect(params.status.split(",").sort()).toEqual(
+        Object.values(SchedulingStatus).filter((status) => !isFinishedStatus(status)).sort()
+      )
+      expect(params.status).toContain(SchedulingStatus.Acquired)
+      expect(params.status).toContain(SchedulingStatus.Downloaded)
     })
   })
 
@@ -373,31 +399,45 @@ describe("SchedulingService", () => {
       consoleErrorSpy.mockRestore()
     })
 
-    test("should invoke onError when the EventSource errors", () => {
-      const onProgress = vi.fn()
-      const onUpdate = vi.fn()
-      const onError = vi.fn()
+    test("should report Connected when the EventSource opens", () => {
+      const onConnectionChange = vi.fn()
 
-      scheduledVideoDownloadStream(onProgress, onUpdate, onError)
+      scheduledVideoDownloadStream(vi.fn(), vi.fn(), onConnectionChange)
+      mockEventSourceInstance!.onopen!(new Event("open"))
 
-      const errorEvent = new Event("error")
-      mockEventSourceInstance!.onerror!(errorEvent)
-
-      expect(onError).toHaveBeenCalledWith(errorEvent)
+      expect(onConnectionChange).toHaveBeenCalledExactlyOnceWith(StreamConnection.Connected)
     })
 
-    test("should clear onerror handler on cleanup", () => {
-      const onProgress = vi.fn()
-      const onUpdate = vi.fn()
-      const onError = vi.fn()
+    test("should report Reconnecting when the EventSource errors but is retrying", () => {
+      const onConnectionChange = vi.fn()
 
-      const cleanup = scheduledVideoDownloadStream(onProgress, onUpdate, onError)
+      scheduledVideoDownloadStream(vi.fn(), vi.fn(), onConnectionChange)
+      mockEventSourceInstance!.readyState = 0 // CONNECTING
+      mockEventSourceInstance!.onerror!(new Event("error"))
+
+      expect(onConnectionChange).toHaveBeenCalledExactlyOnceWith(StreamConnection.Reconnecting)
+    })
+
+    test("should report Disconnected when the EventSource has given up", () => {
+      const onConnectionChange = vi.fn()
+
+      scheduledVideoDownloadStream(vi.fn(), vi.fn(), onConnectionChange)
+      mockEventSourceInstance!.readyState = 2 // CLOSED, e.g. after a 401
+      mockEventSourceInstance!.onerror!(new Event("error"))
+
+      expect(onConnectionChange).toHaveBeenCalledExactlyOnceWith(StreamConnection.Disconnected)
+    })
+
+    test("should clear the connection handlers on cleanup", () => {
+      const cleanup = scheduledVideoDownloadStream(vi.fn(), vi.fn(), vi.fn())
 
       expect(mockEventSourceInstance!.onerror).not.toBeNull()
+      expect(mockEventSourceInstance!.onopen).not.toBeNull()
 
       cleanup()
 
       expect(mockEventSourceInstance!.onerror).toBeNull()
+      expect(mockEventSourceInstance!.onopen).toBeNull()
     })
   })
 })

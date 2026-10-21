@@ -23,7 +23,7 @@ Requires Node 24 (`engines.node: ^24.0.0`) and npm.
 - **Run tests matching a name:** `npx vitest run -t "should reset videos"`
 - `npm run typecheck` runs `react-router typegen && tsc` — the typegen step generates `.react-router/types` and `app/+types/*`, which route modules import. Running bare `tsc` will fail on missing generated types.
 - `npm run build` (and the `start*` scripts) first run `scripts/env-vars.mjs`, which regenerates `.env` with git branch/commit/timestamp via `simple-git`. Expect `.env` to change after a build.
-- Coverage thresholds are enforced in `vitest.config.ts` (statements 96, branches 91, functions 96, lines 97). They are a ratchet set just under what the suite achieves: raise them when coverage climbs, never lower them to make a build pass.
+- Coverage thresholds are enforced in `vitest.config.ts` (statements 98, branches 94, functions 97, lines 98). They are a ratchet set just under what the suite achieves: raise them when coverage climbs, never lower them to make a build pass.
 
 ## Architecture
 
@@ -41,9 +41,9 @@ Requires Node 24 (`engines.node: ^24.0.0`) and npm.
 
 **Theme & settings** flow through `ApplicationConfigurationProvider`, which holds an `Option<ApplicationConfiguration>` (`safeMode` + `theme`), persists to localStorage, and drives both the MUI theme (`createTheme` color schemes) and the `data-theme` body attribute. Consume it via the `useApplicationConfiguration()` hook.
 
-**Real-time download progress** uses an `EventSource` stream (`scheduledVideoDownloadStream` in the scheduling service) feeding live updates into the `ScheduledVideos` page.
+**Real-time download progress** uses an `EventSource` stream (`scheduledVideoDownloadStream` in the scheduling service) feeding live updates into the `ScheduledVideos` page. The stream reports its `StreamConnection` (Connected / Reconnecting / Disconnected — the last when the browser gives up, e.g. on a 401); the page shows a banner while not connected and reloads the list from page 0 after any reconnect, since events sent while disconnected are lost.
 
-**Infinite scroll** is centralized in `usePaginatedFetch` (`app/components/infinite-scroll/usePaginatedFetch.ts`) paired with the `InfiniteScroll` component (IntersectionObserver-based). The hook owns page-number/loading/has-more state and per-page de-dup; callers supply `fetchPage` and an `onResults` accumulator. The `results.length < pageSize ⇒ hasMore = false` rule is the shared convention.
+**Infinite scroll** is centralized in `usePaginatedFetch` (`app/components/infinite-scroll/usePaginatedFetch.ts`) paired with the `InfiniteScroll` component (IntersectionObserver-based). The hook owns page-number/loading/has-more state and per-page de-dup; callers supply `fetchPage` and an `onResults` accumulator. The `results.length < pageSize ⇒ hasMore = false` rule is the shared convention. Because IntersectionObserver only reports transitions, `InfiniteScroll` re-observes its sentinel each time a page settles (loading → idle, more to load, no error), so a sentinel still in view after a short or de-duplicated page asks for the next one. A failed page waits for an explicit `retry`: `loadMore` is a no-op while an error is pending, so scrolling cannot skip past the failed page.
 
 **Styling** is SCSS modules (`*.module.scss`, co-located with components) plus MUI/Emotion.
 

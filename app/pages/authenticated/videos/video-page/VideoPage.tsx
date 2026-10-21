@@ -19,6 +19,8 @@ const VideoPage = (props: Route.ComponentProps) => {
   const timestamp: Duration = Duration.fromObject({
     seconds: Option.fromNullable(queryParams.get("timestamp"))
       .map((value) => Number.parseInt(value, 10))
+      // Luxon throws on NaN, so a malformed link (?timestamp=abc) would otherwise crash the page.
+      .filter((seconds) => Number.isFinite(seconds) && seconds >= 0)
       .getOrElse(() => 0)
   })
 

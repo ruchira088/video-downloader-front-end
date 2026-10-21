@@ -1,4 +1,4 @@
-import React, { type FC, useCallback, useMemo, useState } from "react"
+import React, { type FC, useCallback, useMemo, useRef, useState } from "react"
 import { Alert, Snackbar, type SnackbarCloseReason } from "@mui/material"
 import { None, type Option, Some } from "~/types/Option"
 
@@ -7,6 +7,8 @@ const AUTO_HIDE_DURATION_MS = 6000
 export type NotificationSeverity = "success" | "error"
 
 export type Notification = {
+  // Distinguishes successive notifications, so each one restarts the auto-hide timer.
+  readonly id: number
   readonly message: string
   readonly severity: NotificationSeverity
 }
@@ -39,16 +41,20 @@ export type NotificationProviderProps = {
 
 export const NotificationProvider: FC<NotificationProviderProps> = props => {
   const [notification, setNotification] = useState<Option<Notification>>(None.of())
+  const nextNotificationId = useRef(0)
 
-  const notifySuccess = useCallback((message: string) => {
-    setNotification(Some.of({ message, severity: "success" }))
+  const notify = useCallback((message: string, severity: NotificationSeverity) => {
+    nextNotificationId.current += 1
+    setNotification(Some.of({ id: nextNotificationId.current, message, severity }))
   }, [])
+
+  const notifySuccess = useCallback((message: string) => notify(message, "success"), [notify])
 
   const notifyError = useCallback((message: string, error?: unknown) => {
     // Keep the console breadcrumb: the snackbar is deliberately free of stack traces.
     console.error(message, error)
-    setNotification(Some.of({ message, severity: "error" }))
-  }, [])
+    notify(message, "error")
+  }, [notify])
 
   const notificationContext = useMemo<NotificationContext>(
     () => ({ notifySuccess, notifyError }),
@@ -73,8 +79,10 @@ export const NotificationProvider: FC<NotificationProviderProps> = props => {
       {props.children}
       {
         notification
-          .map(({ message, severity }) => (
+          .map(({ id, message, severity }) => (
+            // Keyed so a replacement remounts: MUI only restarts the auto-hide timer when `open` changes.
             <Snackbar
+              key={id}
               open
               autoHideDuration={AUTO_HIDE_DURATION_MS}
               onClose={onSnackbarClose}

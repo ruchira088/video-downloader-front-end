@@ -43,6 +43,7 @@ export function usePaginatedFetch<T>(
   const [hasError, setHasError] = useState(false)
 
   const isLoadingRef = useRef(false)
+  const hasErrorRef = useRef(false)
   const hasMoreRef = useRef(true)
   const fetchedPages = useRef(new Set<number>())
   const abortController = useRef(new AbortController())
@@ -59,6 +60,11 @@ export function usePaginatedFetch<T>(
     setIsLoading(value)
   }, [])
 
+  const setError = useCallback((value: boolean) => {
+    hasErrorRef.current = value
+    setHasError(value)
+  }, [])
+
   const loadPage = useCallback(async (page: number) => {
     if (fetchedPages.current.has(page)) return
 
@@ -68,7 +74,7 @@ export function usePaginatedFetch<T>(
     const pages = fetchedPages.current
     pages.add(page)
     setLoading(true)
-    setHasError(false)
+    setError(false)
 
     try {
       const results = await fetchPageRef.current(page, controller.signal)
@@ -94,7 +100,7 @@ export function usePaginatedFetch<T>(
         // the sentinel may already be in view, and IntersectionObserver only fires on a
         // transition, so nothing will ask for this page again.
         if (controller === abortController.current) {
-          setHasError(true)
+          setError(true)
         }
       }
     } finally {
@@ -104,7 +110,7 @@ export function usePaginatedFetch<T>(
         setLoading(false)
       }
     }
-  }, [pageSize, setLoading])
+  }, [pageSize, setLoading, setError])
 
   // Initial load, and reset whenever the reset dependencies change.
   //
@@ -122,11 +128,15 @@ export function usePaginatedFetch<T>(
     hasMoreRef.current = true
     setHasMore(true)
     setLoading(false)
-    setHasError(false)
+    setError(false)
 
     if (pageNumber === 0) {
       void loadPage(0)
     } else {
+      // Page 0 only loads after the re-render; until then, block loadMore. Otherwise an
+      // intersection in that window turns this 0 into 1, the page number ends where it was,
+      // and the new query never loads.
+      isLoadingRef.current = true
       setPageNumber(0)
     }
 
@@ -139,8 +149,9 @@ export function usePaginatedFetch<T>(
     void loadPage(pageNumber)
   }, [pageNumber, loadPage])
 
+  // A failed page blocks loadMore until retried: advancing past it would skip its results.
   const loadMore = () => {
-    if (!isLoadingRef.current && hasMoreRef.current) {
+    if (!isLoadingRef.current && hasMoreRef.current && !hasErrorRef.current) {
       setPageNumber(page => page + 1)
     }
   }

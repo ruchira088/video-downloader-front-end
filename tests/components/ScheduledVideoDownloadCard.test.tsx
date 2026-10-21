@@ -95,6 +95,25 @@ describe("ScheduledVideoDownloadCard", () => {
     expect(screen.getByText("Delete Scheduled Video?")).toBeInTheDocument()
   })
 
+  test("should disable the dialog buttons while the delete is in flight", async () => {
+    let resolveDelete: () => void = () => {}
+    const onDelete = vi.fn(() => new Promise<void>((resolve) => { resolveDelete = resolve }))
+    renderWithContext(createMockDownloadableScheduledVideo(), onDelete)
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete scheduled video" }))
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }))
+
+    expect(screen.getByRole("button", { name: "Deleting..." })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled()
+    fireEvent.click(screen.getByRole("button", { name: "Deleting..." }))
+    expect(onDelete).toHaveBeenCalledTimes(1)
+
+    resolveDelete()
+    await waitFor(() => {
+      expect(screen.queryByText("Delete Scheduled Video?")).not.toBeInTheDocument()
+    })
+  })
+
   test("should call onDelete when delete is confirmed", async () => {
     const onDelete = vi.fn().mockResolvedValue(undefined)
     renderWithContext(createMockDownloadableScheduledVideo(), onDelete)

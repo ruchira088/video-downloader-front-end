@@ -24,7 +24,12 @@ const Playlists = () => {
   const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch<Playlist>(
     pageNumber =>
       fetchPlaylists(None.of(), pageNumber, PAGE_SIZE, PlaylistSortBy.CreatedAt, Ordering.Descending),
-    newPlaylists => setPlaylists(prev => [...prev, ...newPlaylists]),
+    // Offset paging shifts when a playlist is created locally, so a page can repeat one already shown.
+    newPlaylists =>
+      setPlaylists(prev => {
+        const shownIds = new Set(prev.map(playlist => playlist.id))
+        return [...prev, ...newPlaylists.filter(playlist => !shownIds.has(playlist.id))]
+      }),
     { pageSize: PAGE_SIZE }
   )
 

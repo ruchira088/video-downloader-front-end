@@ -111,6 +111,26 @@ describe("VideoWatch", () => {
     expect(screen.getByText("Delete Video?")).toBeInTheDocument()
   })
 
+  test("should disable the dialog buttons while the delete is in flight", async () => {
+    const { deleteVideo } = await import("~/services/video/VideoService")
+    let resolveDelete: () => void = () => {}
+    vi.mocked(deleteVideo).mockReturnValue(new Promise((resolve) => { resolveDelete = () => resolve(createMockVideo()) }))
+    renderWithContext()
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }))
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }))
+
+    expect(screen.getByRole("button", { name: "Deleting..." })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled()
+    fireEvent.click(screen.getByRole("button", { name: "Deleting..." }))
+    expect(deleteVideo).toHaveBeenCalledTimes(1)
+
+    resolveDelete()
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/")
+    })
+  })
+
   test("should close delete dialog when cancel is clicked", async () => {
     renderWithContext()
 

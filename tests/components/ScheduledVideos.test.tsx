@@ -4,6 +4,7 @@ import ScheduledVideos from "~/pages/authenticated/downloading/ScheduledVideos"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { DateTime } from "luxon"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
+import { StreamConnection } from "~/services/scheduling/SchedulingService"
 import React from "react"
 import { buildScheduledVideoDownload, durationJson, type Json } from "../fixtures"
 import { triggerIntersection, withApplicationConfiguration } from "../helpers"
@@ -20,7 +21,8 @@ const createMockScheduledVideo = (id: string, overrides: Json = {}) =>
     ...overrides
   })
 
-vi.mock("~/services/scheduling/SchedulingService", () => ({
+vi.mock("~/services/scheduling/SchedulingService", async (importOriginal) => ({
+  StreamConnection: (await importOriginal<typeof import("~/services/scheduling/SchedulingService")>()).StreamConnection,
   fetchScheduledVideos: vi.fn().mockResolvedValue([]),
   scheduledVideoDownloadStream: vi.fn().mockReturnValue(() => {}),
   deleteScheduledVideoById: vi.fn().mockResolvedValue({}),
@@ -100,28 +102,159 @@ describe("ScheduledVideos", () => {
     })
   })
 
-  test("should log stream errors via the onError callback", async () => {
-    const { scheduledVideoDownloadStream } = await import("~/services/scheduling/SchedulingService")
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+  describe("Live update connection", () => {
+    type StreamHandlers = {
+      onUpdate: (download: ReturnType<typeof createMockScheduledVideo>) => void
+      onConnectionChange: (connection: StreamConnection) => void
+    }
 
-    let onError: (event: Event) => void
-    vi.mocked(scheduledVideoDownloadStream).mockImplementation((_onProgress, _onUpdate, onStreamError) => {
-      onError = onStreamError
-      return () => {}
+    const captureStream = async (): Promise<StreamHandlers[]> => {
+      const { scheduledVideoDownloadStream } = await import("~/services/scheduling/SchedulingService")
+      const streams: StreamHandlers[] = []
+      vi.mocked(scheduledVideoDownloadStream).mockImplementation((_onProgress, onUpdate, onConnectionChange) => {
+        streams.push({ onUpdate, onConnectionChange })
+        return () => {}
+      })
+      return streams
+    }
+
+    test("should show no banner while connecting or connected", async () => {
+      const streams = await captureStream()
+      renderWithContext()
+      await waitFor(() => expect(streams).toHaveLength(1))
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+      await act(async () => streams[0].onConnectionChange(StreamConnection.Connected))
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument()
     })
 
-    renderWithContext()
+    test("should warn while the browser is reconnecting, and reload the list once it is back", async () => {
+      const { fetchScheduledVideos } = await import("~/services/scheduling/SchedulingService")
+      vi.mocked(fetchScheduledVideos).mockResolvedValue([createMockScheduledVideo("video-1")])
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+      const streams = await captureStream()
+      renderWithContext()
+      await waitFor(() => expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument())
+      await act(async () => streams[0].onConnectionChange(StreamConnection.Connected))
 
-    await waitFor(() => {
-      expect(scheduledVideoDownloadStream).toHaveBeenCalled()
+      await act(async () => streams[0].onConnectionChange(StreamConnection.Reconnecting))
+      expect(screen.getByRole("alert")).toHaveTextContent("Live updates interrupted")
+
+      // video-1 finished while the stream was down, and video-2 was scheduled.
+      vi.mocked(fetchScheduledVideos).mockResolvedValue([createMockScheduledVideo("video-2")])
+      await act(async () => streams[0].onConnectionChange(StreamConnection.Connected))
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+      await waitFor(() => expect(screen.getByText(/Test Video video-2/)).toBeInTheDocument())
+      expect(screen.queryByText(/Test Video video-1/)).not.toBeInTheDocument()
+      expect(fetchScheduledVideos).toHaveBeenLastCalledWith(expect.anything(), 0, 50, expect.anything(), expect.anything())
+
+      consoleWarnSpy.mockRestore()
     })
 
-    const errorEvent = new Event("error")
-    await act(async () => { onError!(errorEvent) })
+    test("should offer to reconnect once the browser has given up", async () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const streams = await captureStream()
+      renderWithContext()
+      await waitFor(() => expect(streams).toHaveLength(1))
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith("Scheduled video download stream error", errorEvent)
+      await act(async () => streams[0].onConnectionChange(StreamConnection.Disconnected))
 
-    consoleErrorSpy.mockRestore()
+      expect(screen.getByRole("alert")).toHaveTextContent("Live updates stopped")
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Scheduled video download stream disconnected")
+
+      fireEvent.click(screen.getByRole("button", { name: "Reconnect" }))
+      await waitFor(() => expect(streams).toHaveLength(2))
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    test("should keep stream updates that arrive while a reload is in flight", async () => {
+      const { fetchScheduledVideos } = await import("~/services/scheduling/SchedulingService")
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+      vi.mocked(fetchScheduledVideos).mockResolvedValue([createMockScheduledVideo("video-1")])
+      const streams = await captureStream()
+      renderWithContext()
+      await waitFor(() => expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument())
+
+      let resolveReload: (videos: ReturnType<typeof createMockScheduledVideo>[]) => void = () => {}
+      await act(async () => streams[0].onConnectionChange(StreamConnection.Connected))
+      vi.mocked(fetchScheduledVideos).mockReturnValue(new Promise((resolve) => { resolveReload = resolve }))
+      await act(async () => streams[0].onConnectionChange(StreamConnection.Reconnecting))
+      await act(async () => streams[0].onConnectionChange(StreamConnection.Connected))
+
+      // Newer than the snapshot the reload will return: video-2 queued, video-1 paused.
+      await act(async () => {
+        streams[0].onUpdate(createMockScheduledVideo("video-2", { status: SchedulingStatus.Queued }))
+        streams[0].onUpdate(createMockScheduledVideo("video-1", { status: SchedulingStatus.Paused }))
+      })
+      await act(async () => resolveReload([createMockScheduledVideo("video-1")]))
+
+      expect(screen.getByText(/Test Video video-2/)).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Resume" })).toBeInTheDocument()
+
+      consoleWarnSpy.mockRestore()
+    })
+
+    test("should reload once connected even if the very first connection attempt failed", async () => {
+      const { fetchScheduledVideos } = await import("~/services/scheduling/SchedulingService")
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+      const streams = await captureStream()
+      renderWithContext()
+      await waitFor(() => expect(fetchScheduledVideos).toHaveBeenCalledTimes(1))
+
+      await act(async () => streams[0].onConnectionChange(StreamConnection.Reconnecting))
+      await act(async () => streams[0].onConnectionChange(StreamConnection.Connected))
+
+      await waitFor(() => expect(fetchScheduledVideos).toHaveBeenCalledTimes(2))
+      consoleWarnSpy.mockRestore()
+    })
+
+    test("should not reload when the first connection simply succeeds", async () => {
+      const { fetchScheduledVideos } = await import("~/services/scheduling/SchedulingService")
+      const streams = await captureStream()
+      renderWithContext()
+      await waitFor(() => expect(fetchScheduledVideos).toHaveBeenCalledTimes(1))
+
+      await act(async () => streams[0].onConnectionChange(StreamConnection.Connected))
+
+      expect(fetchScheduledVideos).toHaveBeenCalledTimes(1)
+    })
+
+    test("should not let a page fetched before a video finished bring it back", async () => {
+      const { fetchScheduledVideos } = await import("~/services/scheduling/SchedulingService")
+      const streams = await captureStream()
+      let resolvePage: (videos: ReturnType<typeof createMockScheduledVideo>[]) => void = () => {}
+      vi.mocked(fetchScheduledVideos).mockReturnValue(new Promise((resolve) => { resolvePage = resolve }))
+      renderWithContext()
+      await waitFor(() => expect(streams).toHaveLength(1))
+
+      await act(async () => {
+        streams[0].onUpdate(createMockScheduledVideo("video-1", { status: SchedulingStatus.Completed }))
+      })
+      await act(async () => resolvePage([createMockScheduledVideo("video-1"), createMockScheduledVideo("video-2")]))
+
+      await waitFor(() => expect(screen.getByText(/Test Video video-2/)).toBeInTheDocument())
+      expect(screen.queryByText(/Test Video video-1/)).not.toBeInTheDocument()
+    })
+
+    test("should not let a status response bring back a video the stream reported finished", async () => {
+      const { fetchScheduledVideos, updateSchedulingStatus } = await import("~/services/scheduling/SchedulingService")
+      vi.mocked(fetchScheduledVideos).mockResolvedValue([createMockScheduledVideo("video-1")])
+      const streams = await captureStream()
+      let resolveUpdate: (download: ReturnType<typeof createMockScheduledVideo>) => void = () => {}
+      vi.mocked(updateSchedulingStatus).mockReturnValue(new Promise((resolve) => { resolveUpdate = resolve }))
+      renderWithContext()
+      await waitFor(() => expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole("button", { name: "Pause" }))
+      await act(async () => {
+        streams[0].onUpdate(createMockScheduledVideo("video-1", { status: SchedulingStatus.Completed }))
+      })
+      await act(async () => resolveUpdate(createMockScheduledVideo("video-1", { status: SchedulingStatus.Paused })))
+
+      expect(screen.queryByText(/Test Video video-1/)).not.toBeInTheDocument()
+    })
   })
 
   test("should render video cards when videos are fetched", async () => {
@@ -221,6 +354,71 @@ describe("ScheduledVideos", () => {
 
     expect(screen.getByText("10.00 MB/s")).toBeInTheDocument()
     expect(screen.getByText("60 %")).toBeInTheDocument()
+  })
+
+  test("should keep the measured speed and progress when an update leaves the status unchanged", async () => {
+    const { fetchScheduledVideos, scheduledVideoDownloadStream } = await import(
+      "~/services/scheduling/SchedulingService"
+    )
+    vi.mocked(fetchScheduledVideos).mockResolvedValue([
+      createMockScheduledVideo("video-1", { lastUpdatedAt: "2023-10-15T10:00:00+00:00" })
+    ])
+
+    let onDownloadProgress: (progress: any) => void
+    let onUpdate: (download: any) => void
+    vi.mocked(scheduledVideoDownloadStream).mockImplementation((onProgress, onScheduledVideoDownloadUpdate) => {
+      onDownloadProgress = onProgress
+      onUpdate = onScheduledVideoDownloadUpdate
+      return () => {}
+    })
+
+    renderWithContext()
+    await waitFor(() => expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument())
+
+    await act(async () => {
+      onDownloadProgress!({ videoId: "video-1", bytes: 600000000, updatedAt: DateTime.fromISO("2023-10-15T10:00:10+00:00") })
+    })
+    // The server persisted an older byte count while the download carried on.
+    await act(async () => {
+      onUpdate!(createMockScheduledVideo("video-1", {
+        title: "Renamed video-1",
+        downloadedBytes: 550000000,
+        lastUpdatedAt: "2023-10-15T10:00:05+00:00"
+      }))
+    })
+
+    expect(screen.getByText(/Renamed video-1/)).toBeInTheDocument()
+    expect(screen.getByText("10.00 MB/s")).toBeInTheDocument()
+    expect(screen.getByText("60 %")).toBeInTheDocument()
+  })
+
+  test("should reset the measured speed when the status changes", async () => {
+    const { fetchScheduledVideos, scheduledVideoDownloadStream } = await import(
+      "~/services/scheduling/SchedulingService"
+    )
+    vi.mocked(fetchScheduledVideos).mockResolvedValue([
+      createMockScheduledVideo("video-1", { lastUpdatedAt: "2023-10-15T10:00:00+00:00" })
+    ])
+
+    let onDownloadProgress: (progress: any) => void
+    let onUpdate: (download: any) => void
+    vi.mocked(scheduledVideoDownloadStream).mockImplementation((onProgress, onScheduledVideoDownloadUpdate) => {
+      onDownloadProgress = onProgress
+      onUpdate = onScheduledVideoDownloadUpdate
+      return () => {}
+    })
+
+    renderWithContext()
+    await waitFor(() => expect(screen.getByText(/Test Video video-1/)).toBeInTheDocument())
+
+    await act(async () => {
+      onDownloadProgress!({ videoId: "video-1", bytes: 600000000, updatedAt: DateTime.fromISO("2023-10-15T10:00:10+00:00") })
+    })
+    await act(async () => {
+      onUpdate!(createMockScheduledVideo("video-1", { status: SchedulingStatus.Paused, lastUpdatedAt: "2023-10-15T10:00:11+00:00" }))
+    })
+
+    expect(screen.queryByText("10.00 MB/s")).not.toBeInTheDocument()
   })
 
   test("should ignore download progress that is older than the last update", async () => {
@@ -479,6 +677,9 @@ describe("ScheduledVideos", () => {
       "~/services/scheduling/SchedulingService"
     )
     vi.mocked(fetchScheduledVideos).mockResolvedValue([createMockScheduledVideo("video-1")])
+    vi.mocked(deleteScheduledVideoById).mockResolvedValue(
+      createMockScheduledVideo("video-1", { status: SchedulingStatus.Deleted })
+    )
 
     renderWithContext()
 
@@ -491,6 +692,10 @@ describe("ScheduledVideos", () => {
 
     await waitFor(() => {
       expect(deleteScheduledVideoById).toHaveBeenCalledWith("video-1")
+    })
+    // Removed from the response itself, without waiting for a stream event that may never come.
+    await waitFor(() => {
+      expect(screen.queryByText(/Test Video video-1/)).not.toBeInTheDocument()
     })
   })
 

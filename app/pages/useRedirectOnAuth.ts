@@ -8,6 +8,8 @@ import {
   removeAuthenticationToken
 } from "~/services/authentication/AuthenticationService"
 import { httpStatusCode } from "~/services/http/HttpClient"
+import { Option } from "~/types/Option"
+import { safeRedirectPath } from "~/pages/unauthenticated/AuthFormHelpers"
 
 /**
  * - `Verifying`: the session check is in flight.
@@ -69,7 +71,9 @@ export const useRedirectOnAuth = (redirectWhenAuthenticated: boolean): SessionCh
       void maybeUnexpiredToken.forEach(async () => {
         try {
           await getAuthenticatedUser()
-          void navigate("/")
+          // Honour ?redirect= the same way signing in would, e.g. a shared link opened while signed in.
+          const redirect = Option.fromNullable(new URLSearchParams(window.location.search).get(REDIRECT_QUERY_PARAMETER))
+          void navigate(safeRedirectPath(redirect))
         } catch {
           // User not authenticated, stay on the current public page.
         }

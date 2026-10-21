@@ -9,6 +9,7 @@ import {
 } from "@mui/material"
 import { Playlist } from "~/models/Playlist"
 import { createPlaylist } from "~/services/playlist/PlaylistService"
+import { useNotification } from "~/providers/NotificationProvider"
 
 type CreatePlaylistDialogProps = {
   readonly isOpen: boolean
@@ -24,6 +25,7 @@ const CreatePlaylistDialog: FC<CreatePlaylistDialogProps> = ({
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { notifyError } = useNotification()
 
   const handleSubmit = async () => {
     if (!name.trim()) return
@@ -39,7 +41,7 @@ const CreatePlaylistDialog: FC<CreatePlaylistDialogProps> = ({
       setName("")
       setDescription("")
     } catch (error) {
-      console.error(error)
+      notifyError("Failed to create the playlist", error)
     } finally {
       setIsSubmitting(false)
     }

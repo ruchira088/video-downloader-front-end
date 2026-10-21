@@ -1,5 +1,6 @@
 import { describe, expect, test, vi, afterEach } from "vitest"
 import { act, renderHook, waitFor } from "@testing-library/react"
+import { useEffect } from "react"
 import { usePaginatedFetch } from "~/components/infinite-scroll/usePaginatedFetch"
 
 type Deferred<T> = {
@@ -103,6 +104,41 @@ describe("usePaginatedFetch", () => {
     expect(onResults).toHaveBeenCalledWith(["new-1", "new-2"], 0)
   })
 
+  test("should fetch page 0 of the new query even if loadMore fires straight after a reset", async () => {
+    const fetchPage = vi.fn((page: number) => Promise.resolve([`item-${page}-a`, `item-${page}-b`]))
+    const onResults = vi.fn()
+
+    const { result, rerender } = renderHook(
+      ({ query }: { query: string }) => {
+        const paginatedFetch = usePaginatedFetch(fetchPage, onResults, { pageSize: 2, resetDeps: [query] })
+        const { loadMore } = paginatedFetch
+
+        // Runs after the hook's reset effect in the same commit — the window in which the
+        // sentinel's IntersectionObserver callback can fire before the page-0 re-render.
+        useEffect(() => {
+          if (query === "new") {
+            loadMore()
+          }
+        }, [query]) // oxlint-disable-line react-hooks/exhaustive-deps
+
+        return paginatedFetch
+      },
+      { initialProps: { query: "old" } }
+    )
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    act(() => result.current.loadMore())
+    await waitFor(() => expect(fetchPage).toHaveBeenCalledWith(1, expect.anything()))
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    fetchPage.mockClear()
+
+    rerender({ query: "new" })
+
+    await waitFor(() => expect(fetchPage).toHaveBeenCalled())
+    expect(fetchPage).toHaveBeenCalledWith(0, expect.anything())
+    expect(fetchPage).not.toHaveBeenCalledWith(1, expect.anything())
+  })
+
   test("should abort the in-flight request on unmount and not call onResults afterwards", async () => {
     const requests: Request[] = []
     const fetchPage = deferredFetchPage(requests)
@@ -184,6 +220,33 @@ describe("usePaginatedFetch", () => {
     act(() => result.current.loadMore())
 
     await waitFor(() => expect(result.current.hasError).toBe(true))
+
+    act(() => result.current.retry())
+
+    await waitFor(() => expect(onResults).toHaveBeenCalledWith(["c", "d"], 1))
+    expect(fetchPage).toHaveBeenLastCalledWith(1, expect.anything())
+  })
+
+  test("should not skip past a failed page when loadMore fires before a retry", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
+    const fetchPage = vi
+      .fn()
+      .mockResolvedValueOnce(["a", "b"])
+      .mockRejectedValueOnce(new Error("network down"))
+      .mockResolvedValue(["c", "d"])
+    const onResults = vi.fn()
+
+    const { result } = renderHook(() => usePaginatedFetch(fetchPage, onResults, { pageSize: 2 }))
+
+    await waitFor(() => expect(onResults).toHaveBeenCalledWith(["a", "b"], 0))
+    act(() => result.current.loadMore())
+    await waitFor(() => expect(result.current.hasError).toBe(true))
+
+    // e.g. the user scrolls away and back, so the sentinel intersects again
+    act(() => result.current.loadMore())
+
+    expect(fetchPage).toHaveBeenCalledTimes(2)
+    expect(result.current.hasError).toBe(true)
 
     act(() => result.current.retry())
 

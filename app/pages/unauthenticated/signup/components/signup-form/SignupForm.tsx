@@ -5,7 +5,7 @@ import { createUser, type CreateUserRequest } from "~/services/user/UserService"
 import styles from "./SignupForm.module.scss"
 import ErrorMessages from "~/components/error-messages/ErrorMessages"
 import { Link } from "react-router"
-import { onFieldChange } from "~/pages/unauthenticated/AuthFormHelpers"
+import { onFieldChange, useRedirectParameter, withRedirectParameter } from "~/pages/unauthenticated/AuthFormHelpers"
 import { extractErrorMessages } from "~/utils/ErrorMessages"
 import AuthFormHeader from "~/pages/unauthenticated/components/AuthFormHeader"
 import PasswordField from "~/pages/unauthenticated/components/PasswordField"
@@ -33,6 +33,7 @@ type SignupFormProps = {
 }
 
 const SignupForm: FC<SignupFormProps> = props => {
+  const redirect = useRedirectParameter()
   const [firstName, setFirstName] = useState<string>("")
   const [lastName, setLastName] = useState<string>("")
   const [email, setEmail] = useState<string>("")
@@ -86,13 +87,25 @@ const SignupForm: FC<SignupFormProps> = props => {
       try {
         const createUserRequest: CreateUserRequest = { firstName, lastName, email, password }
         await createUser(createUserRequest)
-        await login(email, password)
-        props.onSignup()
       } catch (error: unknown) {
         const errorMessages = extractErrorMessages(error, { 409: "An account with this email already exists." })
         setErrors(errors => ({
           ...errors,
           response: errorMessages,
+        }))
+        setIsSubmitting(false)
+        return
+      }
+
+      // The account exists now, so retrying the form would only report "already exists".
+      try {
+        await login(email, password)
+        props.onSignup()
+      } catch (error: unknown) {
+        console.error("Signing in after sign-up failed", error)
+        setErrors(errors => ({
+          ...errors,
+          response: ["Your account was created, but signing in failed. Please sign in."],
         }))
       } finally {
         setIsSubmitting(false)
@@ -173,7 +186,7 @@ const SignupForm: FC<SignupFormProps> = props => {
       </form>
       <ErrorMessages errors={errors.response} />
       <div className={styles.loginLink}>
-        Already have an account? <Link to="/sign-in">Sign in</Link>
+        Already have an account? <Link to={withRedirectParameter("/sign-in", redirect)}>Sign in</Link>
       </div>
     </div>
   )

@@ -122,6 +122,16 @@ describe("initSentry", () => {
     )
   })
 
+  test("should scrub console arguments from events and console breadcrumbs", async () => {
+    mockGetEnvironment.mockReturnValue(Environment.Production)
+
+    const initSentry = await loadInitSentry()
+    initSentry()
+
+    const { beforeSend, beforeBreadcrumb, beforeSendSpan } = await import("~/services/Sentry")
+    expect(mockInit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ beforeSend, beforeBreadcrumb, beforeSendSpan }))
+  })
+
   test("should only initialize Sentry once", async () => {
     mockGetEnvironment.mockReturnValue(Environment.Production)
 
@@ -130,5 +140,106 @@ describe("initSentry", () => {
     initSentry()
 
     expect(mockInit).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("console argument scrubbing", () => {
+  const axiosLikeError = Object.assign(new Error("Request failed with status code 401"), {
+    name: "AxiosError",
+    config: { headers: { Authorization: "Bearer secret-token" }, data: '{"password":"hunter2"}' },
+  })
+
+  test("should reduce errors to their name and message", async () => {
+    const { scrubConsoleArgument } = await import("~/services/Sentry")
+
+    expect(scrubConsoleArgument(axiosLikeError)).toBe("AxiosError: Request failed with status code 401")
+  })
+
+  test("should keep primitives and redact other objects", async () => {
+    const { scrubConsoleArgument } = await import("~/services/Sentry")
+
+    expect(scrubConsoleArgument("Failed to load")).toBe("Failed to load")
+    expect(scrubConsoleArgument(42)).toBe(42)
+    expect(scrubConsoleArgument(false)).toBe(false)
+    expect(scrubConsoleArgument(null)).toBeNull()
+    expect(scrubConsoleArgument(undefined)).toBeUndefined()
+    expect(scrubConsoleArgument({ password: "hunter2" })).toBe("[redacted]")
+  })
+
+  test("should scrub the console arguments attached to an event", async () => {
+    const { beforeSend } = await import("~/services/Sentry")
+
+    const event = beforeSend({ type: undefined, extra: { arguments: ["Failed to sign in", axiosLikeError] } })
+
+    expect(event.extra).toEqual({ arguments: ["Failed to sign in", "AxiosError: Request failed with status code 401"] })
+  })
+
+  test("should leave events without console arguments untouched", async () => {
+    const { beforeSend } = await import("~/services/Sentry")
+
+    expect(beforeSend({ type: undefined, extra: { other: { nested: true } } }).extra).toEqual({ other: { nested: true } })
+    expect(beforeSend({ type: undefined }).extra).toBeUndefined()
+  })
+
+  test("should scrub console breadcrumbs only", async () => {
+    const { beforeBreadcrumb } = await import("~/services/Sentry")
+
+    expect(beforeBreadcrumb({ category: "console", data: { arguments: [axiosLikeError], logger: "console" } }).data)
+      .toEqual({ arguments: ["AxiosError: Request failed with status code 401"], logger: "console" })
+    expect(beforeBreadcrumb({ category: "xhr", data: { arguments: [{ keep: true }] } }).data)
+      .toEqual({ arguments: [{ keep: true }] })
+  })
+})
+
+describe("URL query scrubbing", () => {
+  const searchUrl = "https://api.example.com/videos/search?search-term=private%20words&page-number=0"
+
+  test("should drop query strings and fragments from every URL in a string", async () => {
+    const { stripUrlQueries } = await import("~/services/Sentry")
+
+    expect(stripUrlQueries(searchUrl)).toBe("https://api.example.com/videos/search")
+    expect(stripUrlQueries(`GET ${searchUrl}`)).toBe("GET https://api.example.com/videos/search")
+    expect(stripUrlQueries("https://videos.example.com/video/1#t=30")).toBe("https://videos.example.com/video/1")
+    expect(stripUrlQueries("no url here?really")).toBe("no url here?really")
+  })
+
+  test("should strip the request URL of an event and drop its query string", async () => {
+    const { beforeSend } = await import("~/services/Sentry")
+
+    const event = beforeSend({ type: undefined, request: { url: searchUrl, query_string: "search-term=private" } })
+
+    expect(event.request).toEqual({ url: "https://api.example.com/videos/search" })
+  })
+
+  test("should strip URLs in request and navigation breadcrumbs", async () => {
+    const { beforeBreadcrumb } = await import("~/services/Sentry")
+
+    expect(beforeBreadcrumb({ category: "xhr", data: { url: searchUrl, method: "GET" } }).data)
+      .toEqual({ url: "https://api.example.com/videos/search", method: "GET" })
+    expect(beforeBreadcrumb({ category: "fetch", data: { url: searchUrl } }).data)
+      .toEqual({ url: "https://api.example.com/videos/search" })
+    expect(beforeBreadcrumb({ category: "navigation", data: { from: "/?search-term=private", to: "/sign-in?redirect=%2Fvideo%2F1" } }).data)
+      .toEqual({ from: "/", to: "/sign-in" })
+  })
+
+  test("should strip URLs from span names and attributes, and drop query attributes", async () => {
+    const { beforeSendSpan } = await import("~/services/Sentry")
+
+    const span = beforeSendSpan({
+      trace_id: "t",
+      span_id: "s",
+      name: `GET ${searchUrl}`,
+      start_timestamp: 0,
+      status: "ok",
+      is_segment: false,
+      attributes: { "url.full": searchUrl, "http.query": "?search-term=private", "http.method": "GET", "http.status": 200 },
+    })
+
+    expect(span.name).toBe("GET https://api.example.com/videos/search")
+    expect(span.attributes).toEqual({
+      "url.full": "https://api.example.com/videos/search",
+      "http.method": "GET",
+      "http.status": 200,
+    })
   })
 })

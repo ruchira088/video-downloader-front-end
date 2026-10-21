@@ -95,6 +95,14 @@ describe("PlaylistService", () => {
   })
 
   describe("fetchPlaylistById", () => {
+    test("should encode the playlist ID so a crafted route param cannot traverse to another API path", async () => {
+      mockAxiosGet.mockResolvedValue({ data: playlistJson({ id: "123" }) })
+
+      await fetchPlaylistById("../users")
+
+      expect(mockAxiosGet).toHaveBeenCalledWith("/playlists/id/..%2Fusers")
+    })
+
     test("should call API with playlist ID", async () => {
       const mockPlaylist = playlistJson({ id: "123", title: "My Playlist" })
       mockAxiosGet.mockResolvedValue({ data: mockPlaylist })

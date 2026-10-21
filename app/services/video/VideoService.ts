@@ -44,12 +44,12 @@ export const searchVideos = async (
 }
 
 export const fetchVideoById = async (videoId: string): Promise<Video> => {
-  const response = await axiosClient.get(`/videos/id/${videoId}`)
+  const response = await axiosClient.get(`/videos/id/${encodeURIComponent(videoId)}`)
   return zodParse(Video, response.data)
 }
 
 export const fetchVideoSnapshotsByVideoId = async (videoId: string): Promise<Snapshot[]> => {
-  const response = await axiosClient.get(`/videos/id/${videoId}/snapshots`)
+  const response = await axiosClient.get(`/videos/id/${encodeURIComponent(videoId)}/snapshots`)
   return zodParse(ListResponse(Snapshot), response.data).results
 }
 
@@ -59,7 +59,7 @@ export const metadata = async (url: string): Promise<VideoMetadata> => {
 }
 
 export const updateVideoTitle = async (videoId: string, title: string): Promise<Video> => {
-  const response = await axiosClient.patch(`/videos/id/${videoId}/metadata`, { title })
+  const response = await axiosClient.patch(`/videos/id/${encodeURIComponent(videoId)}/metadata`, { title })
   return zodParse(Video, response.data)
 }
 
@@ -69,7 +69,7 @@ export const videoServiceSummary = async (): Promise<VideoServiceSummary> => {
 }
 
 export const deleteVideo = async (videoId: string, deleteFile: boolean): Promise<Video> => {
-  const response = await axiosClient.delete(`/videos/id/${videoId}`, {
+  const response = await axiosClient.delete(`/videos/id/${encodeURIComponent(videoId)}`, {
     params: {
       "delete-video-file": deleteFile,
     },

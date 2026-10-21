@@ -93,7 +93,9 @@ const Duplicates = () => {
     <div className={styles.duplicatesPage}>
       <Helmet title="Duplicates" />
 
-      {groups.length === 0 && !isLoading && (
+      {/* Only once every page has been checked: an empty list can still mean a failed page, or a
+          page whose groups were all dropped with more pages to come. */}
+      {groups.length === 0 && !isLoading && !hasMore && !hasError && (
         <div className={styles.emptyState}>No duplicate videos found</div>
       )}
 

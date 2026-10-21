@@ -1,20 +1,16 @@
 import React from "react"
 import LoginForm from "./components/login-form/LoginForm"
-import { useNavigate, useSearchParams } from "react-router"
+import { useNavigate } from "react-router"
 import Helmet from "~/components/helmet/Helmet"
-import { Option } from "~/types/Option"
-import { REDIRECT_QUERY_PARAMETER } from "~/services/authentication/AuthenticationService"
-import { safeRedirectPath } from "~/pages/unauthenticated/AuthFormHelpers"
+import { safeRedirectPath, useRedirectParameter } from "~/pages/unauthenticated/AuthFormHelpers"
 
 import styles from "./LoginPage.module.scss"
 
 const LoginPage = () => {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const redirect = useRedirectParameter()
 
   const onAuthenticate = () => {
-    const redirect: Option<string> = Option.fromNullable(searchParams.get(REDIRECT_QUERY_PARAMETER))
-
     void navigate(safeRedirectPath(redirect))
   }
 

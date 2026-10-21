@@ -25,7 +25,18 @@ describe("humanReadableSize", () => {
       expect(humanReadableSize(1001)).toBe("1kB")
       expect(humanReadableSize(1500)).toBe("2kB")
       expect(humanReadableSize(10000)).toBe("10kB")
-      expect(humanReadableSize(999999)).toBe("1000kB")
+    })
+
+    test("should treat a non-finite size as zero", () => {
+      expect(humanReadableSize(Number.NaN)).toBe("0B")
+      expect(humanReadableSize(Number.POSITIVE_INFINITY)).toBe("0B")
+    })
+
+    test("should step up a unit when rounding reaches 1000", () => {
+      expect(humanReadableSize(999999)).toBe("1MB")
+      expect(humanReadableSize(999999999)).toBe("1.00GB")
+      expect(humanReadableSize(999.5)).toBe("1kB")
+      expect(humanReadableSize(999.999, true)).toBe("1.00kB")
     })
   })
 
@@ -77,6 +88,17 @@ describe("humanReadableSize", () => {
 })
 
 describe("humanReadableDuration", () => {
+  test("should keep days as hours rather than dropping them", () => {
+    expect(humanReadableDuration(Duration.fromObject({ seconds: 90000 }))).toBe("25 hours")
+    expect(humanReadableDuration(Duration.fromObject({ seconds: 86400 }))).toBe("24 hours")
+    expect(humanReadableDuration(Duration.fromObject({ seconds: 100000 }))).toBe("27 hours 46 minutes 40 seconds")
+  })
+
+  test("should drop fractional seconds and treat negative durations as zero", () => {
+    expect(humanReadableDuration(Duration.fromObject({ seconds: 125.5 }))).toBe("2 minutes 5 seconds")
+    expect(humanReadableDuration(Duration.fromObject({ seconds: -30 }))).toBe("0 seconds")
+  })
+
   test("should format seconds only", () => {
     const duration = Duration.fromObject({ seconds: 30 })
     expect(humanReadableDuration(duration)).toBe("30 seconds")
@@ -143,6 +165,16 @@ describe("humanReadableDuration", () => {
 })
 
 describe("shortHumanReadableDuration", () => {
+  test("should treat an invalid duration as zero", () => {
+    expect(shortHumanReadableDuration(Duration.invalid("corrupt"))).toBe("0:00")
+    expect(humanReadableDuration(Duration.invalid("corrupt"))).toBe("0 seconds")
+  })
+
+  test("should keep days as hours rather than dropping them", () => {
+    expect(shortHumanReadableDuration(Duration.fromObject({ seconds: 90000 }))).toBe("25:00:00")
+    expect(shortHumanReadableDuration(Duration.fromObject({ hours: 26, minutes: 3, seconds: 7 }))).toBe("26:03:07")
+  })
+
   describe("without hours", () => {
     test("should format seconds only", () => {
       const duration = Duration.fromObject({ seconds: 30 })

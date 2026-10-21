@@ -27,20 +27,26 @@ export interface KeyValueStore<K, V extends {}> {
   remove(key: K): Option<V>
 }
 
+// Storage access throws when it is blocked (privacy settings, sandboxed frames) or full.
+// Callers treat this store as best-effort, so an unavailable store reads as empty.
+const removeItem = (key: string): void => {
+  Either.fromTry(() => localStorage.removeItem(key))
+}
+
 export class LocalKeyValueStore<K, V extends {}> implements KeyValueStore<K, V> {
   constructor(readonly keySpace: KeySpace<K, V>) {}
 
   get(key: K): Option<V> {
     const stringValue: Option<string> =
-      Option.fromNullable(
-        localStorage.getItem(this.stringKey(key))
-      )
+      Either.fromTry(() => localStorage.getItem(this.stringKey(key)))
+        .toOption()
+        .flatMap(value => Option.fromNullable(value))
 
     return stringValue.flatMap(value =>
       Either.fromTry(() => this.keySpace.valueCodec.decode(value))
         .fold<Option<V>>(
           () => {
-            localStorage.removeItem(this.stringKey(key))
+            removeItem(this.stringKey(key))
             return None.of()
           },
           decodedValue => Some.of(decodedValue)
@@ -49,12 +55,18 @@ export class LocalKeyValueStore<K, V extends {}> implements KeyValueStore<K, V> 
   }
 
   put(key: K, value: V): void {
-    localStorage.setItem(this.stringKey(key), this.keySpace.valueCodec.encode(value))
+    const stringKey = this.stringKey(key)
+
+    Either.fromTry(() => localStorage.setItem(stringKey, this.keySpace.valueCodec.encode(value)))
+      .fold(
+        error => console.error(`Unable to write ${stringKey} to local storage`, error),
+        () => undefined
+      )
   }
 
   remove(key: K): Option<V> {
     const existingValue = this.get(key)
-    localStorage.removeItem(this.stringKey(key))
+    removeItem(this.stringKey(key))
 
     return existingValue
   }

@@ -82,7 +82,7 @@ describe("HealthCheckService", () => {
       expect(result.database.healthStatus).toBe("Healthy")
     })
 
-    test("should accept any status code via validateStatus", async () => {
+    test("should accept any status code except 401 via validateStatus", async () => {
       mockAxiosGet.mockResolvedValue({ data: validHealthCheckData })
 
       await performHealthCheck()
@@ -90,10 +90,12 @@ describe("HealthCheckService", () => {
       const call = mockAxiosGet.mock.calls[0]
       const config = call[1] as { validateStatus: (status: number) => boolean }
 
-      // validateStatus should return true for any status
+      // An unhealthy service still answers with a health report, whatever the status
       expect(config.validateStatus(200)).toBe(true)
       expect(config.validateStatus(500)).toBe(true)
       expect(config.validateStatus(503)).toBe(true)
+      // ...but an expired session must reject, so the shared client's 401 handling signs the user out
+      expect(config.validateStatus(401)).toBe(false)
     })
   })
 
@@ -106,6 +108,21 @@ describe("HealthCheckService", () => {
       expect(result.name).toBe("video-downloader-front-end")
       expect(typeof result.version).toBe("string")
       expect(result.timestamp).toBeInstanceOf(DateTime)
+    })
+
+    test("should treat empty build variables as absent rather than an invalid date", () => {
+      const result = frontendServiceInformation({ ...import.meta.env, VITE_BUILD_TIMESTAMP: "", VITE_GIT_BRANCH: "", VITE_GIT_COMMIT: "" })
+
+      expect(result.buildTimestamp.isEmpty()).toBe(true)
+      expect(result.gitBranch.isEmpty()).toBe(true)
+      expect(result.gitCommit.isEmpty()).toBe(true)
+    })
+
+    test("should parse a build timestamp", () => {
+      const result = frontendServiceInformation({ ...import.meta.env, VITE_BUILD_TIMESTAMP: "2024-01-15T10:30:00Z" })
+
+      expect(result.buildTimestamp.map((timestamp) => timestamp.toMillis()).toNullable())
+        .toBe(DateTime.fromISO("2024-01-15T10:30:00Z").toMillis())
     })
   })
 })

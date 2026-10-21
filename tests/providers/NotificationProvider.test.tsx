@@ -156,6 +156,32 @@ describe("NotificationProvider", () => {
 
     expect(screen.getByRole("alert")).toHaveTextContent("Playlist saved")
   })
+  test("should give a replacing notification its own full display time", async () => {
+    vi.useFakeTimers()
+
+    try {
+      render(
+        <NotificationProvider>
+          <TestConsumer />
+        </NotificationProvider>
+      )
+
+      fireEvent.click(screen.getByRole("button", { name: "Succeed" }))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(4_000)
+      })
+      fireEvent.click(screen.getByRole("button", { name: "Fail" }))
+      // Past the first notification's timeout, but well within the second's.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3_000)
+      })
+
+      expect(screen.getByRole("alert")).toHaveTextContent("Failed to save the playlist")
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   test("should dismiss a notification once the auto-hide timeout elapses", async () => {
     vi.useFakeTimers()
 

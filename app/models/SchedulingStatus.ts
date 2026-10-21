@@ -13,6 +13,10 @@ export enum SchedulingStatus {
   Deleted = "Deleted"
 }
 
+/** Statuses that take a download off the in-progress list for good. */
+export const isFinishedStatus = (status: SchedulingStatus): boolean =>
+  status === SchedulingStatus.Completed || status === SchedulingStatus.Deleted
+
 export const TRANSITION_STATES: Partial<Record<SchedulingStatus, SchedulingStatus[]>> = {
   [SchedulingStatus.Active]: [SchedulingStatus.Paused],
   [SchedulingStatus.Error]: [SchedulingStatus.Queued],

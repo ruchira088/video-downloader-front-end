@@ -183,6 +183,55 @@ describe("InfiniteScroll", () => {
     expect(observer.disconnect).toHaveBeenCalledTimes(1)
   })
 
+  describe("when a page settles", () => {
+    // IntersectionObserver only reports transitions, so a sentinel that stays in view after a
+    // page adds too few rows to push it off-screen would never ask for the next page.
+    // Re-observing makes the observer deliver a fresh entry describing the current state.
+    const renderLoading = (props: { hasMore?: boolean; hasError?: boolean } = {}) => {
+      const { rerender } = render(
+        <InfiniteScroll loadMore={vi.fn()} hasMore={props.hasMore ?? true} isLoading={true} hasError={false}>
+          <div>Content</div>
+        </InfiniteScroll>
+      )
+      const observer = intersectionObserverInstances[intersectionObserverInstances.length - 1]
+      vi.mocked(observer.observe).mockClear()
+
+      const settle = () =>
+        rerender(
+          <InfiniteScroll loadMore={vi.fn()} hasMore={props.hasMore ?? true} isLoading={false} hasError={props.hasError ?? false}>
+            <div>Content</div>
+          </InfiniteScroll>
+        )
+
+      return { observer, settle }
+    }
+
+    test("should re-observe the sentinel so a still-visible sentinel loads the next page", () => {
+      const { observer, settle } = renderLoading()
+
+      settle()
+
+      expect(observer.unobserve).toHaveBeenCalledTimes(1)
+      expect(observer.observe).toHaveBeenCalledTimes(1)
+    })
+
+    test("should not re-observe when everything has loaded", () => {
+      const { observer, settle } = renderLoading({ hasMore: false })
+
+      settle()
+
+      expect(observer.observe).not.toHaveBeenCalled()
+    })
+
+    test("should not re-observe after a failed page, which waits for an explicit retry", () => {
+      const { observer, settle } = renderLoading({ hasError: true })
+
+      settle()
+
+      expect(observer.observe).not.toHaveBeenCalled()
+    })
+  })
+
   test("should observe the loading trigger and disconnect it on unmount", () => {
     const loadMore = vi.fn()
     const { unmount, container } = render(

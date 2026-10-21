@@ -51,6 +51,9 @@ import styles from "./PlaylistDetail.module.scss"
 
 type LoadFailure = "not-found" | "error"
 
+/** A drag's effect on a playlist's order; a no-op if either video is gone. */
+type PlaylistMove = (playlist: Playlist) => Playlist
+
 const PlaylistDetail = (props: Route.ComponentProps) => {
   const navigate = useNavigate()
   const { safeMode } = useApplicationConfiguration()
@@ -64,6 +67,34 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
   const [showAddVideos, setShowAddVideos] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isUploadingAlbumArt, setIsUploadingAlbumArt] = useState(false)
+
+  // The last playlist the server confirmed, kept in step with `playlist` but readable without
+  // waiting for a render — a queued mutation must see the result of the one before it. It
+  // deliberately skips optimistic reorders, which are display-only until the server agrees.
+  const confirmedPlaylist = useRef<Option<Playlist>>(None.of())
+  const pendingMutation = useRef<Promise<void>>(Promise.resolve())
+
+  // Drags shown on screen whose reorder is still waiting its turn in the queue. They are
+  // re-applied over every confirmed playlist, so an earlier change landing doesn't snap them back.
+  const pendingMoves = useRef<ReadonlyArray<PlaylistMove>>([])
+
+  const withPendingMoves = (confirmed: Playlist): Playlist =>
+    pendingMoves.current.reduce((current, move) => move(current), confirmed)
+
+  const applyPlaylist = (confirmed: Option<Playlist>) => {
+    confirmedPlaylist.current = confirmed
+    setPlaylist(confirmed.map(withPendingMoves))
+  }
+
+  // Every change answers with the whole playlist, so concurrent changes would overwrite each
+  // other (lost videos, a reverted title). Run them one at a time, each on the latest playlist.
+  const enqueueMutation = (mutation: (current: Playlist) => Promise<void>): Promise<void> => {
+    const result = pendingMutation.current.then(() =>
+      confirmedPlaylist.current.fold(() => Promise.resolve(), mutation)
+    )
+    pendingMutation.current = result.catch(() => {})
+    return result
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -81,6 +112,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     setLoadFailure(None.of())
     try {
       const data = await fetchPlaylistById(playlistId)
+      confirmedPlaylist.current = Some.of(data)
       setPlaylist(Some.of(data))
     } catch (error) {
       // Without this the promise rejects unhandled and the fallback below claims "not found"
@@ -106,50 +138,69 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
 
   const playback = usePlaylistPlayback(playlist.map(p => p.videos).getOrElse(() => []))
 
-  const handleDragEnd = async (event: DragEndEvent) => {
+  // Refetches without the page-level spinner, which would unmount the page (and any open
+  // player or search panel). If that fails too, fall back to the last order the server confirmed.
+  const refreshPlaylist = async () => {
+    try {
+      applyPlaylist(Some.of(await fetchPlaylistById(playlistId)))
+    } catch (error) {
+      console.error("Failed to refresh the playlist", error)
+      setPlaylist(confirmedPlaylist.current.map(withPendingMoves))
+    }
+  }
+
+  const handleDragEnd = (event: DragEndEvent): Promise<void> => {
     const { active, over } = event
 
-    if (!over) return
+    if (!over || active.id === over.id) return Promise.resolve()
 
-    const activeId = active.id as string
-    const overId = over.id as string
+    const activeId = String(active.id)
+    const overId = String(over.id)
 
-    if (activeId === overId) return
+    const moved = (current: Playlist): Option<Playlist> => {
+      const oldIndex = current.videos.findIndex(v => v.videoMetadata.id === activeId)
+      const newIndex = current.videos.findIndex(v => v.videoMetadata.id === overId)
 
-    const videos = playlist.map(p => p.videos).getOrElse(() => [])
-    const oldIndex = videos.findIndex(v => v.videoMetadata.id === activeId)
-    const newIndex = videos.findIndex(v => v.videoMetadata.id === overId)
+      return oldIndex === -1 || newIndex === -1
+        ? None.of()
+        : Some.of({ ...current, videos: arrayMove(current.videos, oldIndex, newIndex) })
+    }
 
-    if (oldIndex === -1 || newIndex === -1) return
+    const move: PlaylistMove = current => moved(current).getOrElse(() => current)
 
-    const newVideos = arrayMove(videos, oldIndex, newIndex)
+    // Show the drop immediately; the server call may have to wait behind other changes.
+    pendingMoves.current = [...pendingMoves.current, move]
+    setPlaylist(prev => prev.map(move))
 
-    setPlaylist(prev =>
-      prev.map(p => ({
-        ...p,
-        videos: newVideos
-      }))
-    )
+    return enqueueMutation(current => {
+      // From here the move is carried by the request itself rather than re-applied on top.
+      pendingMoves.current = pendingMoves.current.filter(pendingMove => pendingMove !== move)
 
-    try {
-      await reorderPlaylistVideos(
-        playlistId,
-        newVideos.map(v => v.videoMetadata.id)
+      return moved(current).fold(
+        () => Promise.resolve(),
+        async reordered => {
+          try {
+            applyPlaylist(
+              Some.of(await reorderPlaylistVideos(playlistId, reordered.videos.map(v => v.videoMetadata.id)))
+            )
+          } catch (error) {
+            notifyError("Failed to reorder the playlist", error)
+            await refreshPlaylist()
+          }
+        }
       )
-    } catch (error) {
-      notifyError("Failed to reorder the playlist", error)
-      void loadPlaylist()
-    }
+    })
   }
 
-  const handleUpdateTitle = async (title: string) => {
-    try {
-      await updatePlaylist(playlistId, { title })
-      setPlaylist(prev => prev.map(p => ({ ...p, title })))
-    } catch (error) {
-      notifyError("Failed to rename the playlist", error)
-    }
-  }
+  const handleUpdateTitle = (title: string): Promise<void> =>
+    enqueueMutation(async () => {
+      try {
+        await updatePlaylist(playlistId, { title })
+        applyPlaylist(confirmedPlaylist.current.map(p => ({ ...p, title })))
+      } catch (error) {
+        notifyError("Failed to rename the playlist", error)
+      }
+    })
 
   const handleDelete = async () => {
     try {
@@ -160,58 +211,56 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
     }
   }
 
-  const handleRemoveVideo = async (videoId: string) => {
-    const currentPlaylist = playlist.toNullable()
-    if (!currentPlaylist) return
+  const handleRemoveVideo = (videoId: string): Promise<void> =>
+    enqueueMutation(async currentPlaylist => {
+      try {
+        const updatedPlaylist = await removeVideoFromPlaylist(currentPlaylist, videoId)
+        applyPlaylist(Some.of(updatedPlaylist))
+        playback.videoRemoved(videoId)
+      } catch (error) {
+        notifyError("Failed to remove the video from the playlist", error)
+      }
+    })
 
-    try {
-      const updatedPlaylist = await removeVideoFromPlaylist(currentPlaylist, videoId)
-      setPlaylist(Some.of(updatedPlaylist))
-      playback.videoRemoved(videoId)
-    } catch (error) {
-      notifyError("Failed to remove the video from the playlist", error)
-    }
-  }
-
-  const handleAddVideo = async (videoId: string) => {
-    const currentPlaylist = playlist.toNullable()
-    if (!currentPlaylist) return
-
-    try {
-      const updatedPlaylist = await addVideoToPlaylist(currentPlaylist, videoId)
-      setPlaylist(Some.of(updatedPlaylist))
-      void Option.fromNullable(updatedPlaylist.videos.find(v => v.videoMetadata.id === videoId)).forEach(
-        playback.videoAdded
-      )
-    } catch (error) {
-      notifyError("Failed to add the video to the playlist", error)
-    }
-  }
+  const handleAddVideo = (videoId: string): Promise<void> =>
+    enqueueMutation(async currentPlaylist => {
+      try {
+        const updatedPlaylist = await addVideoToPlaylist(currentPlaylist, videoId)
+        applyPlaylist(Some.of(updatedPlaylist))
+        void Option.fromNullable(updatedPlaylist.videos.find(v => v.videoMetadata.id === videoId)).forEach(
+          playback.videoAdded
+        )
+      } catch (error) {
+        notifyError("Failed to add the video to the playlist", error)
+      }
+    })
 
   const handleAlbumArtUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
     setIsUploadingAlbumArt(true)
-    try {
-      const updatedPlaylist = await uploadAlbumArt(playlistId, file)
-      setPlaylist(Some.of(updatedPlaylist))
-    } catch (error) {
-      notifyError("Failed to upload the album art", error)
-    } finally {
-      setIsUploadingAlbumArt(false)
-      if (fileInputRef.current) fileInputRef.current.value = ""
-    }
+    await enqueueMutation(async () => {
+      try {
+        const updatedPlaylist = await uploadAlbumArt(playlistId, file)
+        applyPlaylist(Some.of(updatedPlaylist))
+      } catch (error) {
+        notifyError("Failed to upload the album art", error)
+      }
+    })
+    setIsUploadingAlbumArt(false)
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
-  const handleRemoveAlbumArt = async () => {
-    try {
-      const updatedPlaylist = await removeAlbumArt(playlistId)
-      setPlaylist(Some.of(updatedPlaylist))
-    } catch (error) {
-      notifyError("Failed to remove the album art", error)
-    }
-  }
+  const handleRemoveAlbumArt = (): Promise<void> =>
+    enqueueMutation(async () => {
+      try {
+        const updatedPlaylist = await removeAlbumArt(playlistId)
+        applyPlaylist(Some.of(updatedPlaylist))
+      } catch (error) {
+        notifyError("Failed to remove the album art", error)
+      }
+    })
 
   if (isLoading) {
     return (

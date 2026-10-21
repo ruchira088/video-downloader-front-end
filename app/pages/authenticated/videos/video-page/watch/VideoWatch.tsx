@@ -29,10 +29,20 @@ type VideoDeleteDialogProps = {
 
 const VideoDeleteDialog: FC<VideoDeleteDialogProps> = props => {
   const [deleteFile, setDeleteFile] = useState<boolean>(false)
+  // Guards against a second click sending a second DELETE while the first is in flight.
+  const [isDeleting, setIsDeleting] = useState<boolean>(false)
   const { notifyError } = useNotification()
 
+  const handleDelete = () => {
+    setIsDeleting(true)
+    props.onDelete(deleteFile)
+      .then(() => setDeleteFile(false))
+      .catch((error) => notifyError("Failed to delete the video", error))
+      .finally(() => setIsDeleting(false))
+  }
+
   return (
-    <Dialog open={props.isVisible} onClose={props.onClose}>
+    <Dialog open={props.isVisible} onClose={isDeleting ? undefined : props.onClose}>
       <DialogTitle>Delete Video?</DialogTitle>
       <DialogContent>
         <VideoMetadataCard videoMetadata={props.videoMetadata} />
@@ -44,15 +54,12 @@ const VideoDeleteDialog: FC<VideoDeleteDialogProps> = props => {
         <Button
           color="secondary"
           variant="contained"
-          onClick={() =>
-            props.onDelete(deleteFile)
-              .then(() => setDeleteFile(false))
-              .catch((error) => notifyError("Failed to delete the video", error))
-          }
+          onClick={handleDelete}
+          disabled={isDeleting}
         >
-          Delete
+          {isDeleting ? "Deleting..." : "Delete"}
         </Button>
-        <Button onClick={props.onClose}>Cancel</Button>
+        <Button onClick={props.onClose} disabled={isDeleting}>Cancel</Button>
       </DialogActions>
     </Dialog>
   )

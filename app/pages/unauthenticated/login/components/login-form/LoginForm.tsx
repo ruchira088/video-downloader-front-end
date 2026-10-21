@@ -5,7 +5,7 @@ import { type AuthenticationToken } from "~/models/AuthenticationToken"
 import styles from "./LoginForm.module.scss"
 import ErrorMessages from "~/components/error-messages/ErrorMessages"
 import { Link } from "react-router"
-import { onFieldChange } from "~/pages/unauthenticated/AuthFormHelpers"
+import { onFieldChange, useRedirectParameter, withRedirectParameter } from "~/pages/unauthenticated/AuthFormHelpers"
 import { extractErrorMessages } from "~/utils/ErrorMessages"
 import AuthFormHeader from "~/pages/unauthenticated/components/AuthFormHeader"
 import PasswordField from "~/pages/unauthenticated/components/PasswordField"
@@ -23,6 +23,7 @@ type LoginFormProps = {
 }
 
 const LoginForm: FC<LoginFormProps> = props => {
+  const redirect = useRedirectParameter()
   const [email, setEmail] = useState<string>("")
   const [password, setPassword] = useState<string>("")
   const [errors, setErrors] = useState<Errors>(EMPTY_ERRORS)
@@ -96,7 +97,7 @@ const LoginForm: FC<LoginFormProps> = props => {
       </form>
       <ErrorMessages errors={errors.response} />
       <div className={styles.signupLink}>
-        Don't have an account? <Link to="/sign-up">Sign up</Link>
+        Don't have an account? <Link to={withRedirectParameter("/sign-up", redirect)}>Sign up</Link>
       </div>
     </div>
   )

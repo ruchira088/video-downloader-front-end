@@ -41,10 +41,12 @@ const Schedule = () => {
 
     setScheduling(true)
     setErrors([])
+    const submittedUrl = videoUrl
 
     try {
       await scheduleVideo(trimmedUrl)
-      setVideoUrl("")
+      // Only clear what was scheduled: the field stays editable, so it may hold the next URL by now.
+      setVideoUrl(currentUrl => currentUrl === submittedUrl ? "" : currentUrl)
       notifySuccess("Download scheduled")
     } catch (error: unknown) {
       setErrors(extractErrorMessages(error))
@@ -76,7 +78,8 @@ const Schedule = () => {
         </Button>
         {isScheduling && <LinearProgress className={styles.schedulingProgress} />}
         <ErrorMessages errors={errors} title="Scheduling failed" />
-        <Preview url={videoUrl} />
+        {/* Don't ask the API to preview half-typed text. */}
+        {isHttpUrl(trimmedUrl) && <Preview url={trimmedUrl} />}
       </form>
     </div>
   )

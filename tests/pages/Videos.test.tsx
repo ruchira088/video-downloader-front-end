@@ -26,12 +26,12 @@ vi.mock("~/components/helmet/Helmet", () => ({
   default: ({ title }: { title: string }) => <title>{title}</title>,
 }))
 
-const renderWithRouter = (initialEntry: string = "/") => {
+const renderWithRouter = (initialEntry: string = "/", safeMode: boolean = false) => {
   const router = createMemoryRouter(
     [
       {
         path: "/",
-        element: withApplicationConfiguration(<Videos />),
+        element: withApplicationConfiguration(<Videos />, { safeMode }),
       },
     ],
     { initialEntries: [initialEntry] }
@@ -64,6 +64,49 @@ describe("Videos", () => {
     await waitFor(() => {
       expect(screen.getByLabelText("Search videos")).toBeInTheDocument()
     })
+  })
+
+  test("should not suggest real titles in safe mode", async () => {
+    const { searchVideos } = await import("~/services/video/VideoService")
+    vi.mocked(searchVideos).mockResolvedValue({
+      results: [buildVideo({ id: "video-1", title: "Secret Real Title" })],
+      pageNumber: 0,
+      pageSize: 50,
+      searchTerm: None.of(),
+    })
+
+    renderWithRouter("/", true)
+
+    await waitFor(() => expect(searchVideos).toHaveBeenCalled())
+    await waitFor(() => expect(screen.getAllByRole("link").length).toBeGreaterThan(0))
+    fireEvent.keyDown(screen.getByLabelText("Search videos"), { key: "ArrowDown" })
+
+    expect(screen.getAllByRole("option").length).toBe(1)
+    expect(screen.queryByText("Secret Real Title")).not.toBeInTheDocument()
+  })
+
+  test("should not keep the previous query's results when the new query fails", async () => {
+    const { searchVideos } = await import("~/services/video/VideoService")
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    vi.mocked(searchVideos).mockResolvedValue({
+      results: [buildVideo({ id: "video-1", title: "Cooking pasta" })],
+      pageNumber: 0,
+      pageSize: 50,
+      searchTerm: None.of(),
+    })
+
+    const { router } = renderWithRouter("/?search-term=cooking")
+
+    await waitFor(() => expect(screen.getByText("Cooking pasta")).toBeInTheDocument())
+
+    vi.mocked(searchVideos).mockRejectedValue(new Error("network down"))
+    await act(async () => {
+      await router.navigate("/?search-term=cooking%20rice")
+    })
+
+    await waitFor(() => expect(screen.queryByText("Cooking pasta")).not.toBeInTheDocument())
+
+    consoleError.mockRestore()
   })
 
   test("should render video search component", async () => {
@@ -232,6 +275,49 @@ describe("Videos", () => {
     await waitFor(() => {
       expect(screen.getByLabelText("Search videos")).toHaveValue("cooking")
     })
+  })
+
+  test("should keep text typed while the debounced search is still navigating", async () => {
+    // A route loader holds the navigation open, standing in for a slow router transition.
+    let releaseNavigation: () => void = () => {}
+    let holdNavigations = false
+    const router = createMemoryRouter(
+      [
+        {
+          path: "/",
+          loader: () =>
+            holdNavigations ? new Promise<null>((resolve) => { releaseNavigation = () => resolve(null) }) : null,
+          element: withApplicationConfiguration(<Videos />),
+        },
+      ],
+      { initialEntries: ["/"] }
+    )
+    render(<RouterProvider router={router} />)
+
+    const searchInput = await screen.findByLabelText("Search videos")
+    holdNavigations = true
+
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: "ab" } })
+    })
+    await waitFor(() => {
+      expect(router.state.navigation.state).toBe("loading")
+    }, { timeout: DEBOUNCE_TIMEOUT_MS })
+
+    // The user keeps typing before the "ab" navigation commits.
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: "abc" } })
+    })
+    holdNavigations = false
+    await act(async () => {
+      releaseNavigation()
+    })
+
+    expect(router.state.location.search).toBe("?search-term=ab")
+    expect(searchInput).toHaveValue("abc")
+    await waitFor(() => {
+      expect(router.state.location.search).toBe("?search-term=abc")
+    }, { timeout: DEBOUNCE_TIMEOUT_MS })
   })
 
   test("should drop the query parameter when the search is cleared", async () => {
@@ -418,6 +504,35 @@ describe("Videos", () => {
         expect(screen.getByText("Page1 0")).toBeInTheDocument()
       })
       expect(screen.getByText("Page0 0")).toBeInTheDocument()
+    })
+
+    test("should not show a video twice when it reappears on the next page", async () => {
+      // Offset paging under date-descending order: a newly downloaded video shifts every row
+      // down by one, so the last video of page 0 comes back as the first of page 1.
+      const { searchVideos } = await import("~/services/video/VideoService")
+      const fullPage = Array.from({ length: 50 }, (_, i) => buildVideo({ id: `p0-${i}`, title: `Page0 ${i}` }))
+
+      vi.mocked(searchVideos)
+        .mockResolvedValueOnce({ results: fullPage, pageNumber: 0, pageSize: 50, searchTerm: None.of() })
+        .mockResolvedValueOnce({
+          results: [fullPage[49], buildVideo({ id: "p1-0", title: "Page1 0" })],
+          pageNumber: 1,
+          pageSize: 50,
+          searchTerm: None.of(),
+        })
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByText("Page0 49")).toBeInTheDocument()
+      })
+
+      await triggerIntersection()
+
+      await waitFor(() => {
+        expect(screen.getByText("Page1 0")).toBeInTheDocument()
+      })
+      expect(screen.getAllByText("Page0 49")).toHaveLength(1)
     })
 
     test("should not refetch when results are less than page size (hasMore=false)", async () => {

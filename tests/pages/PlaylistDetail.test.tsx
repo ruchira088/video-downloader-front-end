@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach, beforeAll } from "vitest"
-import { render, screen, waitFor, fireEvent } from "@testing-library/react"
+import { act, render, screen, waitFor, fireEvent } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import PlaylistDetail from "~/pages/authenticated/playlists/PlaylistDetail"
 import { createMemoryRouter, RouterProvider } from "react-router"
@@ -38,6 +38,22 @@ vi.mock("~/services/playlist/PlaylistService", () => ({
   uploadAlbumArt: vi.fn(),
   removeAlbumArt: vi.fn(),
 }))
+
+// Pointer drags can't be simulated in jsdom, so keep the real DndContext but capture its
+// onDragEnd for tests to call directly.
+let capturedOnDragEnd: (event: { active: { id: string }; over: { id: string } | null }) => Promise<void> =
+  async () => {}
+
+vi.mock("@dnd-kit/core", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@dnd-kit/core")>()
+  return {
+    ...actual,
+    DndContext: (props: React.ComponentProps<typeof actual.DndContext>) => {
+      capturedOnDragEnd = props.onDragEnd as typeof capturedOnDragEnd
+      return <actual.DndContext {...props} />
+    },
+  }
+})
 
 vi.mock("~/services/asset/AssetService", () => ({
   imageUrl: vi.fn(() => "https://example.com/album-art.jpg"),
@@ -733,6 +749,333 @@ describe("PlaylistDetail", () => {
       // Drag handles should be present
       const dragHandles = document.querySelectorAll('[aria-roledescription="sortable"]')
       expect(dragHandles.length).toBe(3)
+    })
+  })
+
+  describe("Reorder Failure", () => {
+    test("should restore the server order without unmounting the page when a reorder fails", async () => {
+      const user = userEvent.setup()
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const playlist = createMockPlaylist(3)
+      let resolveRefetch: (value: typeof playlist) => void = () => {}
+      mockFetchPlaylistById
+        .mockResolvedValueOnce(playlist)
+        .mockImplementationOnce(() => new Promise(resolve => { resolveRefetch = resolve }))
+      mockReorderPlaylistVideos.mockRejectedValue(new Error("Reorder failed"))
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole("button", { name: "Play" }))
+      await waitFor(() => {
+        expect(screen.getByText("1 / 3")).toBeInTheDocument()
+      })
+
+      // Not awaited: the drag settles only once the refetch below is released.
+      let drag: Promise<void> = Promise.resolve()
+      act(() => { drag = capturedOnDragEnd({ active: { id: "video-1" }, over: { id: "video-3" } }) })
+
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to reorder the playlist", expect.any(Error))
+      })
+      await waitFor(() => {
+        expect(mockFetchPlaylistById).toHaveBeenCalledTimes(2)
+      })
+      // While the corrected order loads, the page (and its open player) stays mounted, still on
+      // the dragged video at its optimistic position.
+      expect(screen.queryByRole("progressbar")).not.toBeInTheDocument()
+      expect(screen.getByText("3 / 3")).toBeInTheDocument()
+
+      await act(async () => {
+        resolveRefetch(playlist)
+        await drag
+      })
+
+      await waitFor(() => {
+        const titles = screen.getAllByText(/^Video \d$/).map(element => element.textContent)
+        expect(titles.slice(0, 3)).toEqual(["Video 1", "Video 2", "Video 3"])
+      })
+      expect(screen.getByText("1 / 3")).toBeInTheDocument()
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    test("should revert to the order before the drag when the refetch also fails", async () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const playlist = createMockPlaylist(3)
+      mockFetchPlaylistById.mockResolvedValueOnce(playlist).mockRejectedValueOnce(new Error("Refetch failed"))
+      mockReorderPlaylistVideos.mockRejectedValueOnce(new Error("Reorder failed"))
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByText("Video 1")).toBeInTheDocument()
+      })
+
+      await act(() => capturedOnDragEnd({ active: { id: "video-1" }, over: { id: "video-3" } }))
+
+      await waitFor(() => {
+        expect(mockFetchPlaylistById).toHaveBeenCalledTimes(2)
+      })
+      await waitFor(() => {
+        const titles = screen.getAllByText(/^Video \d$/).map(element => element.textContent)
+        expect(titles).toEqual(["Video 1", "Video 2", "Video 3"])
+      })
+
+      consoleErrorSpy.mockRestore()
+    })
+  })
+
+  describe("Drag No-ops", () => {
+    test("should not reorder when dropped outside the list, onto itself, or onto an unknown video", async () => {
+      mockFetchPlaylistById.mockResolvedValue(createMockPlaylist(3))
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByText("Video 1")).toBeInTheDocument()
+      })
+
+      await act(() => capturedOnDragEnd({ active: { id: "video-1" }, over: null }))
+      await act(() => capturedOnDragEnd({ active: { id: "video-1" }, over: { id: "video-1" } }))
+      await act(() => capturedOnDragEnd({ active: { id: "video-1" }, over: { id: "unknown" } }))
+
+      expect(mockReorderPlaylistVideos).not.toHaveBeenCalled()
+      const titles = screen.getAllByText(/^Video \d$/).map(element => element.textContent)
+      expect(titles).toEqual(["Video 1", "Video 2", "Video 3"])
+    })
+  })
+
+  describe("Concurrent Mutations", () => {
+    const deferred = <A,>() => {
+      let resolve: (value: A) => void = () => {}
+      const promise = new Promise<A>(r => { resolve = r })
+      return { promise, resolve }
+    }
+
+    test("should build each add on the result of the previous one instead of losing it", async () => {
+      const user = userEvent.setup()
+      const playlist = createMockPlaylist(1)
+      mockFetchPlaylistById.mockResolvedValue(playlist)
+      mockSearchVideos.mockResolvedValue({
+        results: [createMockVideo("new-a", "New A"), createMockVideo("new-b", "New B")],
+        pageNumber: 0,
+        pageSize: 50,
+        searchTerm: None.of(),
+      })
+      const firstAdd = deferred<Awaited<ReturnType<typeof addVideoToPlaylist>>>()
+      mockAddVideoToPlaylist
+        .mockImplementationOnce(() => firstAdd.promise)
+        .mockImplementationOnce(async (current, videoId) => ({
+          ...current,
+          videos: [...current.videos, createMockVideo(videoId, "New B")],
+        }))
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /add videos/i })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole("button", { name: /add videos/i }))
+      await waitFor(() => {
+        expect(screen.getByText("New B")).toBeInTheDocument()
+      })
+
+      const addButtons = screen.getAllByTestId("AddIcon").map(icon => icon.closest("button")!)
+      await user.click(addButtons[addButtons.length - 2])
+      await user.click(addButtons[addButtons.length - 1])
+
+      // The second add waits for the first rather than racing it with a stale video list.
+      expect(mockAddVideoToPlaylist).toHaveBeenCalledTimes(1)
+
+      await act(async () => {
+        firstAdd.resolve({ ...playlist, videos: [...playlist.videos, createMockVideo("new-a", "New A")] })
+      })
+
+      await waitFor(() => {
+        expect(mockAddVideoToPlaylist).toHaveBeenCalledTimes(2)
+      })
+      const [playlistForSecondAdd, secondVideoId] = mockAddVideoToPlaylist.mock.calls[1]
+      expect(secondVideoId).toBe("new-b")
+      expect(playlistForSecondAdd.videos.map(v => v.videoMetadata.id)).toEqual(["video-1", "new-a"])
+    })
+
+    test("should apply a drag to the latest video list when it queues behind an add", async () => {
+      const user = userEvent.setup()
+      const playlist = createMockPlaylist(2)
+      mockFetchPlaylistById.mockResolvedValue(playlist)
+      mockSearchVideos.mockResolvedValue({
+        results: [createMockVideo("new-a", "New A")],
+        pageNumber: 0,
+        pageSize: 50,
+        searchTerm: None.of(),
+      })
+      const add = deferred<Awaited<ReturnType<typeof addVideoToPlaylist>>>()
+      mockAddVideoToPlaylist.mockImplementationOnce(() => add.promise)
+      mockReorderPlaylistVideos.mockImplementation(async (_id, videoIds) => ({
+        ...playlist,
+        videos: videoIds.map(id => createMockVideo(id, id)),
+      }))
+
+      renderWithRouter()
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /add videos/i })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole("button", { name: /add videos/i }))
+      await waitFor(() => {
+        expect(screen.getByText("New A")).toBeInTheDocument()
+      })
+
+      const addButtons = screen.getAllByTestId("AddIcon").map(icon => icon.closest("button")!)
+      await user.click(addButtons[addButtons.length - 1])
+
+      let drag: Promise<void> = Promise.resolve()
+      act(() => { drag = capturedOnDragEnd({ active: { id: "video-2" }, over: { id: "video-1" } }) })
+
+      await act(async () => {
+        add.resolve({ ...playlist, videos: [...playlist.videos, createMockVideo("new-a", "New A")] })
+        await drag
+      })
+
+      await waitFor(() => {
+        expect(mockReorderPlaylistVideos).toHaveBeenCalledWith("playlist-123", ["video-2", "video-1", "new-a"])
+      })
+    })
+  })
+
+  describe("Interleaved Mutations", () => {
+    const deferred = <A,>() => {
+      let resolve: (value: A) => void = () => {}
+      const promise = new Promise<A>(r => { resolve = r })
+      return { promise, resolve }
+    }
+
+    const displayedTitles = () => screen.getAllByText(/^Video \d$/).map(element => element.textContent)
+
+    const openSearchPanelWith = async (user: ReturnType<typeof userEvent.setup>, title: string) => {
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /add videos/i })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole("button", { name: /add videos/i }))
+      await waitFor(() => {
+        expect(screen.getByText(title)).toBeInTheDocument()
+      })
+    }
+
+    test("should keep a pending drag on screen when an earlier queued change lands", async () => {
+      const user = userEvent.setup()
+      const playlist = createMockPlaylist(3)
+      mockFetchPlaylistById.mockResolvedValue(playlist)
+      const remove = deferred<Awaited<ReturnType<typeof removeVideoFromPlaylist>>>()
+      const reorder = deferred<Awaited<ReturnType<typeof reorderPlaylistVideos>>>()
+      mockRemoveVideoFromPlaylist.mockImplementationOnce(() => remove.promise)
+      mockReorderPlaylistVideos.mockImplementationOnce(() => reorder.promise)
+
+      renderWithRouter()
+      await waitFor(() => {
+        expect(screen.getByText("Video 3")).toBeInTheDocument()
+      })
+
+      // Remove Video 3 (the first delete icon is the header's), then drag 2 above 1 meanwhile.
+      await user.click(screen.getAllByTestId("DeleteIcon")[3].closest("button")!)
+      act(() => { void capturedOnDragEnd({ active: { id: "video-2" }, over: { id: "video-1" } }) })
+      expect(displayedTitles()).toEqual(["Video 2", "Video 1", "Video 3"])
+
+      await act(async () => {
+        remove.resolve({ ...playlist, videos: playlist.videos.slice(0, 2) })
+      })
+
+      // The removal's result must not snap the drag back while the reorder is still queued.
+      expect(displayedTitles()).toEqual(["Video 2", "Video 1"])
+      await waitFor(() => {
+        expect(mockReorderPlaylistVideos).toHaveBeenCalledWith("playlist-123", ["video-2", "video-1"])
+      })
+
+      await act(async () => {
+        reorder.resolve({ ...playlist, videos: [playlist.videos[1], playlist.videos[0]] })
+      })
+      expect(displayedTitles()).toEqual(["Video 2", "Video 1"])
+    })
+
+    test("should not let a queued change's response undo a rename made meanwhile", async () => {
+      const user = userEvent.setup()
+      const playlist = createMockPlaylist(1)
+      mockFetchPlaylistById.mockResolvedValue(playlist)
+      mockSearchVideos.mockResolvedValue({
+        results: [createMockVideo("new-a", "New A")],
+        pageNumber: 0,
+        pageSize: 50,
+        searchTerm: None.of(),
+      })
+      const add = deferred<Awaited<ReturnType<typeof addVideoToPlaylist>>>()
+      mockAddVideoToPlaylist.mockImplementationOnce(() => add.promise)
+      mockUpdatePlaylist.mockResolvedValue({ ...playlist, title: "New Title" })
+
+      renderWithRouter()
+      await openSearchPanelWith(user, "New A")
+      const addButtons = screen.getAllByTestId("AddIcon").map(icon => icon.closest("button")!)
+      await user.click(addButtons[addButtons.length - 1])
+
+      await user.click(screen.getByRole("button", { name: "Edit" }))
+      await user.clear(screen.getByRole("textbox"))
+      await user.type(screen.getByRole("textbox"), "New Title")
+      await user.click(screen.getByRole("button", { name: "Save" }))
+
+      // The add was answered before the rename reached the server, so it carries the old title.
+      await act(async () => {
+        add.resolve({ ...playlist, videos: [...playlist.videos, createMockVideo("new-a", "New A")] })
+      })
+
+      await waitFor(() => {
+        expect(mockUpdatePlaylist).toHaveBeenCalledWith("playlist-123", { title: "New Title" })
+      })
+      await waitFor(() => {
+        expect(screen.getByText("New Title")).toBeInTheDocument()
+      })
+      expect(screen.queryByText("Test Playlist")).not.toBeInTheDocument()
+    })
+
+    test("should not let an album art response drop a video added meanwhile", async () => {
+      const user = userEvent.setup()
+      const playlist = createMockPlaylist(1)
+      const withNewVideo = { ...playlist, videos: [...playlist.videos, createMockVideo("new-a", "New A")] }
+      mockFetchPlaylistById.mockResolvedValue(playlist)
+      mockSearchVideos.mockResolvedValue({
+        results: [createMockVideo("new-a", "New A")],
+        pageNumber: 0,
+        pageSize: 50,
+        searchTerm: None.of(),
+      })
+      const add = deferred<Awaited<ReturnType<typeof addVideoToPlaylist>>>()
+      mockAddVideoToPlaylist.mockImplementationOnce(() => add.promise)
+      // An upload answered before the add was applied carries the old video list.
+      mockUploadAlbumArt.mockResolvedValue({ ...playlist, albumArt: albumArt() })
+
+      const { container } = renderWithRouter()
+      await openSearchPanelWith(user, "New A")
+      const addButtons = screen.getAllByTestId("AddIcon").map(icon => icon.closest("button")!)
+      await user.click(addButtons[addButtons.length - 1])
+
+      const file = new File(["album-art-bytes"], "art.jpg", { type: "image/jpeg" })
+      fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files: [file] } })
+
+      // The upload waits for the add, so it is answered from the server state that includes it.
+      expect(mockUploadAlbumArt).not.toHaveBeenCalled()
+      mockUploadAlbumArt.mockResolvedValue({ ...withNewVideo, albumArt: albumArt() })
+      await act(async () => {
+        add.resolve(withNewVideo)
+      })
+
+      await waitFor(() => {
+        expect(mockUploadAlbumArt).toHaveBeenCalledWith("playlist-123", file)
+      })
+      await waitFor(() => {
+        expect(screen.getByRole("img", { name: /test playlist album art/i })).toBeInTheDocument()
+      })
+      expect(screen.getAllByText("New A").length).toBeGreaterThan(0)
     })
   })
 

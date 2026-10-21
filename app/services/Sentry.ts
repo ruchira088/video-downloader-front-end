@@ -25,6 +25,80 @@ const TRACES_SAMPLE_RATES: Record<Environment, number> = {
   [Environment.Production]: 0.1
 }
 
+/**
+ * Reduces a logged console argument to what is safe to send to Sentry. Axios errors carry
+ * their request config — auth headers and request bodies such as sign-in passwords — so
+ * errors keep only their name and message, and any other object is dropped.
+ */
+export const scrubConsoleArgument = (argument: unknown): unknown => {
+  if (argument instanceof Error) {
+    return `${argument.name}: ${argument.message}`
+  } else if (argument === null || ["string", "number", "boolean", "undefined"].includes(typeof argument)) {
+    return argument
+  } else {
+    return "[redacted]"
+  }
+}
+
+const scrubConsoleArguments = (data: Record<string, unknown> | undefined): void => {
+  if (data !== undefined && Array.isArray(data.arguments)) {
+    data.arguments = data.arguments.map(scrubConsoleArgument)
+  }
+}
+
+/**
+ * Drops the query string and fragment from every URL in `text`. Query strings carry search
+ * terms and redirect targets, which are personal browsing data rather than diagnostics.
+ */
+export const stripUrlQueries = (text: string): string => text.replace(/(\/\/[^\s?#]*)[?#]\S*/g, "$1")
+
+const URL_BREADCRUMB_CATEGORIES = ["xhr", "fetch", "navigation"]
+
+const stripUrlQueriesIn = (data: Record<string, unknown> | undefined): void => {
+  if (data !== undefined) {
+    for (const key of ["url", "from", "to"]) {
+      const value = data[key]
+      if (typeof value === "string") {
+        // Navigation breadcrumbs hold bare paths ("/?search-term=x"), which have no "//".
+        data[key] = stripUrlQueries(value).replace(/^(\/[^?#]*)[?#].*$/, "$1")
+      }
+    }
+  }
+}
+
+export const beforeSend = (event: Sentry.ErrorEvent): Sentry.ErrorEvent => {
+  scrubConsoleArguments(event.extra)
+
+  if (event.request !== undefined) {
+    event.request.url = Option.fromNullable(event.request.url).map(stripUrlQueries).toDefined()
+    delete event.request.query_string
+  }
+
+  return event
+}
+
+export const beforeBreadcrumb = (breadcrumb: Sentry.Breadcrumb): Sentry.Breadcrumb => {
+  if (breadcrumb.category === "console") {
+    scrubConsoleArguments(breadcrumb.data)
+  } else if (URL_BREADCRUMB_CATEGORIES.includes(breadcrumb.category ?? "")) {
+    stripUrlQueriesIn(breadcrumb.data)
+  }
+  return breadcrumb
+}
+
+type SentrySpan = Parameters<NonNullable<Sentry.BrowserOptions["beforeSendSpan"]>>[0]
+
+/** Request spans are named after, and annotated with, the full request URL. */
+export const beforeSendSpan = (span: SentrySpan): SentrySpan => ({
+  ...span,
+  name: stripUrlQueries(span.name),
+  attributes: Object.fromEntries(
+    Object.entries(span.attributes)
+      .filter(([key]) => !key.endsWith("query") && !key.endsWith("fragment"))
+      .map(([key, value]) => [key, typeof value === "string" ? stripUrlQueries(value) : value])
+  )
+})
+
 let sentryInitialized = false
 
 export const initSentry = () => {
@@ -54,6 +128,9 @@ export const initSentry = () => {
     ],
     tracesSampleRate: TRACES_SAMPLE_RATES[environment],
     replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0
+    replaysOnErrorSampleRate: 1.0,
+    beforeSend,
+    beforeBreadcrumb,
+    beforeSendSpan
   })
 }

@@ -1,4 +1,4 @@
-import {Duration, type DurationUnit} from "luxon"
+import {Duration} from "luxon"
 import {Option} from "~/types/Option"
 
 type ByteUnit = "B" | "kB" | "MB" | "GB"
@@ -28,23 +28,45 @@ const GIGA_BYTE: ByteSize = {
   unit: "GB",
 }
 
-export const humanReadableSize = (size: number, alwaysShowDecimals = false, separator: string = ""): string => {
-  const byteSize = Option.fromNullable(
-    [GIGA_BYTE, MEGA_BYTE, KILO_BYTE].find((byteSize) => byteSize.floor <= size)
-  ).getOrElse(() => BYTE)
+export const humanReadableSize = (rawSize: number, alwaysShowDecimals = false, separator: string = ""): string => {
+  // A missing or corrupt size would otherwise render as "NaNGB".
+  const size = Number.isFinite(rawSize) ? rawSize : 0
 
-  return `${(size / byteSize.floor).toFixed(byteSize.unit === GIGA_BYTE.unit || alwaysShowDecimals ? 2 : 0)}${separator}${
-    byteSize.unit
-  }`
+  const format = (byteSize: ByteSize): string =>
+    (size / byteSize.floor).toFixed(byteSize.unit === GIGA_BYTE.unit || alwaysShowDecimals ? 2 : 0)
+
+  // Pick the unit from the rounded value, so 999999 bytes reads "1MB" rather than "1000kB".
+  const byteSize = Option.fromNullable(
+    [BYTE, KILO_BYTE, MEGA_BYTE].find((byteSize) => Number(format(byteSize)) < 1000)
+  ).getOrElse(() => GIGA_BYTE)
+
+  return `${format(byteSize)}${separator}${byteSize.unit}`
 }
 
 
-export const humanReadableDuration = (duration: Duration): string => {
-  const rescaledDuration = duration.rescale()
-  const durationUnits = ["hour", "minute", "second"] as DurationUnit[]
+type HoursMinutesSeconds = {
+  readonly hours: number
+  readonly minutes: number
+  readonly seconds: number
+}
 
-  const parts = durationUnits
-    .map<[number, DurationUnit]>(unit => [rescaledDuration.get(unit), unit])
+// Not Duration.rescale(): that promotes into days, weeks and months, which these formats don't show.
+const toHoursMinutesSeconds = (duration: Duration): HoursMinutesSeconds => {
+  const seconds = duration.as("seconds")
+  // An invalid Duration reports NaN, which would otherwise render as "NaN:NaN".
+  const totalSeconds = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0
+
+  return {
+    hours: Math.floor(totalSeconds / 3600),
+    minutes: Math.floor((totalSeconds % 3600) / 60),
+    seconds: totalSeconds % 60
+  }
+}
+
+export const humanReadableDuration = (duration: Duration): string => {
+  const {hours, minutes, seconds} = toHoursMinutesSeconds(duration)
+
+  const parts = ([[hours, "hour"], [minutes, "minute"], [seconds, "second"]] as const)
     .filter(([value]) => value > 0)
     .map(([value, unit]) => `${value} ${unit}${value > 1 ? "s" : ""}`)
 
@@ -52,12 +74,12 @@ export const humanReadableDuration = (duration: Duration): string => {
 }
 
 export const shortHumanReadableDuration = (duration: Duration): string => {
-  const rescaledDuration = duration.rescale()
+  const {hours, minutes, seconds} = toHoursMinutesSeconds(duration)
 
-  if (rescaledDuration.hours >= 1) {
-    return `${rescaledDuration.hours}:${formatTwoDigits(rescaledDuration.minutes)}:${formatTwoDigits(rescaledDuration.seconds)}`
+  if (hours >= 1) {
+    return `${hours}:${formatTwoDigits(minutes)}:${formatTwoDigits(seconds)}`
   } else {
-    return `${rescaledDuration.minutes}:${formatTwoDigits(rescaledDuration.seconds)}`
+    return `${minutes}:${formatTwoDigits(seconds)}`
   }
 }
 

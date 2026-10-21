@@ -33,6 +33,11 @@ describe("AssetService", () => {
       expect(result).toBe("https://api.example.com/assets/video/id/video-123")
     })
 
+    test("should encode the file resource ID", () => {
+      expect(videoUrl(createFileResource("a/b#c", FileResourceType.Video)))
+        .toBe("https://api.example.com/assets/video/id/a%2Fb%23c")
+    })
+
     test("should handle different video IDs", () => {
       const fileResource = createFileResource("abc-def-ghi", FileResourceType.Video)
 

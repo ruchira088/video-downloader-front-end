@@ -40,13 +40,13 @@ export const fetchPlaylists = async (
 }
 
 export const fetchPlaylistById = async (playlistId: string): Promise<Playlist> => {
-  const response = await axiosClient.get(`/playlists/id/${playlistId}`)
+  const response = await axiosClient.get(`/playlists/id/${encodeURIComponent(playlistId)}`)
 
   return zodParse(Playlist, response.data)
 }
 
 export const updatePlaylist = async (playlistId: string, update: PlaylistUpdate): Promise<Playlist> => {
-  const response = await axiosClient.put(`/playlists/id/${playlistId}`, {
+  const response = await axiosClient.put(`/playlists/id/${encodeURIComponent(playlistId)}`, {
     title: update.title,
     description: update.description,
     videoIds: update.videoIds
@@ -56,7 +56,7 @@ export const updatePlaylist = async (playlistId: string, update: PlaylistUpdate)
 }
 
 export const deletePlaylist = async (playlistId: string): Promise<Playlist> => {
-  const response = await axiosClient.delete(`/playlists/id/${playlistId}`)
+  const response = await axiosClient.delete(`/playlists/id/${encodeURIComponent(playlistId)}`)
 
   return zodParse(Playlist, response.data)
 }
@@ -76,13 +76,13 @@ export const uploadAlbumArt = async (playlistId: string, file: File): Promise<Pl
   const formData = new FormData()
   formData.append("file", file)
 
-  const response = await axiosClient.put(`/playlists/id/${playlistId}/album-art`, formData)
+  const response = await axiosClient.put(`/playlists/id/${encodeURIComponent(playlistId)}/album-art`, formData)
 
   return zodParse(Playlist, response.data)
 }
 
 export const removeAlbumArt = async (playlistId: string): Promise<Playlist> => {
-  const response = await axiosClient.delete(`/playlists/id/${playlistId}/album-art`)
+  const response = await axiosClient.delete(`/playlists/id/${encodeURIComponent(playlistId)}/album-art`)
 
   return zodParse(Playlist, response.data)
 }

@@ -162,6 +162,52 @@ describe("usePlaylistPlayback", () => {
     expect(ids(result.current.displayedVideos)).toEqual(["b", "c", "a", "d"])
   })
 
+  test("should keep playing the same video when the playlist is reordered under it", () => {
+    const { result, rerender } = renderPlayback()
+
+    act(() => result.current.playVideo("b"))
+    rerender({ list: [video("b"), video("a"), video("c")] })
+
+    expect(result.current.currentIndex).toBe(0)
+    expect(result.current.currentlyPlayingVideoId.toNullable()).toBe("b")
+  })
+
+  test("should keep playing the same video when an earlier video is removed", () => {
+    const { result, rerender } = renderPlayback()
+
+    act(() => result.current.playVideo("c"))
+    act(() => result.current.videoRemoved("a"))
+    rerender({ list: [video("b"), video("c")] })
+
+    expect(result.current.currentIndex).toBe(1)
+    expect(result.current.currentlyPlayingVideoId.toNullable()).toBe("c")
+  })
+
+  test("should move on to the next video when the playing video is removed", () => {
+    const { result, rerender } = renderPlayback()
+
+    act(() => result.current.playVideo("b"))
+    act(() => result.current.videoRemoved("b"))
+    rerender({ list: [video("a"), video("c")] })
+
+    expect(result.current.isPlaying).toBe(true)
+    expect(result.current.currentlyPlayingVideoId.toNullable()).toBe("c")
+  })
+
+  test("should stop, and stay stopped, when the playing last video is removed", () => {
+    const { result, rerender } = renderPlayback()
+
+    act(() => result.current.playVideo("c"))
+    act(() => result.current.videoRemoved("c"))
+    rerender({ list: [video("a"), video("b")] })
+
+    expect(result.current.isPlaying).toBe(false)
+
+    rerender({ list: [video("a"), video("b"), video("d")] })
+
+    expect(result.current.isPlaying).toBe(false)
+  })
+
   test("should leave the queue to the playlist order when not shuffled", () => {
     const { result, rerender } = renderPlayback()
 
@@ -173,5 +219,58 @@ describe("usePlaylistPlayback", () => {
     rerender({ list: [video("a"), video("d")] })
 
     expect(ids(result.current.displayedVideos)).toEqual(["a", "d"])
+  })
+
+  // PlaylistDetail calls videoAdded/videoRemoved after a queued request resolves, through the
+  // `playback` object from the render in which the user clicked.
+  describe("called through a stale render's callbacks", () => {
+    test("should add to the shuffled queue when shuffle was turned on after the click", () => {
+      pinShuffle()
+      const { result, rerender } = renderPlayback()
+      const stale = result.current
+
+      act(() => result.current.toggleShuffle())
+      act(() => stale.videoAdded(video("d")))
+      rerender({ list: [...videos, video("d")] })
+
+      expect(ids(result.current.displayedVideos)).toContain("d")
+    })
+
+    test("should drop from the shuffled queue when shuffle was turned on after the click", () => {
+      pinShuffle()
+      const { result, rerender } = renderPlayback()
+      const stale = result.current
+
+      act(() => result.current.toggleShuffle())
+      act(() => stale.videoRemoved("b"))
+      rerender({ list: [video("a"), video("c")] })
+
+      expect(ids(result.current.displayedVideos)).not.toContain("b")
+    })
+
+    test("should not move playback when the removed video stopped playing after the click", () => {
+      const { result, rerender } = renderPlayback()
+      act(() => result.current.play())
+      const stale = result.current
+
+      act(() => result.current.playVideo("c"))
+      act(() => stale.videoRemoved("a"))
+      rerender({ list: [video("b"), video("c")] })
+
+      expect(result.current.currentlyPlayingVideoId.toNullable()).toBe("c")
+    })
+
+    test("should move on from the removed video using the queue as it is now", () => {
+      const { result, rerender } = renderPlayback()
+      act(() => result.current.playVideo("b"))
+      const stale = result.current
+
+      // The playlist was reordered after the click: b is now followed by a.
+      rerender({ list: [video("c"), video("b"), video("a")] })
+      act(() => stale.videoRemoved("b"))
+      rerender({ list: [video("c"), video("a")] })
+
+      expect(result.current.currentlyPlayingVideoId.toNullable()).toBe("a")
+    })
   })
 })

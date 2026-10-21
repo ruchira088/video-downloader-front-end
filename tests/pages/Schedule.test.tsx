@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { act, render, screen, fireEvent, waitFor } from "@testing-library/react"
 import Schedule from "~/pages/authenticated/schedule/Schedule"
 import { NotificationProvider } from "~/providers/NotificationProvider"
 import React from "react"
@@ -52,6 +52,31 @@ describe("Schedule", () => {
     fireEvent.change(input, { target: { value: "https://example.com/video" } })
 
     expect(screen.getByTestId("preview")).toHaveTextContent("Preview: https://example.com/video")
+  })
+
+  test("should not request a preview for text that is not an http(s) URL", () => {
+    render(<Schedule />)
+
+    fireEvent.change(screen.getByLabelText("Website URL"), { target: { value: "example" } })
+
+    expect(screen.queryByTestId("preview")).not.toBeInTheDocument()
+  })
+
+  test("should keep a URL typed while the previous one was being scheduled", async () => {
+    const { scheduleVideo } = await import("~/services/scheduling/SchedulingService")
+    let resolveSchedule: () => void = () => {}
+    vi.mocked(scheduleVideo).mockReturnValueOnce(new Promise((resolve) => { resolveSchedule = () => resolve(createMockScheduledVideoDownload()) }))
+
+    render(<Schedule />)
+
+    const input = screen.getByLabelText("Website URL")
+    fireEvent.change(input, { target: { value: "https://example.com/first" } })
+    fireEvent.click(screen.getByRole("button", { name: "Schedule Download" }))
+    fireEvent.change(input, { target: { value: "https://example.com/second" } })
+
+    await act(async () => resolveSchedule())
+
+    expect(input).toHaveValue("https://example.com/second")
   })
 
   test("should call scheduleVideo and clear input on button click", async () => {

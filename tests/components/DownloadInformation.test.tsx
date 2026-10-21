@@ -85,4 +85,21 @@ describe("DownloadInformation", () => {
 
     expect(screen.getByText(/10 seconds/)).toBeInTheDocument()
   })
+
+  test.each([
+    ["unknown", 0],
+    ["already exceeded", 50000000],
+  ])("should show the speed but no remaining time when the size is %s", (_label, size) => {
+    const video = buildDownloadableScheduledVideo({
+      status: SchedulingStatus.Active,
+      downloadSpeed: 1000000,
+      downloadedBytes: 100000000,
+      videoMetadata: { size }
+    })
+
+    render(<DownloadInformation downloadableScheduledVideo={video} />)
+
+    expect(screen.getByText(/1\.00 MB\/s/)).toBeInTheDocument()
+    expect(screen.queryByText(/second|minute|hour/)).not.toBeInTheDocument()
+  })
 })
