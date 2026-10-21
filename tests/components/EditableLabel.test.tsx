@@ -24,6 +24,14 @@ describe("EditableLabel", () => {
       expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument()
     })
 
+    test("should not offer editing when read-only", () => {
+      const onUpdateText = vi.fn()
+      render(<EditableLabel textValue="Test Title" onUpdateText={onUpdateText} readOnly />)
+
+      expect(screen.getByText("Test Title")).toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument()
+    })
+
     test("should update displayed label when textValue prop changes", () => {
       const onUpdateText = vi.fn()
       const { rerender } = render(<EditableLabel textValue="Initial Title" onUpdateText={onUpdateText} />)

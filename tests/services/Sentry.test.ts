@@ -8,6 +8,7 @@ vi.mock("@sentry/react", () => ({
   init: (options: unknown) => mockInit(options),
   browserTracingIntegration: () => "browser-tracing-integration",
   replayIntegration: () => "replay-integration",
+  captureConsoleIntegration: (options: unknown) => ({ name: "capture-console-integration", options }),
 }))
 
 vi.mock("~/services/Config", async () => {
@@ -102,6 +103,21 @@ describe("initSentry", () => {
       expect.objectContaining({
         dsn: "https://override@self-hosted.example.com/2",
         environment: "production",
+      })
+    )
+  })
+
+  test("should report console errors to Sentry, since most handled failures are only logged", async () => {
+    mockGetEnvironment.mockReturnValue(Environment.Production)
+
+    const initSentry = await loadInitSentry()
+    initSentry()
+
+    expect(mockInit).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        integrations: expect.arrayContaining([
+          { name: "capture-console-integration", options: { levels: ["error"] } }
+        ]),
       })
     )
   })

@@ -289,6 +289,13 @@ describe("VideoWatch", () => {
     })
   })
 
+  test("should not allow editing the title in safe mode, where the shown title is a substitute", () => {
+    renderWithContext(createMockVideo(), Duration.fromObject({ seconds: 0 }), vi.fn(), true)
+
+    expect(screen.getByText("[SAFE] Test Video Title")).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument()
+  })
+
   test("should call updateVideoTitle and updateVideo when title is edited via EditableLabel", async () => {
     const { updateVideoTitle } = await import("~/services/video/VideoService")
     const updateVideo = vi.fn()

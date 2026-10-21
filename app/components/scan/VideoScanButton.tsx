@@ -3,6 +3,7 @@ import {ScanStatus, VideoScan} from "~/models/VideoScan"
 import {None, Option, Some} from "~/types/Option"
 import {fetchVideoScanStatus, scanForVideos} from "~/services/video/VideoService"
 import {Button, CircularProgress} from "@mui/material"
+import {useNotification} from "~/providers/NotificationProvider"
 
 type VideoScanButtonProps = {
   readonly className?: string
@@ -10,6 +11,7 @@ type VideoScanButtonProps = {
 
 const VideoScanButton: FC<VideoScanButtonProps> = props => {
   const [scanStatus, setScanStatus] = useState<Option<ScanStatus>>(None.of())
+  const {notifyError} = useNotification()
 
   const retrieveScanStatus = async () => {
     try {
@@ -44,7 +46,9 @@ const VideoScanButton: FC<VideoScanButtonProps> = props => {
     try {
       await scanForVideos()
     } catch (error) {
-      console.error(error)
+      notifyError("Failed to start the video scan", error)
+      // The optimistic InProgress would otherwise keep the button disabled until a status poll succeeds.
+      setScanStatus(None.of())
     }
   }
 

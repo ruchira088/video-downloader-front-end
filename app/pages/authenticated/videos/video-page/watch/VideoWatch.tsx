@@ -175,6 +175,8 @@ const VideoWatch: FC<VideoWatchProps> = props => {
           <EditableLabel
             textValue={title}
             onUpdateText={onUpdateVideoTitle}
+            // Safe mode shows a substitute title; editing it would save the substitute over the real one.
+            readOnly={safeMode}
           />
         </div>
         <Timestamp timestamp={props.video.createdAt} className={styles.timestamp}/>

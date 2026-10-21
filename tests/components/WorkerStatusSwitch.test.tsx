@@ -65,11 +65,12 @@ describe("WorkerStatusSwitch", () => {
     })
   })
 
-  test("should log error on update failure", async () => {
+  test("should notify the user and revert the toggle on update failure", async () => {
     const user = userEvent.setup()
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const updateError = new Error("Update failed")
     mockFetchWorkerStatus.mockResolvedValue(WorkerStatus.Available)
-    mockUpdateWorkerStatus.mockRejectedValue(new Error("Update failed"))
+    mockUpdateWorkerStatus.mockRejectedValue(updateError)
 
     render(<WorkerStatusSwitch />)
 
@@ -80,8 +81,9 @@ describe("WorkerStatusSwitch", () => {
     await user.click(screen.getByLabelText("Pause workers"))
 
     await waitFor(() => {
-      expect(consoleError).toHaveBeenCalled()
+      expect(consoleError).toHaveBeenCalledWith("Failed to update the worker status", updateError)
     })
+    expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
 
     consoleError.mockRestore()
   })

@@ -6,14 +6,24 @@ import CheckIcon from "@mui/icons-material/Check"
 import CloseIcon from "@mui/icons-material/Close"
 import { useNotification } from "~/providers/NotificationProvider"
 
-const ReadModeLabel = ({ textValue, enabledEditMode }: { textValue: string; enabledEditMode: () => void }) => (
+const ReadModeLabel = ({
+  textValue,
+  readOnly,
+  enabledEditMode,
+}: {
+  textValue: string
+  readOnly: boolean
+  enabledEditMode: () => void
+}) => (
   <span className={styles.readModeLabel}>
     {textValue}
-    <Tooltip title="Edit title">
-      <IconButton className={styles.editButton} size="small" aria-label="Edit" onClick={enabledEditMode}>
-        <EditIcon fontSize="inherit" />
-      </IconButton>
-    </Tooltip>
+    {!readOnly && (
+      <Tooltip title="Edit title">
+        <IconButton className={styles.editButton} size="small" aria-label="Edit" onClick={enabledEditMode}>
+          <EditIcon fontSize="inherit" />
+        </IconButton>
+      </Tooltip>
+    )}
   </span>
 )
 
@@ -60,7 +70,16 @@ const EditableTextField = ({
   </span>
 )
 
-const EditableLabel = ({ textValue, onUpdateText }: { textValue: string; onUpdateText: (text: string) => Promise<void> }) => {
+const EditableLabel = ({
+  textValue,
+  onUpdateText,
+  readOnly = false,
+}: {
+  textValue: string
+  onUpdateText: (text: string) => Promise<void>
+  // For when textValue is not the stored value (e.g. a safe-mode substitute), so saving it would overwrite the real one.
+  readOnly?: boolean
+}) => {
   const [draftText, setDraftText] = useState<string>("")
   const [editMode, setEditMode] = useState(false)
   const { notifyError } = useNotification()
@@ -79,7 +98,7 @@ const EditableLabel = ({ textValue, onUpdateText }: { textValue: string; onUpdat
 
   return (
     <>
-      {!editMode && <ReadModeLabel textValue={textValue} enabledEditMode={enableEditMode} />}
+      {!editMode && <ReadModeLabel textValue={textValue} readOnly={readOnly} enabledEditMode={enableEditMode} />}
       {editMode && (
         <EditableTextField textValue={draftText} onTextChange={setDraftText} onCancel={onCancel} onSaveClick={onSaveClick} />
       )}

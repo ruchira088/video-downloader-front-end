@@ -5,10 +5,12 @@ import PlayCircle from "@mui/icons-material/PlayCircle"
 import PauseCircle from "@mui/icons-material/PauseCircle"
 import QuickSettingsButton from "./QuickSettingsButton"
 import { None, type Option, Some } from "~/types/Option"
+import { useNotification } from "~/providers/NotificationProvider"
 
 const WorkerStatusSwitch = () => {
   // None until the current status has been fetched; the button is disabled in the meantime.
   const [workerStatus, setWorkerStatus] = useState<Option<WorkerStatus>>(None.of())
+  const { notifyError } = useNotification()
 
   useEffect(() => {
     fetchWorkerStatus().then((status) => setWorkerStatus(Some.of(status))).catch(console.error)
@@ -22,7 +24,7 @@ const WorkerStatusSwitch = () => {
       try {
         await updateWorkerStatus(updated)
       } catch (error) {
-        console.error(error)
+        notifyError("Failed to update the worker status", error)
         setWorkerStatus(Some.of(current))
       }
     })

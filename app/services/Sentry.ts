@@ -48,7 +48,9 @@ export const initSentry = () => {
     environment: ENVIRONMENT_NAMES[environment],
     integrations: [
       Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration()
+      Sentry.replayIntegration(),
+      // Most handled failures are only logged with console.error, so report those too.
+      Sentry.captureConsoleIntegration({ levels: ["error"] })
     ],
     tracesSampleRate: TRACES_SAMPLE_RATES[environment],
     replaysSessionSampleRate: 0.1,
