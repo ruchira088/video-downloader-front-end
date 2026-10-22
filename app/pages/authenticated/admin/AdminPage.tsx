@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react"
 import { Link } from "react-router"
 import {
   Button,
-  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -12,6 +11,7 @@ import {
 } from "@mui/material"
 import Helmet from "~/components/helmet/Helmet"
 import VideoScanButton from "~/components/scan/VideoScanButton"
+import VideoSiteChip from "~/components/video/video-site-chip/VideoSiteChip"
 import WorkerStatusButton from "~/components/worker-status/WorkerStatusButton"
 import { VideoServiceSummary } from "~/models/VideoServiceSummary"
 import { useNotification } from "~/providers/NotificationProvider"
@@ -50,7 +50,7 @@ const LibrarySummary = () => {
                   <div><dt>Total duration</dt><dd>{humanReadableDuration(totalDuration)}</dd></div>
                 </dl>
                 <div className={styles.sites}>
-                  {sites.map(site => <Chip key={site} label={site} size="small" />)}
+                  {sites.map(site => <VideoSiteChip key={site} videoSite={site} />)}
                 </div>
               </>
             )
