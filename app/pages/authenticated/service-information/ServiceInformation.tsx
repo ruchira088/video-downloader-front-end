@@ -1,7 +1,6 @@
-import React, { type FC, type ReactNode, useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import {
   frontendServiceInformation,
-  performHealthCheck,
   retrieveBackendServiceInformation
 } from "~/services/health/HealthCheckService"
 import { BackendServiceInformation } from "~/models/BackendServiceInformation"
@@ -9,229 +8,22 @@ import { LoadableComponent } from "~/components/hoc/loading/LoadableComponent"
 import BackendInformation from "./components/BackendInformation"
 import { apiConfiguration } from "~/services/ApiConfiguration"
 import FrontendInformation from "./components/FrontendInformation"
-import { Button, CircularProgress, IconButton, Tooltip } from "@mui/material"
-import ContentCopyIcon from "@mui/icons-material/ContentCopy"
-import CheckIcon from "@mui/icons-material/Check"
-import StorageIcon from "@mui/icons-material/Storage"
-import VpnKeyIcon from "@mui/icons-material/VpnKey"
-import CloudQueueIcon from "@mui/icons-material/CloudQueue"
-import WebIcon from "@mui/icons-material/Web"
-import PublicIcon from "@mui/icons-material/Public"
-import ImageIcon from "@mui/icons-material/Image"
-import VideoLibraryIcon from "@mui/icons-material/VideoLibrary"
-import FolderIcon from "@mui/icons-material/Folder"
-import Replay from "@mui/icons-material/Replay"
+import CopyableText from "./components/CopyableText"
+import HealthCheckInformation from "./components/HealthCheckInformation"
+import ServiceInformationItem from "./components/ServiceInformationItem"
+import { useHealthCheck } from "./useHealthCheck"
+import { CircularProgress } from "@mui/material"
 import { None, type Option, Some } from "~/types/Option"
 import Helmet from "~/components/helmet/Helmet"
 import { DateTime, Duration } from "luxon"
 
 import styles from "./ServiceInformation.module.scss"
-import {
-  type FileRepositoryHealthStatusDetails,
-  HealthCheck,
-  type HealthCheckStatusDetails,
-  HealthStatus
-} from "~/models/HealthCheck"
-import classNames from "classnames"
-import Timestamp from "~/components/timestamp/Timestamp"
-
-interface ServiceInformationItem {
-  readonly label: string
-  readonly value: Option<ReactNode>
-}
-
-export const ServiceInformationItem = (serviceInformationItem: ServiceInformationItem) =>
-  serviceInformationItem.value
-    .fold(
-      () => null,
-      (value) => (
-        <div className={styles.serviceInformationItem}>
-          <div className={styles.serviceInformationItemLabel}>{serviceInformationItem.label}:</div>
-          <div className={styles.serviceInformationItemValue}>{value}</div>
-        </div>
-      )
-    )
-
-type CopyableTextProps = {
-  readonly text: string
-}
-
-const CopyableText: FC<CopyableTextProps> = ({ text }) => {
-  const [copied, setCopied] = useState(false)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-
-  useEffect(() => () => clearTimeout(timeoutRef.current), [])
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopied(true)
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = setTimeout(() => setCopied(false), 2000)
-    } catch (error) {
-      console.error("Failed to copy to clipboard", error)
-    }
-  }
-
-  return (
-    <span className={styles.copyableText}>
-      <span>{text}</span>
-      <Tooltip title={copied ? "Copied!" : "Copy to clipboard"}>
-        <IconButton
-          size="small"
-          onClick={handleCopy}
-          className={styles.copyButton}
-          aria-label="Copy to clipboard"
-        >
-          {copied ? <CheckIcon fontSize="small" /> : <ContentCopyIcon fontSize="small" />}
-        </IconButton>
-      </Tooltip>
-    </span>
-  )
-}
-
-type HealthCheckDetails = { readonly timestamp: DateTime } & HealthCheck
-
-type FileRepositoryHealthCheckProps = {
-  readonly fileRepositoryHealthStatusDetails: FileRepositoryHealthStatusDetails
-}
-
-const FileRepositoryHealthCheck: FC<FileRepositoryHealthCheckProps> = props => (
-  <div className={styles.healthCheckSection}>
-    <div className={styles.healthCheckSectionTitle}>File Repository</div>
-    <div className={styles.healthCheckSectionContent}>
-      <div className={styles.healthCheckSection}>
-        <div className={styles.healthCheckSectionTitle}>Image Folder</div>
-        <div className={styles.healthCheckSectionContent}>
-          <HealthCheckField
-            label={props.fileRepositoryHealthStatusDetails.imageFolder.filePath}
-            icon={<ImageIcon fontSize="small" />}
-            healthCheckStatusDetails={props.fileRepositoryHealthStatusDetails.imageFolder.healthStatusDetails}/>
-        </div>
-      </div>
-      <div className={styles.healthCheckSection}>
-        <div className={styles.healthCheckSectionTitle}>Video Folder</div>
-        <div className={styles.healthCheckSectionContent}>
-          <HealthCheckField
-            label={props.fileRepositoryHealthStatusDetails.videoFolder.filePath}
-            icon={<VideoLibraryIcon fontSize="small" />}
-            healthCheckStatusDetails={props.fileRepositoryHealthStatusDetails.videoFolder.healthStatusDetails}/>
-        </div>
-      </div>
-      {props.fileRepositoryHealthStatusDetails.otherVideoFolders.length > 0 && (
-        <div className={styles.healthCheckSection}>
-          <div className={styles.healthCheckSectionTitle}>Other Folders</div>
-          <div className={styles.healthCheckSectionContent}>
-            {props.fileRepositoryHealthStatusDetails.otherVideoFolders.map(healthCheckStatusDetails =>
-              <HealthCheckField
-                key={healthCheckStatusDetails.filePath}
-                label={healthCheckStatusDetails.filePath}
-                icon={<FolderIcon fontSize="small" />}
-                healthCheckStatusDetails={healthCheckStatusDetails.healthStatusDetails}/>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  </div>
-)
-
-type HealthCheckFieldProps = {
-  readonly label: string
-  readonly healthCheckStatusDetails: HealthCheckStatusDetails
-  readonly icon?: ReactNode
-}
-
-const HealthCheckField: FC<HealthCheckFieldProps> = props => (
-  <div className={styles.healthCheckField}>
-    <div className={styles.healthCheckLabel}>
-      {props.icon && <span className={styles.healthCheckIcon}>{props.icon}</span>}
-      {props.label}
-    </div>
-    <div className={styles.healthCheckValue}>
-      <div
-        className={
-        classNames(
-          styles.healthCheckStatus,
-          {
-            [styles.unhealthy]: props.healthCheckStatusDetails.healthStatus === HealthStatus.Unhealthy,
-            [styles.healthy]: props.healthCheckStatusDetails.healthStatus === HealthStatus.Healthy
-          }
-        )
-      }>
-        {props.healthCheckStatusDetails.healthStatus}
-      </div>
-      <div className={styles.healthCheckDuration}>
-        ({props.healthCheckStatusDetails.duration.toMillis().toLocaleString()} ms)
-      </div>
-    </div>
-  </div>
-)
-
-type HealthCheckInformationProps = {
-  readonly healthCheckDetails: HealthCheckDetails
-  readonly performHealthCheck: () => Promise<void>
-}
-
-const HealthCheckInformation: FC<HealthCheckInformationProps> = props => {
-  const [currentTimestamp, setCurrentTimestamp] = useState<DateTime>(DateTime.now())
-  const [isPerformingHealthCheck, setPerformingHealthCheck] = useState<boolean>(false)
-
-  useEffect(() => {
-    const intervalId = setInterval(() => setCurrentTimestamp(DateTime.now()), 1000)
-    return () => clearInterval(intervalId)
-  }, [])
-
-  const handlePerformHealthCheck = async () => {
-    setPerformingHealthCheck(true)
-
-    try {
-      await props.performHealthCheck()
-    } finally {
-      setPerformingHealthCheck(false)
-    }
-  }
-
-  return (
-    <div className={styles.healthChecks}>
-      <div className={styles.healthChecksTitle}>Health Checks</div>
-      <div className={styles.lastHealthCheck}>
-        <div className={styles.lastHealthCheckTimestamp}>
-          <span className={styles.lastHealthCheckLabel}>Last Health Check:</span>
-          <Timestamp
-            timestamp={props.healthCheckDetails.timestamp}
-            currentTimestamp={currentTimestamp}
-            format={DateTime.DATETIME_MED_WITH_SECONDS} />
-        </div>
-        <Button onClick={handlePerformHealthCheck} disabled={isPerformingHealthCheck} loading={isPerformingHealthCheck}>
-          <Replay fontSize="small" />
-        </Button>
-      </div>
-      <div className={styles.healthCheckSection}>
-        <div className={styles.healthCheckSectionTitle}>Services</div>
-        <div className={styles.healthCheckSectionContent}>
-          <HealthCheckField label="Database" icon={<StorageIcon fontSize="small" />} healthCheckStatusDetails={props.healthCheckDetails.database}/>
-          <HealthCheckField label="Key Value Store" icon={<VpnKeyIcon fontSize="small" />} healthCheckStatusDetails={props.healthCheckDetails.keyValueStore}/>
-          <HealthCheckField label="PubSub" icon={<CloudQueueIcon fontSize="small" />} healthCheckStatusDetails={props.healthCheckDetails.pubSub}/>
-          <HealthCheckField label="SPA Renderer" icon={<WebIcon fontSize="small" />} healthCheckStatusDetails={props.healthCheckDetails.spaRenderer}/>
-          <HealthCheckField
-            label="Internet Connectivity"
-            icon={<PublicIcon fontSize="small" />}
-            healthCheckStatusDetails={props.healthCheckDetails.internetConnectivity}/>
-        </div>
-      </div>
-      <FileRepositoryHealthCheck fileRepositoryHealthStatusDetails={props.healthCheckDetails.fileRepository}/>
-    </div>
-  )
-}
 
 const ServiceInformation = () => {
   const [backendInformation, setBackendInformation] = useState<Option<BackendServiceInformation>>(None.of())
   const [frontendInformation, setFrontendInformation] = useState(frontendServiceInformation(import.meta.env))
-  const [healthCheckDetails, setHealthCheckDetails] = useState<Option<HealthCheckDetails>>(None.of())
+  const { healthCheckDetails, isRefreshing, refresh } = useHealthCheck()
   const serverTimeOffset = useRef<Duration>(Duration.fromMillis(0))
-  const latestHealthCheckRequest = useRef(0)
-  const shownHealthCheckRequest = useRef(0)
 
   const fetchBackendInformation = async () => {
     try {
@@ -243,41 +35,8 @@ const ServiceInformation = () => {
     }
   }
 
-  // Absorbs its own failure: it runs from a poll and a button as well as on mount, and a failed
-  // check should leave the last good result on screen rather than reject unhandled.
-  const fetchHealthCheckDetails = async () => {
-    // The poll and the refresh button can overlap. A result older than the one on screen is
-    // dropped, but one whose newer successor failed still counts.
-    const healthCheckRequest = ++latestHealthCheckRequest.current
-
-    try {
-      const healthCheck = await performHealthCheck()
-
-      if (healthCheckRequest < shownHealthCheckRequest.current) {
-        return
-      }
-
-      shownHealthCheckRequest.current = healthCheckRequest
-
-      setHealthCheckDetails(Some.of({
-        ...healthCheck,
-        timestamp: DateTime.now()
-      }))
-    } catch (error) {
-      console.error("Failed to perform the health check", error)
-    }
-  }
-
   useEffect(() => {
-    // Both setStates happen after an await, so these are async polls rather than cascading renders.
-    // oxlint-disable-next-line react/set-state-in-effect
-    void fetchHealthCheckDetails()
-    const intervalId = setInterval(fetchHealthCheckDetails, 30_000)
-
-    return () => clearInterval(intervalId)
-  }, [])
-
-  useEffect(() => {
+    // The setState happens after an await, so this is an async load rather than a cascading render.
     // oxlint-disable-next-line react/set-state-in-effect
     void fetchBackendInformation()
   }, [])
@@ -334,7 +93,8 @@ const ServiceInformation = () => {
           healthCheckDetails.map((healthCheckDetails) =>
             <HealthCheckInformation
               healthCheckDetails={healthCheckDetails}
-              performHealthCheck={fetchHealthCheckDetails} />)
+              isRefreshing={isRefreshing}
+              onRefresh={refresh} />)
         }
       </LoadableComponent>
     </div>

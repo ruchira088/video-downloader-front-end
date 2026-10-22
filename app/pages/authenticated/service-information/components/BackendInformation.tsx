@@ -1,6 +1,6 @@
 import React, {type FC} from "react"
 import {BackendServiceInformation} from "~/models/BackendServiceInformation"
-import {ServiceInformationItem} from "../ServiceInformation"
+import ServiceInformationItem from "./ServiceInformationItem"
 import {Some} from "~/types/Option"
 import {DateTime} from "luxon"
 import Timestamp from "~/components/timestamp/Timestamp"

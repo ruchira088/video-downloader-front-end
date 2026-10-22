@@ -6,6 +6,7 @@ import { act } from "@testing-library/react"
 import { vi } from "vitest"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
+import { type NotificationContext, NotificationReactContext } from "~/providers/NotificationProvider"
 import { Some } from "~/types/Option"
 import { intersectionObserverCallbacks } from "./setup"
 
@@ -22,6 +23,19 @@ export const withApplicationConfiguration = (
   >
     {element}
   </ApplicationConfigurationContext.Provider>
+)
+
+/**
+ * Wraps `element` in a notification context whose notifiers are mocks unless overridden, so a
+ * test can assert on what was surfaced to the user without rendering the snackbar.
+ */
+export const withNotifications = (
+  element: ReactElement,
+  overrides: Partial<NotificationContext> = {}
+): ReactElement => (
+  <NotificationReactContext.Provider value={{ notifySuccess: vi.fn(), notifyError: vi.fn(), ...overrides }}>
+    {element}
+  </NotificationReactContext.Provider>
 )
 
 /** Fires the most recently created IntersectionObserver as if its sentinel had scrolled into view. */

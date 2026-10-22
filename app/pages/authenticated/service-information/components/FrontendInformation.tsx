@@ -1,5 +1,5 @@
 import React from "react"
-import {ServiceInformationItem} from "../ServiceInformation"
+import ServiceInformationItem from "./ServiceInformationItem"
 import type {FrontendServiceInformation} from "~/models/FrontendServiceInformation"
 import {Some} from "~/types/Option"
 import {DateTime} from "luxon"
