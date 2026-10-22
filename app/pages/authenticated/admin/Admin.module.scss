@@ -43,6 +43,39 @@
   margin-top: 1em;
 }
 
+.siteBreakdown {
+  margin-top: 1em;
+
+  td {
+    font-variant-numeric: tabular-nums;
+  }
+
+  // Phone widths: each site becomes a small card of label/value pairs instead of a five-column row.
+  @media (width <= 40em) {
+    thead {
+      display: none;
+    }
+
+    tr {
+      display: block;
+      padding: 0.5em 0;
+      border-bottom: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: none;
+      padding: 0.25em 0;
+
+      &::before {
+        content: attr(data-label);
+        color: var(--text-secondary-color);
+      }
+    }
+  }
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

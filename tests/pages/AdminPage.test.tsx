@@ -7,9 +7,8 @@ import AdminLayout from "~/pages/authenticated/admin/AdminLayout"
 import AdminPage from "~/pages/authenticated/admin/AdminPage"
 import { Role } from "~/models/User"
 import { queueIncompleteDownloads, videoServiceSummary } from "~/services/video/VideoService"
-import { buildVideo } from "../fixtures"
+import { buildVideo, buildVideoServiceSummary, videoSiteSummaryJson } from "../fixtures"
 import { withAuthenticatedUser, withNotifications } from "../helpers"
-import { Duration } from "luxon"
 
 vi.mock("~/services/video/VideoService", () => ({
   videoServiceSummary: vi.fn(),
@@ -24,12 +23,7 @@ vi.mock("~/components/worker-status/WorkerStatusButton", () => ({
   default: () => <button type="button">Pause Downloads</button>,
 }))
 
-const summary = {
-  videoCount: 42,
-  totalSize: 5_000_000_000,
-  totalDuration: Duration.fromObject({ hours: 3 }),
-  sites: ["youtube", "vimeo"],
-}
+const summary = buildVideoServiceSummary({ videoCount: 42, totalSize: 5_000_000_000, sites: ["youtube", "vimeo"] })
 
 const renderAdmin = (role: Role = Role.Admin, notifications: Parameters<typeof withNotifications>[1] = {}) =>
   render(
@@ -73,6 +67,29 @@ describe("AdminPage", () => {
     expect(await within(library).findByText("42")).toBeInTheDocument()
     expect(within(library).getByText("youtube")).toBeInTheDocument()
     expect(within(library).getByText("vimeo")).toBeInTheDocument()
+  })
+
+  test("should break the library down by site when the API reports it", async () => {
+    vi.mocked(videoServiceSummary).mockResolvedValue(
+      buildVideoServiceSummary({
+        sites: ["youtube"],
+        siteBreakdown: [videoSiteSummaryJson({ site: "youtube", videoCount: 7 })],
+      })
+    )
+    renderAdmin()
+
+    const table = await screen.findByRole("table", { name: "Library by site" })
+    const youtube = within(table).getAllByRole("row")[1]
+    expect(within(youtube).getByText("youtube")).toBeInTheDocument()
+    expect(within(youtube).getByText("7")).toBeInTheDocument()
+  })
+
+  test("should fall back to the site chips without a breakdown", async () => {
+    vi.mocked(videoServiceSummary).mockResolvedValue(summary)
+    renderAdmin()
+
+    expect(await screen.findByText("vimeo")).toBeInTheDocument()
+    expect(screen.queryByRole("table")).not.toBeInTheDocument()
   })
 
   test("should say so when the library summary cannot be loaded", async () => {

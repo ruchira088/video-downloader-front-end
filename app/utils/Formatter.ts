@@ -83,4 +83,11 @@ export const shortHumanReadableDuration = (duration: Duration): string => {
   }
 }
 
+// For columns of totals: whole hours ("2,610 h") read better than "2610 hours 18 minutes"; under an hour shows minutes.
+export const compactDuration = (duration: Duration): string => {
+  const {hours, minutes} = toHoursMinutesSeconds(duration)
+
+  return hours >= 1 ? `${Math.round(hours + minutes / 60).toLocaleString()} h` : `${minutes} min`
+}
+
 const formatTwoDigits = (number: number): string => String(number).padStart(2, "0")

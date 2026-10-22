@@ -260,6 +260,31 @@ describe("VideoServiceSummary", () => {
     const invalid = { ...validSummary, sites: "youtube" }
     expect(() => VideoServiceSummary.parse(invalid)).toThrow()
   })
+
+  test("should default the site breakdown to empty for an API that predates it", () => {
+    expect(VideoServiceSummary.parse(validSummary).siteBreakdown).toEqual([])
+  })
+
+  test("should parse the per-site breakdown", () => {
+    const result = VideoServiceSummary.parse({
+      ...validSummary,
+      siteBreakdown: [
+        {
+          site: "youtube",
+          videoCount: 40,
+          totalSize: 1000,
+          totalDuration: { length: 7_200_000, unit: "milliseconds" },
+          watchTime: { length: 1_800_000, unit: "milliseconds" }
+        }
+      ]
+    })
+
+    const [youtube] = result.siteBreakdown
+    expect(youtube.site).toBe("youtube")
+    expect(youtube.videoCount).toBe(40)
+    expect(youtube.totalDuration.as("hours")).toBe(2)
+    expect(youtube.watchTime.as("minutes")).toBe(30)
+  })
 })
 
 describe("Theme enum", () => {

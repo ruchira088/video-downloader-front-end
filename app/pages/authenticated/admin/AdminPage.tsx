@@ -19,6 +19,7 @@ import { reportError } from "~/services/ErrorReporting"
 import { queueIncompleteDownloads, videoServiceSummary } from "~/services/video/VideoService"
 import { None, type Option, Some } from "~/types/Option"
 import { humanReadableDuration, humanReadableSize } from "~/utils/Formatter"
+import SiteBreakdownTable from "./SiteBreakdownTable"
 import styles from "./Admin.module.scss"
 
 const LibrarySummary = () => {
@@ -42,16 +43,23 @@ const LibrarySummary = () => {
           () => <CircularProgress size={24} aria-label="Loading library summary" />,
           maybeSummary => maybeSummary.fold(
             () => <p className={styles.error}>Unable to load the library summary.</p>,
-            ({ videoCount, totalSize, totalDuration, sites }) => (
+            ({ videoCount, totalSize, totalDuration, sites, siteBreakdown }) => (
               <>
                 <dl className={styles.stats}>
                   <div><dt>Videos</dt><dd>{videoCount}</dd></div>
                   <div><dt>Total size</dt><dd>{humanReadableSize(totalSize)}</dd></div>
                   <div><dt>Total duration</dt><dd>{humanReadableDuration(totalDuration)}</dd></div>
                 </dl>
-                <div className={styles.sites}>
-                  {sites.map(site => <VideoSiteChip key={site} videoSite={site} />)}
-                </div>
+                {
+                  // An API without the per-site breakdown still reports which sites are in the library.
+                  siteBreakdown.length > 0
+                    ? <SiteBreakdownTable siteBreakdown={siteBreakdown} />
+                    : (
+                      <div className={styles.sites}>
+                        {sites.map(site => <VideoSiteChip key={site} videoSite={site} />)}
+                      </div>
+                    )
+                }
               </>
             )
           )

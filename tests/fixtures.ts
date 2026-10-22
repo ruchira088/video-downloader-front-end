@@ -32,7 +32,7 @@ import { User } from "~/models/User"
 import { AuthenticationToken, StoredAuthenticationToken } from "~/models/AuthenticationToken"
 import { HealthCheck } from "~/models/HealthCheck"
 import { BackendServiceInformation } from "~/models/BackendServiceInformation"
-import { VideoServiceSummary } from "~/models/VideoServiceSummary"
+import { VideoServiceSummary, VideoSiteSummary } from "~/models/VideoServiceSummary"
 import { SchedulingStatus } from "~/models/SchedulingStatus"
 
 export type Json = Record<string, unknown>
@@ -346,6 +346,21 @@ export const backendServiceInformationJson = (overrides: Json = {}): Json =>
 
 export const buildBackendServiceInformation = (overrides: Json = {}): BackendServiceInformation =>
   zodParse(BackendServiceInformation, backendServiceInformationJson(overrides))
+
+export const videoSiteSummaryJson = (overrides: Json = {}): Json =>
+  merge(
+    {
+      site: "youtube",
+      videoCount: 10,
+      totalSize: 1024000000,
+      totalDuration: durationJson(3600),
+      watchTime: durationJson(600)
+    },
+    overrides
+  )
+
+export const buildVideoSiteSummary = (overrides: Json = {}): VideoSiteSummary =>
+  zodParse(VideoSiteSummary, videoSiteSummaryJson(overrides))
 
 export const videoServiceSummaryJson = (overrides: Json = {}): Json =>
   merge(

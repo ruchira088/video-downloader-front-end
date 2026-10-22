@@ -4,6 +4,7 @@ import {
   humanReadableSize,
   humanReadableDuration,
   shortHumanReadableDuration,
+  compactDuration,
 } from "~/utils/Formatter"
 
 describe("humanReadableSize", () => {
@@ -239,5 +240,23 @@ describe("shortHumanReadableDuration", () => {
       const duration = Duration.fromObject({ minutes: 59, seconds: 59 })
       expect(shortHumanReadableDuration(duration)).toBe("59:59")
     })
+  })
+})
+
+describe("compactDuration", () => {
+  test.each([
+    [Duration.fromObject({ minutes: 0 }), "0 min"],
+    [Duration.fromObject({ minutes: 45, seconds: 59 }), "45 min"],
+    [Duration.fromObject({ hours: 1 }), "1 h"],
+    [Duration.fromObject({ hours: 2, minutes: 29 }), "2 h"],
+    [Duration.fromObject({ hours: 2, minutes: 30 }), "3 h"],
+    [Duration.fromObject({ hours: 6267, minutes: 18 }), "6,267 h"],
+    [Duration.fromObject({ milliseconds: 9_396_000_000 }), "2,610 h"],
+  ])("should format %s as %s", (duration, expected) => {
+    expect(compactDuration(duration)).toBe(expected)
+  })
+
+  test("should treat an invalid duration as zero", () => {
+    expect(compactDuration(Duration.invalid("test"))).toBe("0 min")
   })
 })

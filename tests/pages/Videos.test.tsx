@@ -2,10 +2,9 @@ import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, waitFor, fireEvent, act } from "@testing-library/react"
 import Videos from "~/pages/authenticated/videos/Videos"
 import { createMemoryRouter, RouterProvider } from "react-router"
-import { Duration } from "luxon"
 import { None } from "~/types/Option"
 import React from "react"
-import { buildVideo } from "../fixtures"
+import { buildVideo, buildVideoServiceSummary } from "../fixtures"
 import { triggerIntersection, withApplicationConfiguration, withAuthenticatedUser } from "../helpers"
 import { intersectionObserverCallbacks } from "../setup"
 
@@ -50,12 +49,9 @@ describe("Videos", () => {
       pageSize: 50,
       searchTerm: None.of(),
     })
-    vi.mocked(videoServiceSummary).mockResolvedValue({
-      sites: ["youtube", "vimeo"],
-      videoCount: 100,
-      totalSize: 1024000000,
-      totalDuration: Duration.fromObject({ hours: 10 }),
-    })
+    vi.mocked(videoServiceSummary).mockResolvedValue(
+      buildVideoServiceSummary({ sites: ["youtube", "vimeo"], videoCount: 100 })
+    )
   })
 
   test("should render videos page", async () => {
