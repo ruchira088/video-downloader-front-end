@@ -20,8 +20,8 @@ vi.mock("~/components/scan/VideoScanButton", () => ({
   default: () => <button type="button">Scan For Videos</button>,
 }))
 
-vi.mock("~/components/quick-settings/switches/WorkerStatusSwitch", () => ({
-  default: () => <button type="button">Pause workers</button>,
+vi.mock("~/components/worker-status/WorkerStatusButton", () => ({
+  default: () => <button type="button">Pause Downloads</button>,
 }))
 
 const summary = {
@@ -87,7 +87,7 @@ describe("AdminPage", () => {
     vi.mocked(videoServiceSummary).mockReturnValue(new Promise(() => {}))
     renderAdmin()
 
-    expect(screen.getByRole("button", { name: "Pause workers" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Pause Downloads" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Scan For Videos" })).toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Review Duplicates" })).toHaveAttribute("href", "/duplicates")
   })

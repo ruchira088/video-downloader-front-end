@@ -15,8 +15,6 @@ import {Ordering} from "~/models/Ordering"
 import {None, Option, Some} from "~/types/Option"
 import InfiniteScroll from "~/components/infinite-scroll/InfiniteScroll"
 import {usePaginatedFetch} from "~/components/infinite-scroll/usePaginatedFetch"
-import VideoScanButton from "~/components/scan/VideoScanButton"
-import { useIsAdmin } from "~/providers/AuthenticatedUserProvider"
 import {Alert, Button} from "@mui/material"
 import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVideo"
 import {isFinishedStatus, SchedulingStatus} from "~/models/SchedulingStatus"
@@ -102,8 +100,6 @@ const withoutEntry = <K, V>(map: ReadonlyMap<K, V>, key: K): ReadonlyMap<K, V> =
 
 const ScheduledVideos = () => {
   const {notifyError} = useNotification()
-  // Starting a scan is admin-only on the server.
-  const isAdmin = useIsAdmin()
 
   const [downloadableScheduledVideos, setDownloadableScheduledVideos] =
     useState<ReadonlyMap<string, DownloadableScheduledVideo>>(() => new Map())
@@ -273,7 +269,6 @@ const ScheduledVideos = () => {
           .toNullable()
       }
       <div className={styles.buttonContainer}>
-        {isAdmin && <VideoScanButton className={styles.scanForVideos}/>}
         <Button
           onClick={retryAll}
           disabled={disableRetry}

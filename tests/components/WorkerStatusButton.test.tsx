@@ -1,7 +1,7 @@
-import { describe, expect, test, vi, beforeEach } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import WorkerStatusSwitch from "~/components/quick-settings/switches/WorkerStatusSwitch"
+import WorkerStatusButton from "~/components/worker-status/WorkerStatusButton"
 import { WorkerStatus } from "~/models/WorkerStatus"
 
 vi.mock("~/services/scheduling/SchedulingService", () => ({
@@ -14,18 +14,22 @@ import { fetchWorkerStatus, updateWorkerStatus } from "~/services/scheduling/Sch
 const mockFetchWorkerStatus = vi.mocked(fetchWorkerStatus)
 const mockUpdateWorkerStatus = vi.mocked(updateWorkerStatus)
 
-describe("WorkerStatusSwitch", () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
+describe("WorkerStatusButton", () => {
+  test("should stay disabled until the worker status has loaded", () => {
+    mockFetchWorkerStatus.mockReturnValue(new Promise(() => {}))
+
+    render(<WorkerStatusButton />)
+
+    expect(screen.getByRole("button", { name: "Pause Downloads" })).toBeDisabled()
   })
 
-  test("should render with workers toggle button", async () => {
+  test("should offer to pause downloads while the workers are available", async () => {
     mockFetchWorkerStatus.mockResolvedValue(WorkerStatus.Available)
 
-    render(<WorkerStatusSwitch />)
+    render(<WorkerStatusButton />)
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Pause Downloads" })).toBeInTheDocument()
     })
   })
 
@@ -34,31 +38,31 @@ describe("WorkerStatusSwitch", () => {
     mockFetchWorkerStatus.mockResolvedValue(WorkerStatus.Available)
     mockUpdateWorkerStatus.mockResolvedValue(WorkerStatus.Paused)
 
-    render(<WorkerStatusSwitch />)
+    render(<WorkerStatusButton />)
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Pause Downloads" })).toBeInTheDocument()
     })
 
-    await user.click(screen.getByLabelText("Pause workers"))
+    await user.click(screen.getByRole("button", { name: "Pause Downloads" }))
 
     await waitFor(() => {
       expect(mockUpdateWorkerStatus).toHaveBeenCalledWith(WorkerStatus.Paused)
     })
   })
 
-  test("should call updateWorkerStatus to start when currently paused", async () => {
+  test("should call updateWorkerStatus to resume when currently paused", async () => {
     const user = userEvent.setup()
     mockFetchWorkerStatus.mockResolvedValue(WorkerStatus.Paused)
     mockUpdateWorkerStatus.mockResolvedValue(WorkerStatus.Available)
 
-    render(<WorkerStatusSwitch />)
+    render(<WorkerStatusButton />)
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Start workers")).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Resume Downloads" })).toBeInTheDocument()
     })
 
-    await user.click(screen.getByLabelText("Start workers"))
+    await user.click(screen.getByRole("button", { name: "Resume Downloads" }))
 
     await waitFor(() => {
       expect(mockUpdateWorkerStatus).toHaveBeenCalledWith(WorkerStatus.Available)
@@ -72,18 +76,18 @@ describe("WorkerStatusSwitch", () => {
     mockFetchWorkerStatus.mockResolvedValue(WorkerStatus.Available)
     mockUpdateWorkerStatus.mockRejectedValue(updateError)
 
-    render(<WorkerStatusSwitch />)
+    render(<WorkerStatusButton />)
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Pause Downloads" })).toBeInTheDocument()
     })
 
-    await user.click(screen.getByLabelText("Pause workers"))
+    await user.click(screen.getByRole("button", { name: "Pause Downloads" }))
 
     await waitFor(() => {
       expect(consoleWarn).toHaveBeenCalledWith("Failed to update the worker status", updateError)
     })
-    expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Pause Downloads" })).toBeInTheDocument()
 
     consoleWarn.mockRestore()
   })

@@ -1,81 +1,40 @@
-import { describe, expect, test, vi, beforeEach } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
+import { describe, expect, test, vi } from "vitest"
+import { render, screen } from "@testing-library/react"
 import QuickSettings from "~/components/quick-settings/QuickSettings"
-import { WorkerStatus } from "~/models/WorkerStatus"
 import React from "react"
 import { MemoryRouter } from "react-router"
 import { withApplicationConfiguration, withAuthenticatedUser } from "../helpers"
-
-vi.mock("~/services/scheduling/SchedulingService", () => ({
-  fetchWorkerStatus: vi.fn(),
-  updateWorkerStatus: vi.fn(),
-}))
+import { Role } from "~/models/User"
 
 vi.mock("~/services/authentication/AuthenticationService", () => ({
   logout: vi.fn(),
 }))
 
-import { fetchWorkerStatus } from "~/services/scheduling/SchedulingService"
-import { Role } from "~/models/User"
-
-const mockFetchWorkerStatus = vi.mocked(fetchWorkerStatus)
-
 const renderWithContext = (role: Role = Role.Admin) =>
   render(<MemoryRouter>{withAuthenticatedUser(withApplicationConfiguration(<QuickSettings />), role)}</MemoryRouter>)
 
 describe("QuickSettings", () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    mockFetchWorkerStatus.mockResolvedValue(WorkerStatus.Available)
-  })
-
-  test("should render ThemeSwitch", async () => {
+  test("should render ThemeSwitch", () => {
     renderWithContext()
 
-    await waitFor(() => {
-      expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument()
-    })
+    expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument()
   })
 
-  test("should render SafeModeSwitch", async () => {
+  test("should render SafeModeSwitch", () => {
     renderWithContext()
 
-    await waitFor(() => {
-      expect(screen.getByLabelText("Enable safe mode")).toBeInTheDocument()
-    })
+    expect(screen.getByLabelText("Enable safe mode")).toBeInTheDocument()
   })
 
-  test("should render WorkerStatusSwitch", async () => {
+  test("should render LogoutButton", () => {
     renderWithContext()
 
-    await waitFor(() => {
-      expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
-    })
-  })
-
-  test("should hide the WorkerStatusSwitch from non-admins", () => {
-    renderWithContext(Role.User)
-
-    expect(screen.queryByLabelText(/workers/i)).not.toBeInTheDocument()
     expect(screen.getByLabelText("Logout")).toBeInTheDocument()
   })
 
-  test("should render all four icon buttons", async () => {
-    renderWithContext()
+  test.each([Role.Admin, Role.User])("should not offer to pause downloads to %s users", (role) => {
+    renderWithContext(role)
 
-    await waitFor(() => {
-      expect(screen.getByLabelText("Switch to dark mode")).toBeInTheDocument()
-      expect(screen.getByLabelText("Enable safe mode")).toBeInTheDocument()
-      expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
-      expect(screen.getByLabelText("Logout")).toBeInTheDocument()
-    })
-  })
-
-  test("should render LogoutButton", async () => {
-    renderWithContext()
-
-    await waitFor(() => {
-      expect(screen.getByLabelText("Logout")).toBeInTheDocument()
-    })
+    expect(screen.queryByRole("button", { name: /downloads/i })).not.toBeInTheDocument()
   })
 })

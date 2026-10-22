@@ -12,7 +12,7 @@ import {
 } from "@mui/material"
 import Helmet from "~/components/helmet/Helmet"
 import VideoScanButton from "~/components/scan/VideoScanButton"
-import WorkerStatusSwitch from "~/components/quick-settings/switches/WorkerStatusSwitch"
+import WorkerStatusButton from "~/components/worker-status/WorkerStatusButton"
 import { VideoServiceSummary } from "~/models/VideoServiceSummary"
 import { useNotification } from "~/providers/NotificationProvider"
 import { reportError } from "~/services/ErrorReporting"
@@ -82,7 +82,7 @@ const RequeueIncompleteDownloads = () => {
 
   return (
     <>
-      <Button variant="outlined" color="warning" onClick={() => setIsDialogOpen(true)}>
+      <Button variant="contained" color="warning" onClick={() => setIsDialogOpen(true)}>
         Re-queue Incomplete Downloads
       </Button>
       <Dialog open={isDialogOpen} onClose={isRequeueing ? undefined : () => setIsDialogOpen(false)} maxWidth="xs" fullWidth>
@@ -112,7 +112,7 @@ const AdminPage = () => (
     <section className={styles.section} aria-labelledby="workers-heading">
       <h2 id="workers-heading">Workers</h2>
       <div className={styles.actions}>
-        <WorkerStatusSwitch />
+        <WorkerStatusButton />
         <VideoScanButton />
       </div>
     </section>
@@ -120,7 +120,7 @@ const AdminPage = () => (
     <section className={styles.section} aria-labelledby="maintenance-heading">
       <h2 id="maintenance-heading">Maintenance</h2>
       <div className={styles.actions}>
-        <Button component={Link} to="/duplicates" variant="outlined">Review Duplicates</Button>
+        <Button component={Link} to="/duplicates" variant="contained">Review Duplicates</Button>
         <RequeueIncompleteDownloads />
       </div>
     </section>

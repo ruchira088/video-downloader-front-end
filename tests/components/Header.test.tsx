@@ -1,19 +1,9 @@
-import { describe, expect, test, vi, beforeEach } from "vitest"
+import { describe, expect, test } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
 import Header from "~/components/title-bar/Header"
 import { createMemoryRouter, RouterProvider } from "react-router"
-import { WorkerStatus } from "~/models/WorkerStatus"
 import React from "react"
 import { withApplicationConfiguration } from "../helpers"
-
-vi.mock("~/services/scheduling/SchedulingService", () => ({
-  fetchWorkerStatus: vi.fn(),
-  updateWorkerStatus: vi.fn(),
-}))
-
-import { fetchWorkerStatus } from "~/services/scheduling/SchedulingService"
-
-const mockFetchWorkerStatus = vi.mocked(fetchWorkerStatus)
 
 const renderWithProviders = () => {
   const routes = [
@@ -30,11 +20,6 @@ const renderWithProviders = () => {
 }
 
 describe("Header", () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    mockFetchWorkerStatus.mockResolvedValue(WorkerStatus.Available)
-  })
-
   test("should render logo image", async () => {
     renderWithProviders()
 

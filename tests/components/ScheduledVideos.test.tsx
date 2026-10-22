@@ -47,10 +47,6 @@ vi.mock("~/components/helmet/Helmet", () => ({
   default: ({ title }: { title: string }) => <title>{title}</title>,
 }))
 
-vi.mock("~/components/scan/VideoScanButton", () => ({
-  default: () => <button data-testid="scan-button">Scan</button>,
-}))
-
 const renderWithContext = (role: Role = Role.Admin) => {
   const router = createMemoryRouter([
     {
@@ -67,19 +63,12 @@ describe("ScheduledVideos", () => {
     vi.clearAllMocks()
   })
 
-  test("should render scheduled videos page", async () => {
-    renderWithContext()
-
-    await waitFor(() => {
-      expect(screen.getByTestId("scan-button")).toBeInTheDocument()
-    })
-  })
-
-  test("should hide the scan button from non-admins", async () => {
-    renderWithContext(Role.User)
+  // Scanning is admin-only and lives on the Admin page; retrying failed downloads is for every user.
+  test.each([Role.Admin, Role.User])("should offer Retry All but not a scan to %s users", async (role) => {
+    renderWithContext(role)
 
     expect(await screen.findByRole("button", { name: "Retry All" })).toBeInTheDocument()
-    expect(screen.queryByTestId("scan-button")).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /scan/i })).not.toBeInTheDocument()
   })
 
   test("should render retry all button", async () => {

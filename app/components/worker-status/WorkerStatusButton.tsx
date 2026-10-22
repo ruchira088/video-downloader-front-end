@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react"
+import { Button } from "@mui/material"
 import { WorkerStatus } from "~/models/WorkerStatus"
 import { fetchWorkerStatus, updateWorkerStatus } from "~/services/scheduling/SchedulingService"
-import PlayCircle from "@mui/icons-material/PlayCircle"
-import PauseCircle from "@mui/icons-material/PauseCircle"
-import QuickSettingsButton from "./QuickSettingsButton"
 import { None, type Option, Some } from "~/types/Option"
 import { useNotification } from "~/providers/NotificationProvider"
 import { reportError } from "~/services/ErrorReporting"
 
-const WorkerStatusSwitch = () => {
+// Pauses or resumes the download workers for every user. Admin only on the server.
+const WorkerStatusButton = () => {
   // None until the current status has been fetched; the button is disabled in the meantime.
   const [workerStatus, setWorkerStatus] = useState<Option<WorkerStatus>>(None.of())
   const { notifyError } = useNotification()
@@ -30,17 +29,18 @@ const WorkerStatusSwitch = () => {
       }
     })
 
-  const isAvailable = workerStatus.toNullable() === WorkerStatus.Available
+  const isPaused = workerStatus.toNullable() === WorkerStatus.Paused
 
   return (
-    <QuickSettingsButton
-      tooltip={isAvailable ? "Pause Workers" : "Start Workers"}
-      ariaLabel={isAvailable ? "Pause workers" : "Start workers"}
-      icon={isAvailable ? <PauseCircle /> : <PlayCircle />}
+    <Button
+      variant="contained"
+      color={isPaused ? "success" : "warning"}
       onClick={onClick}
       disabled={workerStatus.isEmpty()}
-    />
+    >
+      {isPaused ? "Resume Downloads" : "Pause Downloads"}
+    </Button>
   )
 }
 
-export default WorkerStatusSwitch
+export default WorkerStatusButton
