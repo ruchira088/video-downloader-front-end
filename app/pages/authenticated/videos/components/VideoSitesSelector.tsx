@@ -4,6 +4,7 @@ import {videoServiceSummary} from "~/services/video/VideoService"
 
 import styles from "./VideoSitesSelector.module.scss"
 import { reportError } from "~/services/ErrorReporting"
+import { useIsAdmin } from "~/providers/AuthenticatedUserProvider"
 
 const menuProps = {
   slotProps: {
@@ -24,10 +25,18 @@ type VideoSitesSelectorProps = {
 
 const VideoSitesSelector: FC<VideoSitesSelectorProps> = props => {
   const [availableVideoSites, setAvailableVideoSites] = useState<string[]>([])
+  // The site list comes from the admin-only service summary, which answers 403 for anyone else.
+  const isAdmin = useIsAdmin()
 
   useEffect(() => {
-    videoServiceSummary().then((summary) => setAvailableVideoSites(summary.sites)).catch((error) => reportError("Failed to fetch the video sites", error))
-  }, [])
+    if (isAdmin) {
+      videoServiceSummary().then((summary) => setAvailableVideoSites(summary.sites)).catch((error) => reportError("Failed to fetch the video sites", error))
+    }
+  }, [isAdmin])
+
+  if (!isAdmin) {
+    return null
+  }
 
   return (
     <FormControl size="small" className={props.className} sx={{ minWidth: "7em" }}>

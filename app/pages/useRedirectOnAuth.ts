@@ -8,7 +8,8 @@ import {
   removeAuthenticationToken
 } from "~/services/authentication/AuthenticationService"
 import { httpStatusCode } from "~/services/http/HttpClient"
-import { Option } from "~/types/Option"
+import { None, Option, Some } from "~/types/Option"
+import type { User } from "~/models/User"
 import { safeRedirectPath } from "~/pages/unauthenticated/AuthFormHelpers"
 
 /**
@@ -25,6 +26,8 @@ export enum SessionStatus {
 
 export type SessionCheck = {
   readonly status: SessionStatus
+  // The signed-in user once the protected layout's check succeeds; always None for public layouts.
+  readonly user: Option<User>
   // Re-runs the session check, e.g. after the server was unreachable.
   readonly retry: () => void
 }
@@ -51,6 +54,7 @@ export const useRedirectOnAuth = (redirectWhenAuthenticated: boolean): SessionCh
   const [status, setStatus] = useState(
     redirectWhenAuthenticated ? SessionStatus.Verified : SessionStatus.Verifying
   )
+  const [user, setUser] = useState<Option<User>>(None.of())
   const [attempt, setAttempt] = useState(0)
 
   const retry = useCallback(() => {
@@ -89,7 +93,8 @@ export const useRedirectOnAuth = (redirectWhenAuthenticated: boolean): SessionCh
         },
         async () => {
           try {
-            await getAuthenticatedUser()
+            const authenticatedUser = await getAuthenticatedUser()
+            setUser(Some.of(authenticatedUser))
             setStatus(SessionStatus.Verified)
           } catch (error) {
             const isUnauthenticated = !httpStatusCode(error).filter(code => code === 401).isEmpty()
@@ -108,5 +113,5 @@ export const useRedirectOnAuth = (redirectWhenAuthenticated: boolean): SessionCh
     }
   }, [navigate, redirectWhenAuthenticated, attempt])
 
-  return { status, retry }
+  return { status, user, retry }
 }

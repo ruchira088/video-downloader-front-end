@@ -4,7 +4,7 @@ import QuickSettings from "~/components/quick-settings/QuickSettings"
 import { WorkerStatus } from "~/models/WorkerStatus"
 import React from "react"
 import { MemoryRouter } from "react-router"
-import { withApplicationConfiguration } from "../helpers"
+import { withApplicationConfiguration, withAuthenticatedUser } from "../helpers"
 
 vi.mock("~/services/scheduling/SchedulingService", () => ({
   fetchWorkerStatus: vi.fn(),
@@ -16,11 +16,12 @@ vi.mock("~/services/authentication/AuthenticationService", () => ({
 }))
 
 import { fetchWorkerStatus } from "~/services/scheduling/SchedulingService"
+import { Role } from "~/models/User"
 
 const mockFetchWorkerStatus = vi.mocked(fetchWorkerStatus)
 
-const renderWithContext = () =>
-  render(<MemoryRouter>{withApplicationConfiguration(<QuickSettings />)}</MemoryRouter>)
+const renderWithContext = (role: Role = Role.Admin) =>
+  render(<MemoryRouter>{withAuthenticatedUser(withApplicationConfiguration(<QuickSettings />), role)}</MemoryRouter>)
 
 describe("QuickSettings", () => {
   beforeEach(() => {
@@ -50,6 +51,13 @@ describe("QuickSettings", () => {
     await waitFor(() => {
       expect(screen.getByLabelText("Pause workers")).toBeInTheDocument()
     })
+  })
+
+  test("should hide the WorkerStatusSwitch from non-admins", () => {
+    renderWithContext(Role.User)
+
+    expect(screen.queryByLabelText(/workers/i)).not.toBeInTheDocument()
+    expect(screen.getByLabelText("Logout")).toBeInTheDocument()
   })
 
   test("should render all four icon buttons", async () => {

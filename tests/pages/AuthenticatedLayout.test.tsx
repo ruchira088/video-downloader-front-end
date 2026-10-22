@@ -6,6 +6,8 @@ import React from "react"
 import { buildStoredAuthenticationToken, buildUser } from "../fixtures"
 import { None, Some } from "~/types/Option"
 import { DateTime } from "luxon"
+import { Role } from "~/models/User"
+import { useAuthenticatedUser, useIsAdmin } from "~/providers/AuthenticatedUserProvider"
 
 const createMockToken = (expiresAt: DateTime = DateTime.now().plus({ hours: 1 })) =>
   buildStoredAuthenticationToken({
@@ -59,6 +61,29 @@ describe("AuthenticatedLayout", () => {
       value: { pathname: "/videos", search: "" },
       writable: true,
     })
+  })
+
+  test("should give the outlet the signed-in user", async () => {
+    const { getAuthenticationToken, getAuthenticatedUser } = await import(
+      "~/services/authentication/AuthenticationService"
+    )
+    vi.mocked(getAuthenticationToken).mockReturnValue(Some.of(createMockToken()))
+    vi.mocked(getAuthenticatedUser).mockResolvedValue(buildUser({ role: Role.Admin, email: "admin@example.com" }))
+
+    const UserProbe = () => {
+      const email = useAuthenticatedUser().map(user => user.email).getOrElse(() => "none")
+      return <div data-testid="user">{email} {useIsAdmin() ? "admin" : "user"}</div>
+    }
+
+    render(
+      <RouterProvider
+        router={createMemoryRouter([
+          { path: "/", element: <AuthenticatedLayout />, children: [{ index: true, element: <UserProbe /> }] },
+        ])}
+      />
+    )
+
+    expect(await screen.findByTestId("user")).toHaveTextContent("admin@example.com admin")
   })
 
   test("should render header and outlet when authenticated", async () => {

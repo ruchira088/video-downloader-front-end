@@ -4,12 +4,14 @@ import userEvent from "@testing-library/user-event"
 import Navigator from "~/components/navigator/Navigator"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import React from "react"
+import { withAuthenticatedUser } from "../helpers"
+import { Role } from "~/models/User"
 
-const renderWithRouter = (initialPath: string = "/") => {
+const renderWithRouter = (initialPath: string = "/", role: Role = Role.Admin) => {
   const routes = [
     {
       path: "*",
-      element: <Navigator />,
+      element: withAuthenticatedUser(<Navigator />, role),
     },
   ]
   const router = createMemoryRouter(routes, {
@@ -44,6 +46,7 @@ describe("Navigator", () => {
       expect(screen.getByText("Downloading")).toBeInTheDocument()
       expect(screen.getByText("Duplicates")).toBeInTheDocument()
       expect(screen.getByText("Information")).toBeInTheDocument()
+      expect(screen.getByText("Admin")).toBeInTheDocument()
     })
 
     test("should render navigation links with correct hrefs", () => {
@@ -56,13 +59,22 @@ describe("Navigator", () => {
       expect(screen.getByRole("link", { name: "Downloading" })).toHaveAttribute("href", "/downloading")
       expect(screen.getByRole("link", { name: "Duplicates" })).toHaveAttribute("href", "/duplicates")
       expect(screen.getByRole("link", { name: "Information" })).toHaveAttribute("href", "/information")
+      expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute("href", "/admin")
     })
 
-    test("should render seven navigation tabs", () => {
+    test("should render eight navigation tabs for an admin", () => {
       renderWithRouter()
 
       const links = screen.getAllByRole("link")
-      expect(links).toHaveLength(7)
+      expect(links).toHaveLength(8)
+    })
+
+    test("should hide the admin-only tabs from other users", () => {
+      renderWithRouter("/", Role.User)
+
+      expect(screen.getAllByRole("link")).toHaveLength(6)
+      expect(screen.queryByRole("link", { name: "Duplicates" })).not.toBeInTheDocument()
+      expect(screen.queryByRole("link", { name: "Admin" })).not.toBeInTheDocument()
     })
 
     test("should render an icon in every tab", () => {
@@ -75,7 +87,8 @@ describe("Navigator", () => {
         "ScheduleIcon",
         "DownloadIcon",
         "ContentCopyIcon",
-        "InfoIcon"
+        "InfoIcon",
+        "AdminPanelSettingsIcon"
       ]
 
       screen.getAllByRole("link").forEach((link, index) => {
@@ -166,6 +179,17 @@ describe("Navigator", () => {
       expect(within(menu).getByRole("menuitem", { name: "Schedule" })).toHaveAttribute("href", "/schedule")
       expect(within(menu).getByRole("menuitem", { name: "Duplicates" })).toHaveAttribute("href", "/duplicates")
       expect(within(menu).getByRole("menuitem", { name: "Information" })).toHaveAttribute("href", "/information")
+      expect(within(menu).getByRole("menuitem", { name: "Admin" })).toHaveAttribute("href", "/admin")
+    })
+
+    test("should leave the admin-only pages out of the overflow menu for other users", async () => {
+      const user = userEvent.setup()
+      renderWithRouter("/", Role.User)
+
+      await user.click(screen.getByRole("button", { name: "More" }))
+
+      const menu = screen.getByRole("menu")
+      expect(within(menu).getAllByRole("menuitem").map(item => item.textContent)).toEqual(["Schedule", "Information"])
     })
 
     test("should close the overflow menu after choosing a page", async () => {

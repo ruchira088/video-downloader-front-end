@@ -7,6 +7,9 @@ import { vi } from "vitest"
 import { Theme } from "~/models/ApplicationConfiguration"
 import { ApplicationConfigurationContext } from "~/providers/ApplicationConfigurationProvider"
 import { type NotificationContext, NotificationReactContext } from "~/providers/NotificationProvider"
+import { AuthenticatedUserContext } from "~/providers/AuthenticatedUserProvider"
+import { Role } from "~/models/User"
+import { buildUser } from "./fixtures"
 import { Some } from "~/types/Option"
 import { intersectionObserverCallbacks } from "./setup"
 
@@ -36,6 +39,16 @@ export const withNotifications = (
   <NotificationReactContext.Provider value={{ notifySuccess: vi.fn(), notifyError: vi.fn(), ...overrides }}>
     {element}
   </NotificationReactContext.Provider>
+)
+
+/**
+ * Wraps `element` in the signed-in user's context. Defaults to an admin, the user who sees every
+ * control; pass `Role.User` to assert that admin-only controls stay hidden.
+ */
+export const withAuthenticatedUser = (element: ReactElement, role: Role = Role.Admin): ReactElement => (
+  <AuthenticatedUserContext.Provider value={Some.of(buildUser({ role }))}>
+    {element}
+  </AuthenticatedUserContext.Provider>
 )
 
 /** Fires the most recently created IntersectionObserver as if its sentinel had scrolled into view. */

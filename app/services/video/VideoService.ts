@@ -93,3 +93,11 @@ export const fetchVideoScanStatus = async (): Promise<VideoScan> => {
   const response = await axiosClient.get("/videos/scan")
   return zodParse(VideoScan, response.data)
 }
+/**
+ * Re-queues downloads the server considers incomplete (at most 100 videos of 1 MiB or less),
+ * wiping their watch history and snapshots first. Admin only.
+ */
+export const queueIncompleteDownloads = async (): Promise<Video[]> => {
+  const response = await axiosClient.post("/videos/queue-incomplete-downloads")
+  return zodParse(ListResponse(Video), response.data).results
+}

@@ -11,7 +11,10 @@ export default [
     route("/server-error", "pages/authenticated/server-error/ServerErrorPage.tsx"),
     route("/playlists", "pages/authenticated/playlists/Playlists.tsx"),
     route("/playlists/:playlistId", "pages/authenticated/playlists/PlaylistDetail.tsx"),
-    route("/duplicates", "pages/authenticated/duplicates/Duplicates.tsx")
+    layout("pages/authenticated/admin/AdminLayout.tsx", [
+      route("/admin", "pages/authenticated/admin/AdminPage.tsx"),
+      route("/duplicates", "pages/authenticated/duplicates/Duplicates.tsx")
+    ])
   ]),
   layout("pages/unauthenticated/UnauthenticatedLayout.tsx", [
     route("/sign-in", "pages/unauthenticated/login/LoginPage.tsx"),

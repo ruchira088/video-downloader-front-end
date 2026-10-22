@@ -9,6 +9,8 @@ import Download from "@mui/icons-material/Download"
 import ContentCopy from "@mui/icons-material/ContentCopy"
 import Info from "@mui/icons-material/Info"
 import MoreHoriz from "@mui/icons-material/MoreHoriz"
+import AdminPanelSettings from "@mui/icons-material/AdminPanelSettings"
+import { useIsAdmin } from "~/providers/AuthenticatedUserProvider"
 import { None, Option, Some } from "~/types/Option"
 import styles from "./Navigator.module.scss"
 import classNames from "classnames"
@@ -17,6 +19,8 @@ type NavigationTab = {
   readonly label: string
   readonly path: string
   readonly icon: ReactElement
+  // Shown only to admins: the server rejects these pages' requests for anyone else.
+  readonly adminOnly?: boolean
 }
 
 const navigationTabs: NavigationTab[] = [
@@ -25,14 +29,14 @@ const navigationTabs: NavigationTab[] = [
   { label: "Playlists", path: "/playlists", icon: <PlaylistPlay /> },
   { label: "Schedule", path: "/schedule", icon: <Schedule /> },
   { label: "Downloading", path: "/downloading", icon: <Download /> },
-  { label: "Duplicates", path: "/duplicates", icon: <ContentCopy /> },
-  { label: "Information", path: "/information", icon: <Info /> }
+  { label: "Duplicates", path: "/duplicates", icon: <ContentCopy />, adminOnly: true },
+  { label: "Information", path: "/information", icon: <Info /> },
+  { label: "Admin", path: "/admin", icon: <AdminPanelSettings />, adminOnly: true }
 ]
 
 // The bottom bar has room for four tabs plus "More"; the rest live in the overflow menu.
 const bottomBarPaths = ["/", "/history", "/playlists", "/downloading"]
 const bottomBarTabs = navigationTabs.filter(tab => bottomBarPaths.includes(tab.path))
-const overflowTabs = navigationTabs.filter(tab => !bottomBarPaths.includes(tab.path))
 
 /** Matches the breakpoint in Navigator.module.scss and Header.module.scss. */
 export const MOBILE_MEDIA_QUERY = "(width <= 48em)"
@@ -51,12 +55,13 @@ const activeTabPath = (matches: UIMatch[]): string => {
 
 type TabsProps = {
   readonly activePath: string
+  readonly tabs: NavigationTab[]
 }
 
-const DesktopTabs = ({ activePath }: TabsProps) => (
+const DesktopTabs = ({ activePath, tabs }: TabsProps) => (
   <nav className={styles.navigator} aria-label="Primary">
     <div className={styles.navigatorTabs}>
-      {navigationTabs.map(navigationTab => (
+      {tabs.map(navigationTab => (
         <Link
           to={navigationTab.path}
           prefetch="intent"
@@ -71,7 +76,8 @@ const DesktopTabs = ({ activePath }: TabsProps) => (
   </nav>
 )
 
-const BottomBar = ({ activePath }: TabsProps) => {
+const BottomBar = ({ activePath, tabs }: TabsProps) => {
+  const overflowTabs = tabs.filter(tab => !bottomBarPaths.includes(tab.path))
   const [menuAnchor, setMenuAnchor] = useState<Option<HTMLElement>>(None.of())
   const closeMenu = () => setMenuAnchor(None.of())
 
@@ -129,8 +135,10 @@ const Navigator = () => {
   const activePath = activeTabPath(matches)
   // The app is a client-only SPA, so there is no server render to keep in sync with.
   const isMobile = useMediaQuery(MOBILE_MEDIA_QUERY, { noSsr: true })
+  const isAdmin = useIsAdmin()
+  const tabs = navigationTabs.filter(tab => isAdmin || !tab.adminOnly)
 
-  return isMobile ? <BottomBar activePath={activePath} /> : <DesktopTabs activePath={activePath} />
+  return isMobile ? <BottomBar activePath={activePath} tabs={tabs} /> : <DesktopTabs activePath={activePath} tabs={tabs} />
 }
 
 export default Navigator

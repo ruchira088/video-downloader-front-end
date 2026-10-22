@@ -1,0 +1,63 @@
+.adminPage {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+  max-width: 60em;
+  margin: 0 auto;
+}
+
+.section {
+  border-radius: 0.5em;
+  padding: 1em 1.25em;
+  // Opaque rather than tinted: MUI's outlined buttons need the full card colour for 4.5:1 contrast.
+  background-color: var(--card-background-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  h2 {
+    margin: 0 0 0.75em;
+    font-size: 1.1em;
+  }
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10em, 1fr));
+  gap: 1em;
+  margin: 0;
+
+  dt {
+    font-size: 0.85em;
+    color: var(--text-secondary-color);
+  }
+
+  dd {
+    margin: 0.25em 0 0;
+    font-size: 1.4em;
+  }
+}
+
+.sites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin-top: 1em;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1em;
+}
+
+.error {
+  color: var(--text-secondary-color);
+}
+
+.adminOnly {
+  display: flex;
+  justify-content: center;
+  padding: 4em 1em;
+  color: var(--text-secondary-color);
+  font-size: 1.1em;
+}

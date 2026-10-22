@@ -6,7 +6,7 @@ import { Duration } from "luxon"
 import { None } from "~/types/Option"
 import React from "react"
 import { buildVideo } from "../fixtures"
-import { triggerIntersection, withApplicationConfiguration } from "../helpers"
+import { triggerIntersection, withApplicationConfiguration, withAuthenticatedUser } from "../helpers"
 import { intersectionObserverCallbacks } from "../setup"
 
 // The search debounce is wall-clock, so these waits must tolerate a heavily loaded suite.
@@ -31,7 +31,7 @@ const renderWithRouter = (initialEntry: string = "/", safeMode: boolean = false)
     [
       {
         path: "/",
-        element: withApplicationConfiguration(<Videos />, { safeMode }),
+        element: withAuthenticatedUser(withApplicationConfiguration(<Videos />, { safeMode })),
       },
     ],
     { initialEntries: [initialEntry] }
@@ -287,7 +287,7 @@ describe("Videos", () => {
           path: "/",
           loader: () =>
             holdNavigations ? new Promise<null>((resolve) => { releaseNavigation = () => resolve(null) }) : null,
-          element: withApplicationConfiguration(<Videos />),
+          element: withAuthenticatedUser(withApplicationConfiguration(<Videos />)),
         },
       ],
       { initialEntries: ["/"] }

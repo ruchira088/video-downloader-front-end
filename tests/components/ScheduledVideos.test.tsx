@@ -7,8 +7,9 @@ import { SchedulingStatus } from "~/models/SchedulingStatus"
 import { StreamConnection } from "~/services/scheduling/SchedulingService"
 import React from "react"
 import { buildScheduledVideoDownload, durationJson, type Json } from "../fixtures"
-import { triggerIntersection, withApplicationConfiguration } from "../helpers"
+import { triggerIntersection, withApplicationConfiguration, withAuthenticatedUser } from "../helpers"
 import { intersectionObserverCallbacks } from "../setup"
+import { Role } from "~/models/User"
 
 const createMockScheduledVideo = (id: string, overrides: Json = {}) =>
   buildScheduledVideoDownload({
@@ -50,11 +51,11 @@ vi.mock("~/components/scan/VideoScanButton", () => ({
   default: () => <button data-testid="scan-button">Scan</button>,
 }))
 
-const renderWithContext = () => {
+const renderWithContext = (role: Role = Role.Admin) => {
   const router = createMemoryRouter([
     {
       path: "/",
-      element: withApplicationConfiguration(<ScheduledVideos />),
+      element: withAuthenticatedUser(withApplicationConfiguration(<ScheduledVideos />), role),
     },
   ])
 
@@ -72,6 +73,13 @@ describe("ScheduledVideos", () => {
     await waitFor(() => {
       expect(screen.getByTestId("scan-button")).toBeInTheDocument()
     })
+  })
+
+  test("should hide the scan button from non-admins", async () => {
+    renderWithContext(Role.User)
+
+    expect(await screen.findByRole("button", { name: "Retry All" })).toBeInTheDocument()
+    expect(screen.queryByTestId("scan-button")).not.toBeInTheDocument()
   })
 
   test("should render retry all button", async () => {

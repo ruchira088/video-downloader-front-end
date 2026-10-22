@@ -7,6 +7,7 @@ import { Range } from "~/models/Range"
 import { None, Some } from "~/types/Option"
 import { Duration } from "luxon"
 import React from "react"
+import { withAuthenticatedUser } from "../helpers"
 
 vi.mock("~/services/video/VideoService", () => ({
   videoServiceSummary: vi.fn().mockResolvedValue({
@@ -50,7 +51,7 @@ describe("VideoSearch", () => {
   // VideoSitesSelector fetches the available site list on mount; flush that promise so the
   // resulting state update is wrapped in act() rather than landing after the test ends.
   const renderVideoSearch = async (props: Partial<typeof defaultProps> = {}) => {
-    const result = render(<VideoSearch {...defaultProps} {...props} />)
+    const result = render(withAuthenticatedUser(<VideoSearch {...defaultProps} {...props} />))
     await act(async () => {})
     return result
   }

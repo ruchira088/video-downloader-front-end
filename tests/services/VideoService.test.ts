@@ -25,8 +25,7 @@ import {
   deleteVideo,
   fetchDuplicateVideos,
   scanForVideos,
-  fetchVideoScanStatus,
-} from "~/services/video/VideoService"
+  fetchVideoScanStatus, queueIncompleteDownloads } from "~/services/video/VideoService"
 import { fileResourceJson, videoJson, videoMetadataJson } from "../fixtures"
 
 const mockAxiosGet = vi.mocked(axiosClient.get)
@@ -299,6 +298,17 @@ describe("VideoService", () => {
       await scanForVideos()
 
       expect(mockAxiosPost).toHaveBeenCalledWith("/videos/scan")
+    })
+  })
+
+  describe("queueIncompleteDownloads", () => {
+    test("should post to the queue-incomplete-downloads endpoint and return the re-queued videos", async () => {
+      mockAxiosPost.mockResolvedValue({ data: { results: [videoJson(), videoJson()] } })
+
+      const result = await queueIncompleteDownloads()
+
+      expect(mockAxiosPost).toHaveBeenCalledWith("/videos/queue-incomplete-downloads")
+      expect(result).toHaveLength(2)
     })
   })
 

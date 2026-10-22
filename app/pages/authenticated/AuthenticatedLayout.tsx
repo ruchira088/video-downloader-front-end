@@ -4,10 +4,11 @@ import Header from "~/components/title-bar/Header"
 import { SessionStatus, useRedirectOnAuth } from "~/pages/useRedirectOnAuth"
 import { LoadingScreen } from "~/components/loading/LoadingScreen"
 import { apiConfiguration } from "~/services/ApiConfiguration"
+import { AuthenticatedUserContext } from "~/providers/AuthenticatedUserProvider"
 import styles from "./AuthenticatedLayout.module.scss"
 
 const AuthenticatedLayout = () => {
-  const { status, retry } = useRedirectOnAuth(false)
+  const { status, user, retry } = useRedirectOnAuth(false)
 
   // Children must not mount before the session check completes: their on-mount API
   // calls would 401 and race the redirect to the sign-in page.
@@ -26,12 +27,12 @@ const AuthenticatedLayout = () => {
 
     case SessionStatus.Verified:
       return (
-        <>
+        <AuthenticatedUserContext.Provider value={user}>
           <Header />
           <div className={styles.content}>
             <Outlet />
           </div>
-        </>
+        </AuthenticatedUserContext.Provider>
       )
   }
 }

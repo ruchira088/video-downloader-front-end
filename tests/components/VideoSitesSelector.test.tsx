@@ -2,6 +2,8 @@ import { describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import VideoSitesSelector from "~/pages/authenticated/videos/components/VideoSitesSelector"
 import React from "react"
+import { withAuthenticatedUser } from "../helpers"
+import { Role } from "~/models/User"
 
 vi.mock("~/services/video/VideoService", () => ({
   videoServiceSummary: vi.fn().mockResolvedValue({
@@ -20,16 +22,26 @@ describe("VideoSitesSelector", () => {
   const flushMountFetch = () => act(async () => {})
 
   test("should render with label", async () => {
-    render(<VideoSitesSelector videoSites={[]} onChange={vi.fn()} />)
+    render(withAuthenticatedUser(<VideoSitesSelector videoSites={[]} onChange={vi.fn()} />))
     await flushMountFetch()
 
     expect(screen.getByLabelText("Sites")).toBeInTheDocument()
   })
 
+  test("should render nothing and skip the admin-only summary for non-admins", async () => {
+    const { videoServiceSummary } = await import("~/services/video/VideoService")
+
+    const { container } = render(withAuthenticatedUser(<VideoSitesSelector videoSites={[]} onChange={vi.fn()} />, Role.User))
+    await flushMountFetch()
+
+    expect(container).toBeEmptyDOMElement()
+    expect(videoServiceSummary).not.toHaveBeenCalled()
+  })
+
   test("should fetch available video sites on mount", async () => {
     const { videoServiceSummary } = await import("~/services/video/VideoService")
 
-    render(<VideoSitesSelector videoSites={[]} onChange={vi.fn()} />)
+    render(withAuthenticatedUser(<VideoSitesSelector videoSites={[]} onChange={vi.fn()} />))
 
     await waitFor(() => {
       expect(videoServiceSummary).toHaveBeenCalled()
@@ -37,7 +49,7 @@ describe("VideoSitesSelector", () => {
   })
 
   test("should display selected sites as chips", async () => {
-    render(<VideoSitesSelector videoSites={["youtube", "vimeo"]} onChange={vi.fn()} />)
+    render(withAuthenticatedUser(<VideoSitesSelector videoSites={["youtube", "vimeo"]} onChange={vi.fn()} />))
     await flushMountFetch()
 
     expect(screen.getByText("youtube")).toBeInTheDocument()
@@ -45,7 +57,7 @@ describe("VideoSitesSelector", () => {
   })
 
   test("should show available sites in dropdown", async () => {
-    render(<VideoSitesSelector videoSites={[]} onChange={vi.fn()} />)
+    render(withAuthenticatedUser(<VideoSitesSelector videoSites={[]} onChange={vi.fn()} />))
 
     await waitFor(() => {
       fireEvent.mouseDown(screen.getByRole("combobox"))
@@ -60,7 +72,7 @@ describe("VideoSitesSelector", () => {
 
   test("should call onChange when site is selected", async () => {
     const onChange = vi.fn()
-    render(<VideoSitesSelector videoSites={[]} onChange={onChange} />)
+    render(withAuthenticatedUser(<VideoSitesSelector videoSites={[]} onChange={onChange} />))
 
     await waitFor(() => {
       fireEvent.mouseDown(screen.getByRole("combobox"))
@@ -76,7 +88,7 @@ describe("VideoSitesSelector", () => {
 
   test("should apply custom className", async () => {
     const { container } = render(
-      <VideoSitesSelector videoSites={[]} onChange={vi.fn()} className="custom-class" />
+      withAuthenticatedUser(<VideoSitesSelector videoSites={[]} onChange={vi.fn()} className="custom-class" />)
     )
     await flushMountFetch()
 
@@ -84,7 +96,7 @@ describe("VideoSitesSelector", () => {
   })
 
   test("should check selected sites in dropdown", async () => {
-    render(<VideoSitesSelector videoSites={["youtube"]} onChange={vi.fn()} />)
+    render(withAuthenticatedUser(<VideoSitesSelector videoSites={["youtube"]} onChange={vi.fn()} />))
 
     await waitFor(() => {
       fireEvent.mouseDown(screen.getByRole("combobox"))
