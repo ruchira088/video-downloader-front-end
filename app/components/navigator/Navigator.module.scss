@@ -1,5 +1,6 @@
 // Inactive tabs sit back from the active one; the tokens only define the full text colour.
-$muted-text: color-mix(in srgb, var(--text-color) 62%, transparent);
+// 68% keeps inactive tab labels above the 4.5:1 WCAG AA contrast ratio on the page background.
+$muted-text: color-mix(in srgb, var(--text-color) 68%, transparent);
 $hairline: color-mix(in srgb, var(--text-color) 14%, transparent);
 
 // Desktop: icon + label tabs, never squeezed. The logo and quick settings flex to fill the

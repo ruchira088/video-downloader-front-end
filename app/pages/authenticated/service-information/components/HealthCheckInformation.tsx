@@ -86,7 +86,7 @@ const HealthCheckInformation: FC<HealthCheckInformationProps> = props => {
             currentTimestamp={currentTimestamp}
             format={DateTime.DATETIME_MED_WITH_SECONDS} />
         </div>
-        <Button onClick={() => void props.onRefresh()} disabled={props.isRefreshing} loading={props.isRefreshing}>
+        <Button onClick={() => void props.onRefresh()} disabled={props.isRefreshing} loading={props.isRefreshing} aria-label="Refresh health check">
           <Replay fontSize="small" />
         </Button>
       </div>

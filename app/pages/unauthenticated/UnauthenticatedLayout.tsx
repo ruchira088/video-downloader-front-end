@@ -5,7 +5,11 @@ import { useRedirectOnAuth } from "~/pages/useRedirectOnAuth"
 const UnauthenticatedLayout = () => {
   useRedirectOnAuth(true)
 
-  return <Outlet />
+  return (
+    <main>
+      <Outlet />
+    </main>
+  )
 }
 
 export default UnauthenticatedLayout

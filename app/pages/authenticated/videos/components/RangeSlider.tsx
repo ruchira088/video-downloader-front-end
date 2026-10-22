@@ -50,6 +50,7 @@ function RangeSlider<A>(props: RangeSliderProps<A>): JSX.Element {
         onChange={(event, value) => setTransientRange(toRange(value))}
         onChangeCommitted={(event, value) => props.onChange(toRange(value))}
         className={styles.slider}
+        getAriaLabel={(index) => `${props.title} ${index === 0 ? "minimum" : "maximum"}`}
       />
     </div>
   )

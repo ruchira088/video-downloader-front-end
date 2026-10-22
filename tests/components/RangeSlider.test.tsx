@@ -123,6 +123,13 @@ describe("RangeSlider", () => {
     expect(screen.getByText("50")).toBeInTheDocument()
   })
 
+  test("should name both thumbs after the title for assistive technology", () => {
+    render(<RangeSlider {...defaultProps} />)
+
+    expect(screen.getByRole("slider", { name: "Test Range minimum" })).toBeInTheDocument()
+    expect(screen.getByRole("slider", { name: "Test Range maximum" })).toBeInTheDocument()
+  })
+
   test("should render MUI slider", () => {
     const { container } = render(<RangeSlider {...defaultProps} />)
 

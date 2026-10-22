@@ -326,14 +326,14 @@ describe("ServiceInformation", () => {
     })
     expect(performHealthCheck).toHaveBeenCalledTimes(1)
 
-    await user.click(screen.getByTestId("ReplayIcon").closest("button")!)
+    await user.click(screen.getByRole("button", { name: "Refresh health check" }))
 
     await waitFor(() => {
       expect(performHealthCheck).toHaveBeenCalledTimes(2)
     })
     // The button is usable again once the check has finished.
     await waitFor(() => {
-      expect(screen.getByTestId("ReplayIcon").closest("button")).toBeEnabled()
+      expect(screen.getByRole("button", { name: "Refresh health check" })).toBeEnabled()
     })
   })
 
@@ -354,7 +354,7 @@ describe("ServiceInformation", () => {
     await act(async () => { vi.advanceTimersByTime(30_000) })
     expect(performHealthCheck).toHaveBeenCalledTimes(2)
 
-    await user.click(screen.getByTestId("ReplayIcon").closest("button")!)
+    await user.click(screen.getByRole("button", { name: "Refresh health check" }))
     await waitFor(() => {
       expect(screen.getByText("Unhealthy")).toBeInTheDocument()
     })
@@ -381,7 +381,7 @@ describe("ServiceInformation", () => {
       .mockReturnValueOnce(new Promise((resolve) => { resolvePolledCheck = resolve }))
       .mockRejectedValueOnce(new Error("health check failed"))
     await act(async () => { vi.advanceTimersByTime(30_000) })
-    await user.click(screen.getByTestId("ReplayIcon").closest("button")!)
+    await user.click(screen.getByRole("button", { name: "Refresh health check" }))
     await waitFor(() => {
       expect(consoleWarn).toHaveBeenCalledWith("Failed to perform the health check", expect.any(Error))
     })
@@ -406,14 +406,14 @@ describe("ServiceInformation", () => {
       expect(screen.getByText("Database")).toBeInTheDocument()
     })
 
-    await user.click(screen.getByTestId("ReplayIcon").closest("button")!)
+    await user.click(screen.getByRole("button", { name: "Refresh health check" }))
 
     await waitFor(() => {
       expect(consoleWarn).toHaveBeenCalledWith("Failed to perform the health check", expect.any(Error))
     })
     expect(screen.getByText("Database")).toBeInTheDocument()
     await waitFor(() => {
-      expect(screen.getByTestId("ReplayIcon").closest("button")).toBeEnabled()
+      expect(screen.getByRole("button", { name: "Refresh health check" })).toBeEnabled()
     })
 
     consoleWarn.mockRestore()

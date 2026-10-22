@@ -29,9 +29,9 @@ const AuthenticatedLayout = () => {
       return (
         <AuthenticatedUserContext.Provider value={user}>
           <Header />
-          <div className={styles.content}>
+          <main className={styles.content}>
             <Outlet />
-          </div>
+          </main>
         </AuthenticatedUserContext.Provider>
       )
   }

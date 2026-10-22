@@ -7,11 +7,11 @@ import { Link } from "react-router"
 
 
 const Header = () => (
-  <div className={styles.header}>
+  <header className={styles.header}>
     <HeaderLogo />
     <Navigator />
     <QuickSettings/>
-  </div>
+  </header>
 )
 
 const HeaderLogo = () =>

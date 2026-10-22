@@ -174,12 +174,13 @@
 
           &.healthy {
             background-color: rgba(46, 125, 50, 0.15);
-            color: #2e7d32;
+            // Blended towards the text colour so the label stays legible on the tinted badge in both themes.
+            color: color-mix(in srgb, #2e7d32 45%, var(--text-color));
           }
 
           &.unhealthy {
             background-color: rgba(211, 47, 47, 0.15);
-            color: #d32f2f;
+            color: color-mix(in srgb, #d32f2f 50%, var(--text-color));
           }
         }
 
