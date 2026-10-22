@@ -27,3 +27,8 @@ yarn-error.log*
 
 .react-router
 .playwright-mcp
+# playwright
+/e2e/.auth
+/playwright-report
+/blob-report
+/playwright-results

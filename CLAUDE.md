@@ -18,6 +18,7 @@ Requires Node 24 (`engines.node: ^24.0.0`) and npm.
 | Tests + coverage | `npm run test:coverage` |
 | Production build | `npm run build` |
 | Full CI gate | `npm run ci:checks` (typecheck → lint → test:coverage) |
+| End-to-end (Playwright, against staging) | `npm run e2e` / `npm run e2e:ui` |
 
 - **Run a single test file:** `npx vitest run tests/components/VideoCard.test.tsx`
 - **Run tests matching a name:** `npx vitest run -t "should reset videos"`
@@ -60,11 +61,32 @@ Requires Node 24 (`engines.node: ^24.0.0`) and npm.
 
 ## Verifying changes in a browser
 
-To verify a change end-to-end, build the app against a real API and drive it with headless Chromium:
+**The committed smoke suite comes first.** `e2e/` holds a `@playwright/test` 1.64 suite (`playwright.config.ts`)
+covering sign-in/out with `?redirect=`, the videos list, infinite scroll and video page, the downloads page and its SSE
+stream, and a playlist create/add/reorder/delete round trip. `npm run e2e` builds the app with
+`VITE_API_URL=https://api.staging.video.dev.ruchij.com` and serves `build/client` through `e2e/static-server.mjs` (SPA
+fallback, port 4173) via Playwright's `webServer`. Run it with the "Video Downloader - Dev" 1Password credentials in
+`E2E_EMAIL` / `E2E_PASSWORD`, and never write them to a file.
+
+- A `setup` project signs in once through the UI and saves `e2e/.auth/user.json` (gitignored) as `storageState` for the
+  specs. `auth.spec.ts` opts out with an empty `storageState`, so its sign-out ends only its own session.
+- Locally a server already on port 4173 is reused, even one built against another API; stop it when switching APIs.
+  `E2E_API_URL` changes the API, and `E2E_BASE_URL` points the suite at a deployed front-end instead of a local build.
+- The staging account had a single video as of October 2026, so the infinite-scroll test skips itself and the playlist
+  reorder step is skipped with an annotation. They run once the account has 50+ and 2+ videos respectively.
+- Credentials are entered by `enterSecret` in `e2e/helpers.ts`, not `fill()`, because the HTML report records fill
+  values and CI uploads it from a public repository. CI also turns off traces, videos and screenshots, which can
+  record the session cookie or the email on the sign-in page. Keep both rules when adding specs.
+- Playwright writes to `playwright-results/` and `playwright-report/`, not the default `test-results/`, which holds
+  Vitest's JUnit output. Vitest excludes `e2e/**`. `npm run lint` and `npm run typecheck` both cover `e2e/`.
+- The `End-to-end Tests` CI job runs on branch pushes after `deploy-to-dev`, reading the `E2E_EMAIL` / `E2E_PASSWORD`
+  repository secrets, and uploads `playwright-report/` as an artifact.
+
+For a one-off check the suite does not cover, drive the app by hand:
 
 1. `VITE_API_URL=https://api.video.home.ruchij.com npm run build`
-2. Serve `build/client` with any static server that falls back to `index.html` for unknown paths (SPA routing).
-3. Drive it with Playwright (`playwright-core` + the Chromium cached under `~/Library/Caches/ms-playwright/`), signing in with the 1Password credentials.
+2. Serve it with `node e2e/static-server.mjs build/client` (or any static server that falls back to `index.html`).
+3. Drive it with Playwright (`@playwright/test`'s bundled `playwright-core` + the Chromium cached under `~/Library/Caches/ms-playwright/`), signing in with the 1Password credentials.
 4. To distinguish SPA navigation from hard reloads (e.g. when verifying auth-redirect behavior), count Playwright `page.on("load")` events — an SPA transition fires none.
 
 ## Gotchas

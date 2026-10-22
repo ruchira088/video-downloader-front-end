@@ -16,7 +16,9 @@ export default defineConfig({
     exclude: [
       "**/node_modules/**",
       "**/build/**",
-      "cdk-deploy/**"
+      "cdk-deploy/**",
+      // Playwright specs, run by `npm run e2e`
+      "e2e/**"
     ],
     coverage: {
       provider: "v8",

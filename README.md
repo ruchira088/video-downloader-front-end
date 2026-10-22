@@ -31,7 +31,7 @@ A modern, full-featured React web application for downloading and managing video
 | **Drag & Drop** | dnd-kit |
 | **Error Monitoring** | Sentry |
 | **Linting** | oxlint (type-aware, via tsgolint) |
-| **Testing** | Vitest 5, jsdom |
+| **Testing** | Vitest 5, jsdom; Playwright 1.64 (end-to-end) |
 | **Deployment** | Docker, AWS CDK 2 |
 
 ## Prerequisites
@@ -82,6 +82,7 @@ The development server runs at `http://localhost:5173`.
 | `npm run typecheck` | Run TypeScript type checking |
 | `npm run lint` / `npm run lint:fix` | Lint (and autofix) sources |
 | `npm run ci:checks` | Full CI gate: typecheck → lint → test:coverage |
+| `npm run e2e` / `npm run e2e:ui` | Build against the staging API and run the Playwright end-to-end suite (headless / UI mode) |
 
 ## Configuration
 
@@ -140,6 +141,7 @@ video-downloader-front-end/
 │   ├── providers/          # React Context providers
 │   └── routes.ts           # Route definitions
 ├── tests/                  # Test files
+├── e2e/                    # Playwright end-to-end specs and static server
 ├── public/                 # Static assets
 ├── playbooks/              # Ansible deployment playbooks
 │   └── docker/             # Docker configuration
@@ -147,6 +149,7 @@ video-downloader-front-end/
 ├── scripts/                # Build scripts
 ├── vite.config.ts          # Vite configuration
 ├── vitest.config.ts        # Vitest configuration
+├── playwright.config.ts    # Playwright configuration
 ├── react-router.config.ts  # React Router configuration (ssr: false)
 ├── bundled-dependencies.ts # Packages bundled by both Vite and Vitest
 ├── .oxlintrc.json          # oxlint rules
@@ -180,6 +183,25 @@ npm run test:run
 ```
 
 Tests use Vitest with jsdom for DOM simulation. Test files are located in the `tests/` directory.
+
+### End-to-end tests
+
+The Playwright suite in `e2e/` signs in to the staging API (`https://api.staging.video.dev.ruchij.com`) with a real
+account and covers signing in and out (including `?redirect=`), browsing videos, the downloads page and its live-update
+stream, and a playlist create/add/reorder/delete round trip. It builds the app with `VITE_API_URL` pointed at staging
+and serves `build/client` with `e2e/static-server.mjs`.
+
+```bash
+# Once: the Chromium build that @playwright/test expects
+npx playwright install chromium
+
+E2E_EMAIL=... E2E_PASSWORD=... npm run e2e
+```
+
+Credentials are read only from `E2E_EMAIL` / `E2E_PASSWORD`. Set `E2E_API_URL` to target another API, or `E2E_BASE_URL`
+to test an already-deployed front-end instead of a local build. The HTML report lands in `playwright-report/`. In CI the
+`End-to-end Tests` job runs the suite on branch pushes after the dev deploy, using the `E2E_EMAIL` / `E2E_PASSWORD`
+repository secrets, and uploads the report as an artifact.
 
 ## Building for Production
 
