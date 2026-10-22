@@ -64,6 +64,8 @@
 
     td {
       display: flex;
+      // MUI gives right-aligned cells row-reverse, which would put the value before its label.
+      flex-direction: row;
       justify-content: space-between;
       border-bottom: none;
       padding: 0.25em 0;
