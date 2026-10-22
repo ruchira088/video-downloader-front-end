@@ -11,6 +11,7 @@ import {zodParse} from "~/types/Zod"
 import {ListResponse} from "~/models/ListResponse"
 import {DownloadProgress} from "~/models/DownloadProgress"
 import {EventStreamEventType} from "~/models/EventStreamEventType"
+import { reportError } from "~/services/ErrorReporting"
 
 export enum StreamConnection {
   Connected = "Connected",
@@ -33,14 +34,14 @@ export const scheduledVideoDownloadStream = (
   const onActionDownloadMessage = (messageEvent: MessageEvent) =>
     Either.fromTry(() => zodParse(DownloadProgress, JSON.parse(messageEvent.data)))
       .fold(
-        error => console.error("Failed to parse download progress event", error),
+        error => reportError("Failed to parse download progress event", error),
         onDownloadProgress
       )
 
   const onScheduledVideoDownloadUpdateMessage = (messageEvent: MessageEvent) =>
     Either.fromTry(() => zodParse(ScheduledVideoDownload, JSON.parse(messageEvent.data)))
       .fold(
-        error => console.error("Failed to parse scheduled video download update event", error),
+        error => reportError("Failed to parse scheduled video download update event", error),
         onScheduledVideoDownloadUpdate
       )
 

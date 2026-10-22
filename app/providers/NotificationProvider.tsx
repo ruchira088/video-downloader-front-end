@@ -1,6 +1,7 @@
 import React, { type FC, useCallback, useMemo, useRef, useState } from "react"
 import { Alert, Snackbar, type SnackbarCloseReason } from "@mui/material"
 import { None, type Option, Some } from "~/types/Option"
+import { reportError } from "~/services/ErrorReporting"
 
 const AUTO_HIDE_DURATION_MS = 6000
 
@@ -30,7 +31,7 @@ export type NotificationContext = {
  */
 const consoleNotificationContext: NotificationContext = {
   notifySuccess: (message) => console.debug(message),
-  notifyError: (message, error) => console.error(message, error),
+  notifyError: (message, error) => reportError(message, error),
 }
 
 export const NotificationReactContext = React.createContext<NotificationContext>(consoleNotificationContext)
@@ -51,8 +52,8 @@ export const NotificationProvider: FC<NotificationProviderProps> = props => {
   const notifySuccess = useCallback((message: string) => notify(message, "success"), [notify])
 
   const notifyError = useCallback((message: string, error?: unknown) => {
-    // Keep the console breadcrumb: the snackbar is deliberately free of stack traces.
-    console.error(message, error)
+    // The snackbar is deliberately free of stack traces, so the error itself is reported.
+    reportError(message, error)
     notify(message, "error")
   }, [notify])
 

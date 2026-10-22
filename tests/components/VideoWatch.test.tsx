@@ -271,7 +271,7 @@ describe("VideoWatch", () => {
 
   test("should not navigate and keep the dialog open when delete fails", async () => {
     const { deleteVideo } = await import("~/services/video/VideoService")
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
     vi.mocked(deleteVideo).mockRejectedValueOnce(new Error("delete failed"))
 
     renderWithContext()
@@ -286,13 +286,13 @@ describe("VideoWatch", () => {
     fireEvent.click(dialogButtons[dialogButtons.length - 1])
 
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalled()
+      expect(consoleWarnSpy).toHaveBeenCalled()
     })
 
     expect(mockNavigate).not.toHaveBeenCalled()
     expect(screen.getByText("Delete Video?")).toBeInTheDocument()
 
-    consoleErrorSpy.mockRestore()
+    consoleWarnSpy.mockRestore()
   })
 
   test("should update video title when edited", async () => {

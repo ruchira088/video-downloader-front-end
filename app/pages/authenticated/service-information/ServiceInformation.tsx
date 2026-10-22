@@ -18,6 +18,7 @@ import Helmet from "~/components/helmet/Helmet"
 import { DateTime, Duration } from "luxon"
 
 import styles from "./ServiceInformation.module.scss"
+import { reportError } from "~/services/ErrorReporting"
 
 const ServiceInformation = () => {
   const [backendInformation, setBackendInformation] = useState<Option<BackendServiceInformation>>(None.of())
@@ -31,7 +32,7 @@ const ServiceInformation = () => {
       serverTimeOffset.current = information.currentTimestamp.diff(DateTime.now())
       setBackendInformation(Some.of(information))
     } catch (error) {
-      console.error("Failed to retrieve backend service information", error)
+      reportError("Failed to retrieve backend service information", error)
     }
   }
 

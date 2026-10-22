@@ -10,6 +10,7 @@ import {VideoMetadata} from "~/models/VideoMetadata"
 import type {DownloadableScheduledVideo} from "~/models/DownloadableScheduledVideo"
 import styles from "./ScheduledVideoDownloadCard.module.scss"
 import Timestamp from "~/components/timestamp/Timestamp"
+import { reportError } from "~/services/ErrorReporting"
 
 enum ModalDialogType {
   Delete = "Delete",
@@ -87,7 +88,7 @@ const ErrorDetailsDialog: FC<ErrorDetailsDialogProps> = props => (
       {props.scheduleVideoDownload.errorInfo.map(errorInfo => errorInfo.message).toNullable()}
     </DialogContent>
     <DialogActions>
-      <Button onClick={() => props.onUpdateStatus(SchedulingStatus.Queued).catch(console.error).finally(props.onClose)}>Retry</Button>
+      <Button onClick={() => props.onUpdateStatus(SchedulingStatus.Queued).catch((error) => reportError("Failed to retry the download", error)).finally(props.onClose)}>Retry</Button>
       <Button onClick={props.onClose}>Cancel</Button>
     </DialogActions>
   </Dialog>
@@ -107,7 +108,7 @@ const ScheduledVideoDeleteDialog: FC<ScheduledVideoDeleteDialogProps> = props =>
   const handleDelete = () => {
     setIsDeleting(true)
     void props.onDelete()
-      .catch(console.error)
+      .catch((error) => reportError("Failed to delete the scheduled download", error))
       .finally(() => {
         setIsDeleting(false)
         props.onClose()

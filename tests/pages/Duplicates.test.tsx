@@ -82,7 +82,7 @@ describe("Duplicates", () => {
   })
 
   test("should not claim there are no duplicates while more pages remain to be checked", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
     // A full page (so hasMore stays true) whose every group loses a video and is dropped.
     const fullPage = Object.fromEntries(
       Array.from({ length: 25 }, (_, index) => [
@@ -101,11 +101,11 @@ describe("Duplicates", () => {
     await waitFor(() => expect(mockFetchDuplicateVideos).toHaveBeenCalledTimes(1))
     expect(screen.queryByText("No duplicate videos found")).not.toBeInTheDocument()
 
-    consoleError.mockRestore()
+    consoleWarn.mockRestore()
   })
 
   test("should not claim there are no duplicates when the first page failed to load", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
     mockFetchDuplicateVideos.mockRejectedValue(new Error("network down"))
 
     renderPage()
@@ -115,7 +115,7 @@ describe("Duplicates", () => {
     })
     expect(screen.queryByText("No duplicate videos found")).not.toBeInTheDocument()
 
-    consoleError.mockRestore()
+    consoleWarn.mockRestore()
   })
 
   test("should render duplicate groups with video cards", async () => {
@@ -200,7 +200,7 @@ describe("Duplicates", () => {
       "group-1": createDuplicateGroup("group-1", ["video-1", "video-2"]),
     })
     mockDeleteVideo.mockRejectedValue(new Error("Failed to delete video"))
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
 
     renderPage()
 
@@ -212,13 +212,13 @@ describe("Duplicates", () => {
     await user.click(deleteButtons[0])
 
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalled()
+      expect(consoleWarnSpy).toHaveBeenCalled()
     })
 
     expect(screen.getByText("Video video-1")).toBeInTheDocument()
     expect(screen.getByText("Video video-2")).toBeInTheDocument()
 
-    consoleErrorSpy.mockRestore()
+    consoleWarnSpy.mockRestore()
   })
 
   test("should render links to video pages", async () => {
@@ -332,7 +332,7 @@ describe("Duplicates", () => {
   })
   describe("Video loading", () => {
     test("should still show a group when one of its videos fails to load", async () => {
-      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
       mockFetchDuplicateVideos.mockResolvedValue({
         "group-1": [
           { videoId: "video-1", duplicateGroupId: "group-1", createdAt: DateTime.now() },
@@ -355,11 +355,11 @@ describe("Duplicates", () => {
       expect(screen.getByText("Title video-3")).toBeInTheDocument()
       expect(screen.getByText("2 duplicate videos")).toBeInTheDocument()
 
-      consoleError.mockRestore()
+      consoleWarn.mockRestore()
     })
 
     test("should drop a group left with fewer than two loadable videos", async () => {
-      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
       mockFetchDuplicateVideos.mockResolvedValue({
         "group-1": [
           { videoId: "video-1", duplicateGroupId: "group-1", createdAt: DateTime.now() },
@@ -379,7 +379,7 @@ describe("Duplicates", () => {
       })
       expect(screen.queryByText("Title video-1")).not.toBeInTheDocument()
 
-      consoleError.mockRestore()
+      consoleWarn.mockRestore()
     })
 
     test("should fetch a video once when it appears in more than one group", async () => {

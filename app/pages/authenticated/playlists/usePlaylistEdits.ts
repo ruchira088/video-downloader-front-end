@@ -14,6 +14,7 @@ import {
 } from "~/services/playlist/PlaylistService"
 import { httpStatusCode } from "~/services/http/HttpClient"
 import { useNotification } from "~/providers/NotificationProvider"
+import { reportError } from "~/services/ErrorReporting"
 
 export type LoadFailure = "not-found" | "error"
 
@@ -102,7 +103,7 @@ export const usePlaylistEdits = (playlistId: string) => {
     try {
       applyPlaylist(Some.of(await fetchPlaylistById(playlistId)))
     } catch (error) {
-      console.error("Failed to refresh the playlist", error)
+      reportError("Failed to refresh the playlist", error)
       setPlaylist(confirmedPlaylist.current.map(withPendingMoves))
     }
   }

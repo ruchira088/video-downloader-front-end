@@ -4,6 +4,7 @@ import {None, Option, Some} from "~/types/Option"
 import {fetchVideoScanStatus, scanForVideos} from "~/services/video/VideoService"
 import {Button, CircularProgress} from "@mui/material"
 import {useNotification} from "~/providers/NotificationProvider"
+import {reportError} from "~/services/ErrorReporting"
 
 type VideoScanButtonProps = {
   readonly className?: string
@@ -18,7 +19,7 @@ const VideoScanButton: FC<VideoScanButtonProps> = props => {
       const videoScan: VideoScan = await fetchVideoScanStatus()
       setScanStatus(Some.of(videoScan.scanStatus))
     } catch (error) {
-      console.error(error)
+      reportError("Failed to fetch the video scan status", error)
     }
   }
 

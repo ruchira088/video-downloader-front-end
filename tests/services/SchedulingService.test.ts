@@ -380,7 +380,7 @@ describe("SchedulingService", () => {
       const onProgress = vi.fn()
       const onUpdate = vi.fn()
       const onError = vi.fn()
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
 
       scheduledVideoDownloadStream(onProgress, onUpdate, onError)
 
@@ -393,10 +393,10 @@ describe("SchedulingService", () => {
 
       expect(onProgress).not.toHaveBeenCalled()
       expect(onUpdate).not.toHaveBeenCalled()
-      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to parse download progress event", expect.any(Error))
-      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to parse scheduled video download update event", expect.any(Error))
+      expect(consoleWarnSpy).toHaveBeenCalledWith("Failed to parse download progress event", expect.any(Error))
+      expect(consoleWarnSpy).toHaveBeenCalledWith("Failed to parse scheduled video download update event", expect.any(Error))
 
-      consoleErrorSpy.mockRestore()
+      consoleWarnSpy.mockRestore()
     })
 
     test("should report Connected when the EventSource opens", () => {

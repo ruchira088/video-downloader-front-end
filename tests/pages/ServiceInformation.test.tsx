@@ -298,13 +298,13 @@ describe("ServiceInformation", () => {
 
   test("should keep the frontend section when backend information cannot be retrieved", async () => {
     const { retrieveBackendServiceInformation } = await import("~/services/health/HealthCheckService")
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
     vi.mocked(retrieveBackendServiceInformation).mockRejectedValue(new Error("backend down"))
 
     renderWithRouter()
 
     await waitFor(() => {
-      expect(consoleError).toHaveBeenCalledWith(
+      expect(consoleWarn).toHaveBeenCalledWith(
         "Failed to retrieve backend service information",
         expect.any(Error)
       )
@@ -312,7 +312,7 @@ describe("ServiceInformation", () => {
     expect(screen.getByText("video-downloader-front-end")).toBeInTheDocument()
     expect(screen.queryByText("Service Name:")).not.toBeInTheDocument()
 
-    consoleError.mockRestore()
+    consoleWarn.mockRestore()
   })
 
   test("should re-run the health check when the refresh button is clicked", async () => {
@@ -366,7 +366,7 @@ describe("ServiceInformation", () => {
 
   test("should still show a slow polled result when the newer manual check fails", async () => {
     const { performHealthCheck } = await import("~/services/health/HealthCheckService")
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     let resolvePolledCheck: (healthCheck: ReturnType<typeof createMockHealthCheck>) => void = () => {}
 
@@ -383,18 +383,18 @@ describe("ServiceInformation", () => {
     await act(async () => { vi.advanceTimersByTime(30_000) })
     await user.click(screen.getByTestId("ReplayIcon").closest("button")!)
     await waitFor(() => {
-      expect(consoleError).toHaveBeenCalledWith("Failed to perform the health check", expect.any(Error))
+      expect(consoleWarn).toHaveBeenCalledWith("Failed to perform the health check", expect.any(Error))
     })
 
     await act(async () => resolvePolledCheck(createMockHealthCheck(false)))
 
     expect(screen.getByText("Unhealthy")).toBeInTheDocument()
-    consoleError.mockRestore()
+    consoleWarn.mockRestore()
   })
 
   test("should keep the last result and re-enable the refresh when a health check fails", async () => {
     const { performHealthCheck } = await import("~/services/health/HealthCheckService")
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     vi.mocked(performHealthCheck)
       .mockResolvedValueOnce(createMockHealthCheck())
@@ -409,14 +409,14 @@ describe("ServiceInformation", () => {
     await user.click(screen.getByTestId("ReplayIcon").closest("button")!)
 
     await waitFor(() => {
-      expect(consoleError).toHaveBeenCalledWith("Failed to perform the health check", expect.any(Error))
+      expect(consoleWarn).toHaveBeenCalledWith("Failed to perform the health check", expect.any(Error))
     })
     expect(screen.getByText("Database")).toBeInTheDocument()
     await waitFor(() => {
       expect(screen.getByTestId("ReplayIcon").closest("button")).toBeEnabled()
     })
 
-    consoleError.mockRestore()
+    consoleWarn.mockRestore()
   })
 
   describe("API URL copy button", () => {
@@ -444,7 +444,7 @@ describe("ServiceInformation", () => {
     })
 
     test("should log rather than throw when the clipboard is unavailable", async () => {
-      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
       stubClipboard(vi.fn().mockRejectedValue(new Error("denied")))
 
       renderWithRouter()
@@ -452,11 +452,11 @@ describe("ServiceInformation", () => {
       fireEvent.click(screen.getByRole("button", { name: "Copy to clipboard" }))
 
       await waitFor(() => {
-        expect(consoleError).toHaveBeenCalledWith("Failed to copy to clipboard", expect.any(Error))
+        expect(consoleWarn).toHaveBeenCalledWith("Failed to copy to clipboard", expect.any(Error))
       })
       expect(screen.getByTestId("ContentCopyIcon")).toBeInTheDocument()
 
-      consoleError.mockRestore()
+      consoleWarn.mockRestore()
     })
   })
 })

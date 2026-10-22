@@ -131,7 +131,7 @@ describe("CreatePlaylistDialog", () => {
   test("should remain usable when createPlaylist fails", async () => {
     const { createPlaylist } = await import("~/services/playlist/PlaylistService")
     vi.mocked(createPlaylist).mockRejectedValue(new Error("Failed to create playlist"))
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
 
     render(
       <CreatePlaylistDialog
@@ -148,7 +148,7 @@ describe("CreatePlaylistDialog", () => {
     fireEvent.click(createButton)
 
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to create the playlist", expect.any(Error))
+      expect(consoleWarnSpy).toHaveBeenCalledWith("Failed to create the playlist", expect.any(Error))
     })
 
     expect(onPlaylistCreated).not.toHaveBeenCalled()
@@ -159,6 +159,6 @@ describe("CreatePlaylistDialog", () => {
     fireEvent.click(cancelButton)
     expect(onClose).toHaveBeenCalled()
 
-    consoleErrorSpy.mockRestore()
+    consoleWarnSpy.mockRestore()
   })
 })

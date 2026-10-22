@@ -11,6 +11,7 @@ import { None, Option, Some } from "~/types/Option"
 import { type FileResource, FileResourceType } from "~/models/FileResource"
 import { translate } from "~/services/sanitize/SanitizationService"
 import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
+import { reportError } from "~/services/ErrorReporting"
 
 type VideoMetadataCardProps = {
   readonly videoMetadata: VideoMetadata
@@ -50,7 +51,7 @@ const VideoMetadataCard: FC<VideoMetadataCardProps> = props => {
     if (!props.disableSnapshots && snapshotInterval.current.isEmpty()) {
       snapshotInterval.current = Some.of(setInterval(() => setIndex((index) => index + 1), SNAPSHOT_INTERVAL_MS))
       setIsHovering(true)
-      initializeSnapshots().catch((error) => console.error(error))
+      initializeSnapshots().catch((error) => reportError("Failed to load video snapshots", error))
     }
   }
 

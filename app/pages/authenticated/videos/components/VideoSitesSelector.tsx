@@ -3,6 +3,7 @@ import {Box, Checkbox, Chip, FormControl, InputLabel, ListItemText, MenuItem, Se
 import {videoServiceSummary} from "~/services/video/VideoService"
 
 import styles from "./VideoSitesSelector.module.scss"
+import { reportError } from "~/services/ErrorReporting"
 
 const menuProps = {
   slotProps: {
@@ -25,7 +26,7 @@ const VideoSitesSelector: FC<VideoSitesSelectorProps> = props => {
   const [availableVideoSites, setAvailableVideoSites] = useState<string[]>([])
 
   useEffect(() => {
-    videoServiceSummary().then((summary) => setAvailableVideoSites(summary.sites)).catch(console.error)
+    videoServiceSummary().then((summary) => setAvailableVideoSites(summary.sites)).catch((error) => reportError("Failed to fetch the video sites", error))
   }, [])
 
   return (

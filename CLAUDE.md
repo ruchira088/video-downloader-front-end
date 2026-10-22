@@ -40,6 +40,8 @@ Requires Node 24 (`engines.node: ^24.0.0`) and npm.
 
 **Auth & local state** use a typed localStorage layer (`app/services/kv-store/KeyValueStore.ts`). The auth token is persisted under a `KeySpace`; `useRedirectOnAuth` (`app/pages/useRedirectOnAuth.ts`) gates the two layouts (redirect to sign-in when unauthenticated, to home when already signed in).
 
+**Handled errors go through `reportError(operation, error)`** (`app/services/ErrorReporting.ts`), not `console.error`. It logs at warn level and sends a Sentry exception tagged with `operation`. It must not use `console.error`, because Sentry's `captureConsoleIntegration` would report the same failure again. `notifyError` calls it for you. Tests assert on the `console.warn` spy.
+
 **Theme & settings** flow through `ApplicationConfigurationProvider`, which holds an `Option<ApplicationConfiguration>` (`safeMode` + `theme`), persists to localStorage, and drives both the MUI theme (`createTheme` color schemes) and the `data-theme` body attribute. Consume it via the `useApplicationConfiguration()` hook.
 
 **Real-time download progress** uses an `EventSource` stream (`scheduledVideoDownloadStream` in the scheduling service) feeding live updates into the `ScheduledVideos` page. The stream reports its `StreamConnection` (Connected / Reconnecting / Disconnected — the last when the browser gives up, e.g. on a 401); the page shows a banner while not connected and reloads the list from page 0 after any reconnect, since events sent while disconnected are lost.

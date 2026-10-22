@@ -6,6 +6,7 @@ import PauseCircle from "@mui/icons-material/PauseCircle"
 import QuickSettingsButton from "./QuickSettingsButton"
 import { None, type Option, Some } from "~/types/Option"
 import { useNotification } from "~/providers/NotificationProvider"
+import { reportError } from "~/services/ErrorReporting"
 
 const WorkerStatusSwitch = () => {
   // None until the current status has been fetched; the button is disabled in the meantime.
@@ -13,7 +14,7 @@ const WorkerStatusSwitch = () => {
   const { notifyError } = useNotification()
 
   useEffect(() => {
-    fetchWorkerStatus().then((status) => setWorkerStatus(Some.of(status))).catch(console.error)
+    fetchWorkerStatus().then((status) => setWorkerStatus(Some.of(status))).catch((error) => reportError("Failed to fetch the worker status", error))
   }, [])
 
   const onClick = () =>

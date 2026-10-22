@@ -153,7 +153,7 @@ describe("ScheduledVideos", () => {
     })
 
     test("should offer to reconnect once the browser has given up", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
       const streams = await captureStream()
       renderWithContext()
       await waitFor(() => expect(streams).toHaveLength(1))
@@ -161,12 +161,12 @@ describe("ScheduledVideos", () => {
       await act(async () => streams[0].onConnectionChange(StreamConnection.Disconnected))
 
       expect(screen.getByRole("alert")).toHaveTextContent("Live updates stopped")
-      expect(consoleErrorSpy).toHaveBeenCalledWith("Scheduled video download stream disconnected")
+      expect(consoleWarnSpy).toHaveBeenCalledWith("Scheduled video download stream disconnected", undefined)
 
       fireEvent.click(screen.getByRole("button", { name: "Reconnect" }))
       await waitFor(() => expect(streams).toHaveLength(2))
 
-      consoleErrorSpy.mockRestore()
+      consoleWarnSpy.mockRestore()
     })
 
     test("should keep stream updates that arrive while a reload is in flight", async () => {
@@ -566,7 +566,7 @@ describe("ScheduledVideos", () => {
     const { fetchScheduledVideos, updateSchedulingStatus } = await import(
       "~/services/scheduling/SchedulingService"
     )
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
 
     vi.mocked(fetchScheduledVideos).mockResolvedValue([createMockScheduledVideo("video-1")])
     vi.mocked(updateSchedulingStatus).mockRejectedValue(new Error("Update failed"))
@@ -581,11 +581,11 @@ describe("ScheduledVideos", () => {
 
     // Without a provider the notification degrades to a console error; the status is unchanged.
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to update the download status", expect.any(Error))
+      expect(consoleWarnSpy).toHaveBeenCalledWith("Failed to update the download status", expect.any(Error))
     })
     expect(screen.getByText("Active")).toBeInTheDocument()
 
-    consoleErrorSpy.mockRestore()
+    consoleWarnSpy.mockRestore()
   })
 
   test("should handle video removal when status becomes Deleted via stream update", async () => {

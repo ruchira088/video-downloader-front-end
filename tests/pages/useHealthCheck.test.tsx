@@ -113,7 +113,7 @@ describe("useHealthCheck", () => {
   })
 
   test("should log a failed check, keep the last result and resolve the refresh", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
     const { result } = renderHook(() => useHealthCheck())
     await flush()
 
@@ -122,24 +122,24 @@ describe("useHealthCheck", () => {
 
     await act(() => result.current.refresh())
 
-    expect(consoleError).toHaveBeenCalledWith("Failed to perform the health check", error)
+    expect(consoleWarn).toHaveBeenCalledWith("Failed to perform the health check", error)
     expect(databaseStatus(result)).toBe(HealthStatus.Healthy)
     expect(result.current.isRefreshing).toBe(false)
 
-    consoleError.mockRestore()
+    consoleWarn.mockRestore()
   })
 
   test("should stay empty when the first check fails", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
     vi.mocked(performHealthCheck).mockRejectedValueOnce(new Error("health check failed"))
 
     const { result } = renderHook(() => useHealthCheck())
     await flush()
 
     expect(result.current.healthCheckDetails.isEmpty()).toBe(true)
-    expect(consoleError).toHaveBeenCalledTimes(1)
+    expect(consoleWarn).toHaveBeenCalledTimes(1)
 
-    consoleError.mockRestore()
+    consoleWarn.mockRestore()
   })
 
   test("should drop an older result that settles after a newer one is shown", async () => {
@@ -161,7 +161,7 @@ describe("useHealthCheck", () => {
   })
 
   test("should still show an older result when the newer check failed", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
     const { result } = renderHook(() => useHealthCheck())
     await flush()
 
@@ -177,7 +177,7 @@ describe("useHealthCheck", () => {
     await act(async () => polledCheck.resolve(unhealthyCheck))
 
     expect(databaseStatus(result)).toBe(HealthStatus.Unhealthy)
-    consoleError.mockRestore()
+    consoleWarn.mockRestore()
   })
 
   test("should show results in order when overlapping checks settle in order", async () => {

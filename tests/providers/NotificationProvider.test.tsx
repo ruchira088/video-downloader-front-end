@@ -17,14 +17,14 @@ const TestConsumer = () => {
 }
 
 describe("NotificationProvider", () => {
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>
+  let consoleWarnSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
-    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
   })
 
   afterEach(() => {
-    consoleErrorSpy.mockRestore()
+    consoleWarnSpy.mockRestore()
   })
 
   test("should render children", () => {
@@ -79,7 +79,7 @@ describe("NotificationProvider", () => {
     })
 
     // The snackbar stays free of stack traces, so the error itself goes to the console.
-    expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to save the playlist", new Error("boom"))
+    expect(consoleWarnSpy).toHaveBeenCalledWith("Failed to save the playlist", new Error("boom"))
   })
 
   test("should dismiss a notification when it is closed", async () => {
@@ -132,7 +132,7 @@ describe("NotificationProvider", () => {
 
     await user.click(screen.getByRole("button", { name: "Fail" }))
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to save the playlist", new Error("boom"))
+    expect(consoleWarnSpy).toHaveBeenCalledWith("Failed to save the playlist", new Error("boom"))
     expect(screen.queryByRole("alert")).not.toBeInTheDocument()
   })
   test("should not dismiss a notification when the user clicks elsewhere on the page", async () => {

@@ -306,7 +306,7 @@ describe("usePlaylistEdits", () => {
     })
 
     test("should revert to the confirmed order when the refetch fails too", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
       const refetchFailure = new Error("Refetch failed")
       mockReorderPlaylistVideos.mockRejectedValueOnce(new Error("Reorder failed"))
       const { result } = await renderLoaded(playlistOf("a", "b", "c"))
@@ -314,7 +314,7 @@ describe("usePlaylistEdits", () => {
 
       await act(() => result.current.moveVideo("a", "c"))
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to refresh the playlist", refetchFailure)
+      expect(consoleWarnSpy).toHaveBeenCalledWith("Failed to refresh the playlist", refetchFailure)
       expect(videoIds(result.current)).toEqual(["a", "b", "c"])
     })
 

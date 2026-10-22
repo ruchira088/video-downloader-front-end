@@ -191,7 +191,7 @@ describe("VideoSearchPanel", () => {
 
   describe("Search Error Handling", () => {
     test("should handle search error gracefully", async () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
       mockSearchVideos.mockRejectedValue(new Error("Network error"))
 
       render(

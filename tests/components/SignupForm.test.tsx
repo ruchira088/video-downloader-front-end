@@ -330,7 +330,7 @@ describe("SignupForm", () => {
   describe("Successful Signup", () => {
     test("should tell the user to sign in when the account was created but signing in failed", async () => {
       const user = userEvent.setup()
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
       mockCreateUser.mockResolvedValue(mockUser)
       mockLogin.mockRejectedValue(new Error("Network Error"))
       renderWithRouter(<SignupForm onSignup={mockOnSignup} />)
@@ -347,7 +347,7 @@ describe("SignupForm", () => {
       expect(screen.queryByText("Network Error")).not.toBeInTheDocument()
       expect(mockOnSignup).not.toHaveBeenCalled()
 
-      consoleErrorSpy.mockRestore()
+      consoleWarnSpy.mockRestore()
     })
 
     test("should call createUser and login on successful signup", async () => {

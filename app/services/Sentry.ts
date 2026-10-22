@@ -122,7 +122,7 @@ export const initSentry = () => {
     environment: ENVIRONMENT_NAMES[environment],
     integrations: [
       Sentry.browserTracingIntegration(),
-      // Most handled failures are only logged with console.error, so report those too.
+      // Handled failures go through reportError; this catches any other error-level logs.
       Sentry.captureConsoleIntegration({ levels: ["error"] })
     ],
     tracesSampleRate: TRACES_SAMPLE_RATES[environment],

@@ -191,13 +191,13 @@ describe("LocalKeyValueStore", () => {
     })
 
     test("should report a failed write rather than throw", () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
       localStorageMock.setItem.mockImplementationOnce(blocked)
 
       expect(() => store.put("key1", { name: "test", value: 1 })).not.toThrow()
-      expect(consoleErrorSpy).toHaveBeenCalledWith("Unable to write TestStore-key1 to local storage", expect.any(Error))
+      expect(consoleWarnSpy).toHaveBeenCalledWith("Unable to write to local storage", expect.any(Error))
 
-      consoleErrorSpy.mockRestore()
+      consoleWarnSpy.mockRestore()
     })
 
     test("should not throw when removing", () => {

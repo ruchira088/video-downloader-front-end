@@ -22,6 +22,7 @@ import {isFinishedStatus, SchedulingStatus} from "~/models/SchedulingStatus"
 import {ScheduledVideoDownload} from "~/models/ScheduledVideoDownload"
 import Helmet from "~/components/helmet/Helmet"
 import {useNotification} from "~/providers/NotificationProvider"
+import { reportError } from "~/services/ErrorReporting"
 
 const DOWNLOAD_HISTORY_SIZE = 10
 const PAGE_SIZE = 50
@@ -198,7 +199,7 @@ const ScheduledVideos = () => {
       }
     } else if (connection === StreamConnection.Disconnected) {
       missedStreamEvents.current = true
-      console.error("Scheduled video download stream disconnected")
+      reportError("Scheduled video download stream disconnected", undefined)
     } else {
       missedStreamEvents.current = true
       // Transient (e.g. a server restart) and retried by the browser, so not an error.

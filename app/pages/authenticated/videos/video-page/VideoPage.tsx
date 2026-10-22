@@ -8,6 +8,7 @@ import {useSearchParams} from "react-router"
 import {None, Option, Some} from "~/types/Option"
 import type {Route} from "./+types/VideoPage"
 import {Duration} from "luxon"
+import { reportError } from "~/services/ErrorReporting"
 
 const VideoPage = (props: Route.ComponentProps) => {
   const [queryParams] = useSearchParams()
@@ -58,7 +59,7 @@ const VideoPage = (props: Route.ComponentProps) => {
           setVideoSnapshots(snapshots)
         }
       } catch (error) {
-        console.error("Failed to load video snapshots", error)
+        reportError("Failed to load video snapshots", error)
       }
     }
 

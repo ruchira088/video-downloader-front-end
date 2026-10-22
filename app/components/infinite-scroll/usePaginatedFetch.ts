@@ -1,4 +1,5 @@
 import { useCallback, type DependencyList, useEffect, useRef, useState } from "react"
+import { reportError } from "~/services/ErrorReporting"
 
 interface PaginatedFetch {
   readonly isLoading: boolean
@@ -94,7 +95,7 @@ export function usePaginatedFetch<T>(
       pages.delete(page)
 
       if (!isAbortError(error)) {
-        console.error(error)
+        reportError("Failed to load a page of results", error)
 
         // Surfaced so the caller can offer a retry. Without one the list silently stalls:
         // the sentinel may already be in view, and IntersectionObserver only fires on a

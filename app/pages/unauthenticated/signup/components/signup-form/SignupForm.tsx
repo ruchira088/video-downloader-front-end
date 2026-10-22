@@ -9,6 +9,7 @@ import { onFieldChange, useRedirectParameter, withRedirectParameter } from "~/pa
 import { extractErrorMessages } from "~/utils/ErrorMessages"
 import AuthFormHeader from "~/pages/unauthenticated/components/AuthFormHeader"
 import PasswordField from "~/pages/unauthenticated/components/PasswordField"
+import { reportError } from "~/services/ErrorReporting"
 
 interface Errors {
   firstName: string | null
@@ -102,7 +103,7 @@ const SignupForm: FC<SignupFormProps> = props => {
         await login(email, password)
         props.onSignup()
       } catch (error: unknown) {
-        console.error("Signing in after sign-up failed", error)
+        reportError("Signing in after sign-up failed", error)
         setErrors(errors => ({
           ...errors,
           response: ["Your account was created, but signing in failed. Please sign in."],

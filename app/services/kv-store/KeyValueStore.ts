@@ -1,5 +1,6 @@
 import { Either } from "~/types/Either"
 import { None, Option, Some } from "~/types/Option"
+import { reportError } from "~/services/ErrorReporting"
 
 export interface Encoder<A, B> {
   encode(value: A): B
@@ -59,7 +60,7 @@ export class LocalKeyValueStore<K, V extends {}> implements KeyValueStore<K, V> 
 
     Either.fromTry(() => localStorage.setItem(stringKey, this.keySpace.valueCodec.encode(value)))
       .fold(
-        error => console.error(`Unable to write ${stringKey} to local storage`, error),
+        error => reportError("Unable to write to local storage", error),
         () => undefined
       )
   }

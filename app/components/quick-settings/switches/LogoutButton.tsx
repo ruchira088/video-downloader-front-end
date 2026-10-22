@@ -2,6 +2,7 @@ import LogoutIcon from "@mui/icons-material/Logout"
 import { logout } from "~/services/authentication/AuthenticationService"
 import { useNavigate } from "react-router"
 import QuickSettingsButton from "./QuickSettingsButton"
+import { reportError } from "~/services/ErrorReporting"
 
 const LogoutButton = () => {
   const navigate = useNavigate()
@@ -11,7 +12,7 @@ const LogoutButton = () => {
       await logout()
     } catch (error) {
       // The local session is cleared even when the server-side logout fails
-      console.error("Server-side logout failed", error)
+      reportError("Server-side logout failed", error)
     } finally {
       void navigate("/sign-in")
     }

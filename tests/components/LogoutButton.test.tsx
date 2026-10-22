@@ -63,7 +63,7 @@ describe("LogoutButton", () => {
 
   test("should still navigate to sign-in page when logout fails", async () => {
     const user = userEvent.setup()
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
     mockLogout.mockRejectedValue(new Error("Network error"))
 
     renderWithRouter()
@@ -79,8 +79,8 @@ describe("LogoutButton", () => {
       expect(screen.getByText("Sign In Page")).toBeInTheDocument()
     })
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith("Server-side logout failed", expect.any(Error))
+    expect(consoleWarnSpy).toHaveBeenCalledWith("Server-side logout failed", expect.any(Error))
 
-    consoleErrorSpy.mockRestore()
+    consoleWarnSpy.mockRestore()
   })
 })

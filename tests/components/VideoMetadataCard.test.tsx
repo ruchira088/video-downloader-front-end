@@ -287,17 +287,17 @@ describe("VideoMetadataCard", () => {
   test("should log an error when fetching snapshots fails", async () => {
     const { fetchVideoSnapshotsByVideoId } = await import("~/services/video/VideoService")
     vi.mocked(fetchVideoSnapshotsByVideoId).mockRejectedValueOnce(new Error("fetch failed"))
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
 
     renderWithContext(videoMetadata(), { disableSnapshots: false })
 
     const thumbnail = hoverThumbnail()
 
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.objectContaining({ message: "fetch failed" }))
+      expect(consoleWarnSpy).toHaveBeenCalledWith("Failed to load video snapshots", expect.objectContaining({ message: "fetch failed" }))
     })
 
     expect(thumbnail).toBeInTheDocument()
-    consoleErrorSpy.mockRestore()
+    consoleWarnSpy.mockRestore()
   })
 })

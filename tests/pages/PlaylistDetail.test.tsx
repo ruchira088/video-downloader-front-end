@@ -755,7 +755,7 @@ describe("PlaylistDetail", () => {
   describe("Reorder Failure", () => {
     test("should restore the server order without unmounting the page when a reorder fails", async () => {
       const user = userEvent.setup()
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
       const playlist = createMockPlaylist(3)
       let resolveRefetch: (value: typeof playlist) => void = () => {}
       mockFetchPlaylistById
@@ -778,7 +778,7 @@ describe("PlaylistDetail", () => {
       act(() => { drag = capturedOnDragEnd({ active: { id: "video-1" }, over: { id: "video-3" } }) })
 
       await waitFor(() => {
-        expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to reorder the playlist", expect.any(Error))
+        expect(consoleWarnSpy).toHaveBeenCalledWith("Failed to reorder the playlist", expect.any(Error))
       })
       await waitFor(() => {
         expect(mockFetchPlaylistById).toHaveBeenCalledTimes(2)
@@ -799,11 +799,11 @@ describe("PlaylistDetail", () => {
       })
       expect(screen.getByText("1 / 3")).toBeInTheDocument()
 
-      consoleErrorSpy.mockRestore()
+      consoleWarnSpy.mockRestore()
     })
 
     test("should revert to the order before the drag when the refetch also fails", async () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
       const playlist = createMockPlaylist(3)
       mockFetchPlaylistById.mockResolvedValueOnce(playlist).mockRejectedValueOnce(new Error("Refetch failed"))
       mockReorderPlaylistVideos.mockRejectedValueOnce(new Error("Reorder failed"))
@@ -824,7 +824,7 @@ describe("PlaylistDetail", () => {
         expect(titles).toEqual(["Video 1", "Video 2", "Video 3"])
       })
 
-      consoleErrorSpy.mockRestore()
+      consoleWarnSpy.mockRestore()
     })
   })
 
@@ -1419,7 +1419,7 @@ describe("PlaylistDetail", () => {
 
     test("should keep the video when removal fails on the server", async () => {
       const user = userEvent.setup()
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
       mockFetchPlaylistById.mockResolvedValue(createMockPlaylist(2))
       mockRemoveVideoFromPlaylist.mockRejectedValue(new Error("Remove failed"))
 
@@ -1440,14 +1440,14 @@ describe("PlaylistDetail", () => {
       // The video should still be displayed since the server call failed
       expect(screen.getByText("Video 1")).toBeInTheDocument()
       expect(screen.getByText("2 videos")).toBeInTheDocument()
-      expect(consoleErrorSpy).toHaveBeenCalled()
+      expect(consoleWarnSpy).toHaveBeenCalled()
 
-      consoleErrorSpy.mockRestore()
+      consoleWarnSpy.mockRestore()
     })
 
     test("should tell the user when removal fails rather than failing silently", async () => {
       const user = userEvent.setup()
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
       mockFetchPlaylistById.mockResolvedValue(createMockPlaylist(2))
       mockRemoveVideoFromPlaylist.mockRejectedValue(new Error("Remove failed"))
 
@@ -1466,12 +1466,12 @@ describe("PlaylistDetail", () => {
         )
       })
 
-      consoleErrorSpy.mockRestore()
+      consoleWarnSpy.mockRestore()
     })
 
     test("should tell the user when renaming fails", async () => {
       const user = userEvent.setup()
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
       mockFetchPlaylistById.mockResolvedValue(createMockPlaylist(1))
       mockUpdatePlaylist.mockRejectedValue(new Error("Rename failed"))
 
@@ -1488,7 +1488,7 @@ describe("PlaylistDetail", () => {
         expect(screen.getByRole("alert")).toHaveTextContent("Failed to rename the playlist")
       })
 
-      consoleErrorSpy.mockRestore()
+      consoleWarnSpy.mockRestore()
     })
   })
 

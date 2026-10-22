@@ -172,23 +172,23 @@ describe("zodParse", () => {
 
   test("should throw on invalid data", () => {
     // zodParse logs the error before rethrowing; silence it and assert it happened.
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
     const invalidInput = { id: 123, count: "not a number" }
 
     expect(() => zodParse(TestSchema, invalidInput)).toThrow()
-    expect(consoleError).toHaveBeenCalled()
+    expect(consoleWarn).toHaveBeenCalled()
 
-    consoleError.mockRestore()
+    consoleWarn.mockRestore()
   })
 
   test("should throw on missing fields", () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
     const partialInput = { id: "abc123" }
 
     expect(() => zodParse(TestSchema, partialInput)).toThrow()
-    expect(consoleError).toHaveBeenCalled()
+    expect(consoleWarn).toHaveBeenCalled()
 
-    consoleError.mockRestore()
+    consoleWarn.mockRestore()
   })
 
   test("should work with primitive types", () => {

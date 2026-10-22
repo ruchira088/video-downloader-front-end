@@ -158,7 +158,7 @@ describe("usePaginatedFetch", () => {
   })
 
   test("should log a failed fetch, leave it retryable and retry it on reset", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined)
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => undefined)
     const error = new Error("network down")
     const fetchPage = vi
       .fn()
@@ -171,7 +171,7 @@ describe("usePaginatedFetch", () => {
       { initialProps: { term: "first" } }
     )
 
-    await waitFor(() => expect(consoleError).toHaveBeenCalledWith(error))
+    await waitFor(() => expect(consoleWarn).toHaveBeenCalledWith("Failed to load a page of results", error))
     expect(onResults).not.toHaveBeenCalled()
     expect(result.current.isLoading).toBe(false)
     expect(result.current.hasMore).toBe(true)
@@ -184,7 +184,7 @@ describe("usePaginatedFetch", () => {
   })
 
   test("should report a failed page and clear the error once a retry succeeds", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined)
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => undefined)
     const error = new Error("network down")
     const fetchPage = vi.fn().mockRejectedValueOnce(error).mockResolvedValue(["a", "b"])
     const onResults = vi.fn()
@@ -201,11 +201,11 @@ describe("usePaginatedFetch", () => {
     await waitFor(() => expect(onResults).toHaveBeenCalledWith(["a", "b"], 0))
     expect(result.current.hasError).toBe(false)
     expect(fetchPage).toHaveBeenCalledTimes(2)
-    expect(consoleError).toHaveBeenCalledWith(error)
+    expect(consoleWarn).toHaveBeenCalledWith("Failed to load a page of results", error)
   })
 
   test("should retry the page that failed rather than restarting from page 0", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => undefined)
+    vi.spyOn(console, "warn").mockImplementation(() => undefined)
     const fetchPage = vi
       .fn()
       .mockResolvedValueOnce(["a", "b"])
@@ -228,7 +228,7 @@ describe("usePaginatedFetch", () => {
   })
 
   test("should not skip past a failed page when loadMore fires before a retry", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => undefined)
+    vi.spyOn(console, "warn").mockImplementation(() => undefined)
     const fetchPage = vi
       .fn()
       .mockResolvedValueOnce(["a", "b"])
@@ -255,7 +255,7 @@ describe("usePaginatedFetch", () => {
   })
 
   test("should not report an error for an aborted request", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => undefined)
+    vi.spyOn(console, "warn").mockImplementation(() => undefined)
     const abortError = new DOMException("The operation was aborted", "AbortError")
     const fetchPage = vi.fn().mockRejectedValue(abortError)
 
@@ -269,7 +269,7 @@ describe("usePaginatedFetch", () => {
     ["AbortError", new DOMException("The operation was aborted", "AbortError")],
     ["CanceledError", Object.assign(new Error("canceled"), { name: "CanceledError" })]
   ])("should swallow %s rejections without logging", async (_name, abortError) => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined)
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => undefined)
     const fetchPage = vi.fn().mockRejectedValue(abortError)
     const onResults = vi.fn()
 
@@ -279,6 +279,6 @@ describe("usePaginatedFetch", () => {
     await act(async () => undefined)
 
     expect(onResults).not.toHaveBeenCalled()
-    expect(consoleError).not.toHaveBeenCalled()
+    expect(consoleWarn).not.toHaveBeenCalled()
   })
 })

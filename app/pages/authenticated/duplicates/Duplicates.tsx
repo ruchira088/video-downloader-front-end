@@ -11,6 +11,7 @@ import { usePaginatedFetch } from "~/components/infinite-scroll/usePaginatedFetc
 import { useNotification } from "~/providers/NotificationProvider"
 
 import styles from "./Duplicates.module.scss"
+import { reportError } from "~/services/ErrorReporting"
 
 const PAGE_SIZE = 25
 
@@ -34,7 +35,7 @@ const Duplicates = () => {
       const request: Promise<Option<Video>> = fetchVideoById(videoId)
         .then((video) => Some.of(video))
         .catch((error: unknown) => {
-          console.error(`Failed to load duplicate video ${videoId}`, error)
+          reportError("Failed to load a duplicate video", error)
           // Failures are not cached, so a later page or retry can fetch the video again.
           videoRequests.current.delete(videoId)
           return None.of<Video>()

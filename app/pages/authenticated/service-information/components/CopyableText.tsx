@@ -4,6 +4,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import CheckIcon from "@mui/icons-material/Check"
 
 import styles from "../ServiceInformation.module.scss"
+import { reportError } from "~/services/ErrorReporting"
 
 type CopyableTextProps = {
   readonly text: string
@@ -22,7 +23,7 @@ const CopyableText: FC<CopyableTextProps> = ({ text }) => {
       clearTimeout(timeoutRef.current)
       timeoutRef.current = setTimeout(() => setCopied(false), 2000)
     } catch (error) {
-      console.error("Failed to copy to clipboard", error)
+      reportError("Failed to copy to clipboard", error)
     }
   }
 

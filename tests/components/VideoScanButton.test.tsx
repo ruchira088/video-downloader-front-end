@@ -116,7 +116,7 @@ describe("VideoScanButton", () => {
   describe("Scan Failure", () => {
     test("should notify the user and re-enable the button when the scan cannot be started", async () => {
       const user = userEvent.setup()
-      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+      const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {})
       const scanError = new Error("Scan failed")
       mockFetchVideoScanStatus.mockResolvedValue({ scanStatus: ScanStatus.Idle, updatedAt: None.of() })
       mockScanForVideos.mockRejectedValue(scanError)
@@ -130,13 +130,13 @@ describe("VideoScanButton", () => {
       await user.click(screen.getByRole("button"))
 
       await waitFor(() => {
-        expect(consoleError).toHaveBeenCalledWith("Failed to start the video scan", scanError)
+        expect(consoleWarn).toHaveBeenCalledWith("Failed to start the video scan", scanError)
       })
       await waitFor(() => {
         expect(screen.getByRole("button", { name: /scan for videos/i })).not.toBeDisabled()
       })
 
-      consoleError.mockRestore()
+      consoleWarn.mockRestore()
     })
   })
 

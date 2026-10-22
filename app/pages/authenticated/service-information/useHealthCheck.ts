@@ -3,6 +3,7 @@ import { DateTime } from "luxon"
 import { performHealthCheck } from "~/services/health/HealthCheckService"
 import { HealthCheck } from "~/models/HealthCheck"
 import { None, type Option, Some } from "~/types/Option"
+import { reportError } from "~/services/ErrorReporting"
 
 export type HealthCheckDetails = { readonly timestamp: DateTime } & HealthCheck
 
@@ -47,7 +48,7 @@ export const useHealthCheck = (): UseHealthCheckResult => {
         timestamp: DateTime.now()
       }))
     } catch (error) {
-      console.error("Failed to perform the health check", error)
+      reportError("Failed to perform the health check", error)
     }
   }, [])
 
