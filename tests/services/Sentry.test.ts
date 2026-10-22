@@ -2,10 +2,12 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 import { Environment } from "~/services/Config"
 
 const mockInit = vi.fn()
+const mockAddIntegration = vi.fn()
 const mockGetEnvironment = vi.fn()
 
 vi.mock("@sentry/react", () => ({
   init: (options: unknown) => mockInit(options),
+  addIntegration: (integration: unknown) => mockAddIntegration(integration),
   browserTracingIntegration: () => "browser-tracing-integration",
   replayIntegration: () => "replay-integration",
   captureConsoleIntegration: (options: unknown) => ({ name: "capture-console-integration", options }),
@@ -30,7 +32,9 @@ describe("initSentry", () => {
     vi.clearAllMocks()
   })
 
-  afterEach(() => {
+  afterEach(async () => {
+    // Let each test's lazy session-replay import land before the next test clears the mocks.
+    await vi.dynamicImportSettled()
     vi.unstubAllEnvs()
     vi.resetModules()
   })
@@ -140,6 +144,31 @@ describe("initSentry", () => {
     initSentry()
 
     expect(mockInit).toHaveBeenCalledTimes(1)
+  })
+
+  test("should add session replay lazily, after initializing, to keep it out of the root chunk", async () => {
+    mockGetEnvironment.mockReturnValue(Environment.Production)
+
+    const initSentry = await loadInitSentry()
+    initSentry()
+
+    expect(mockInit).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ integrations: expect.not.arrayContaining(["replay-integration"]) })
+    )
+    await vi.waitFor(() => expect(mockAddIntegration).toHaveBeenCalledExactlyOnceWith("replay-integration"))
+  })
+
+  test("should warn rather than fail when session replay cannot be loaded", async () => {
+    mockGetEnvironment.mockReturnValue(Environment.Production)
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const loadError = new Error("Failed to fetch dynamically imported module")
+    mockAddIntegration.mockImplementationOnce(() => { throw loadError })
+
+    const initSentry = await loadInitSentry()
+    initSentry()
+
+    await vi.waitFor(() => expect(warn).toHaveBeenCalledWith("Failed to load Sentry session replay", loadError))
+    warn.mockRestore()
   })
 })
 

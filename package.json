@@ -1,6 +1,6 @@
 {
   "name": "video-downloader-front-end",
-  "version": "1.4.99",
+  "version": "1.4.100",
   "private": true,
   "type": "module",
   "engines": {
@@ -37,7 +37,6 @@
     "@sentry/react": "^11.7.0",
     "axios": "^1.20.0",
     "classnames": "^2.5.1",
-    "immutable": "^5.1.9",
     "isbot": "^5.2.2",
     "luxon": "^3.7.2",
     "react": "^19.3.0",

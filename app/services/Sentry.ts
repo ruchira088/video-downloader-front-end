@@ -122,7 +122,6 @@ export const initSentry = () => {
     environment: ENVIRONMENT_NAMES[environment],
     integrations: [
       Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration(),
       // Most handled failures are only logged with console.error, so report those too.
       Sentry.captureConsoleIntegration({ levels: ["error"] })
     ],
@@ -133,4 +132,10 @@ export const initSentry = () => {
     beforeBreadcrumb,
     beforeSendSpan
   })
+
+  // Replay is added once its chunk arrives, as Sentry documents for lazy-loading it; the sample
+  // rates above still apply. Until then, errors are reported without a replay.
+  void import("~/services/SentryReplay")
+    .then(({ replayIntegration }) => Sentry.addIntegration(replayIntegration()))
+    .catch((error: unknown) => console.warn("Failed to load Sentry session replay", error))
 }

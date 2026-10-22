@@ -1,5 +1,4 @@
 import React, {useEffect, useRef, useState} from "react"
-import {Map, Set} from "immutable"
 import {
   deleteScheduledVideoById,
   fetchScheduledVideos,
@@ -84,11 +83,26 @@ const gatherDownloadHistory =
     }
   }
 
+// React state must never be mutated in place, so the downloads map is copied on every change.
+// A delete of an absent key keeps the same instance, letting React skip the re-render.
+const withEntry = <K, V>(map: ReadonlyMap<K, V>, key: K, value: V): ReadonlyMap<K, V> =>
+  new Map(map).set(key, value)
+
+const withoutEntry = <K, V>(map: ReadonlyMap<K, V>, key: K): ReadonlyMap<K, V> => {
+  if (!map.has(key)) {
+    return map
+  }
+
+  const copy = new Map(map)
+  copy.delete(key)
+  return copy
+}
+
 const ScheduledVideos = () => {
   const {notifyError} = useNotification()
 
   const [downloadableScheduledVideos, setDownloadableScheduledVideos] =
-    useState(Map<string, DownloadableScheduledVideo>())
+    useState<ReadonlyMap<string, DownloadableScheduledVideo>>(() => new Map())
 
   const [disableRetry, setDisableRetry] = useState(false)
 
@@ -104,8 +118,9 @@ const ScheduledVideos = () => {
   // A page's snapshot can be older than what the stream has delivered since the list started
   // loading. These record that newer state so a landing page cannot overwrite it: ids the
   // stream reported finished, and ids it otherwise updated.
-  const finishedVideoIds = useRef(Set<string>())
-  const streamUpdatedVideoIds = useRef(Set<string>())
+  // Refs rather than state, so these are mutated in place.
+  const finishedVideoIds = useRef(new Set<string>())
+  const streamUpdatedVideoIds = useRef(new Set<string>())
 
   const { isLoading, hasMore, loadMore, hasError, retry } = usePaginatedFetch(
     pageNumber => fetchScheduledVideos(None.of(), pageNumber, PAGE_SIZE, SortBy.Date, Ordering.Ascending),
@@ -113,19 +128,20 @@ const ScheduledVideos = () => {
       setDownloadableScheduledVideos((downloadableScheduledVideos) => {
         // Page 0 starts a fresh list (a reload drops what finished while disconnected), keeping
         // only what the stream has delivered since; later pages add to the list.
-        const base = pageNumber === 0
-          ? downloadableScheduledVideos.filter((_, videoId) => streamUpdatedVideoIds.current.has(videoId))
-          : downloadableScheduledVideos
+        // A fresh copy owned by this updater, so it can be filled in place.
+        const videos = pageNumber === 0
+          ? new Map([...downloadableScheduledVideos].filter(([videoId]) => streamUpdatedVideoIds.current.has(videoId)))
+          : new Map(downloadableScheduledVideos)
 
-        return scheduledVideos
-          .filter((scheduledVideoDownload) => !finishedVideoIds.current.has(scheduledVideoDownload.videoMetadata.id))
-          .reduce((videos, scheduledVideoDownload) => {
-            const videoId = scheduledVideoDownload.videoMetadata.id
+        for (const scheduledVideoDownload of scheduledVideos) {
+          const videoId = scheduledVideoDownload.videoMetadata.id
 
-            return streamUpdatedVideoIds.current.has(videoId) && videos.has(videoId)
-              ? videos
-              : videos.set(videoId, applyUpdate(downloadableScheduledVideos.get(videoId), scheduledVideoDownload))
-          }, base)
+          if (!finishedVideoIds.current.has(videoId) && !(streamUpdatedVideoIds.current.has(videoId) && videos.has(videoId))) {
+            videos.set(videoId, applyUpdate(downloadableScheduledVideos.get(videoId), scheduledVideoDownload))
+          }
+        }
+
+        return videos
       }),
     { pageSize: PAGE_SIZE, resetDeps: [reloadKey] }
   )
@@ -133,11 +149,11 @@ const ScheduledVideos = () => {
   const onDownloadProgress = (downloadProgress: DownloadProgress) =>
     setDownloadableScheduledVideos(scheduledVideoDownloads =>
       Option.fromNullable(scheduledVideoDownloads.get(downloadProgress.videoId))
-        .fold<Map<string, DownloadableScheduledVideo>>(
+        .fold<ReadonlyMap<string, DownloadableScheduledVideo>>(
           () => scheduledVideoDownloads,
           scheduledVideoDownload => {
             const downloadHistory = gatherDownloadHistory(downloadProgress, scheduledVideoDownload)
-            return scheduledVideoDownloads.set(downloadProgress.videoId, {
+            return withEntry(scheduledVideoDownloads, downloadProgress.videoId, {
               ...scheduledVideoDownload,
               downloadedBytes: downloadProgress.bytes,
               lastUpdatedAt: downloadProgress.updatedAt,
@@ -151,16 +167,20 @@ const ScheduledVideos = () => {
   const onScheduledVideoDownloadUpdate = (scheduledVideoDownload: ScheduledVideoDownload) => {
     const videoId = scheduledVideoDownload.videoMetadata.id
 
-    streamUpdatedVideoIds.current = streamUpdatedVideoIds.current.add(videoId)
+    streamUpdatedVideoIds.current.add(videoId)
 
     if (isFinishedStatus(scheduledVideoDownload.status)) {
-      finishedVideoIds.current = finishedVideoIds.current.add(videoId)
-      setDownloadableScheduledVideos(downloadableScheduledVideos => downloadableScheduledVideos.delete(videoId))
+      finishedVideoIds.current.add(videoId)
+      setDownloadableScheduledVideos(downloadableScheduledVideos => withoutEntry(downloadableScheduledVideos, videoId))
     } else {
       // A finished video can be scheduled again.
-      finishedVideoIds.current = finishedVideoIds.current.delete(videoId)
+      finishedVideoIds.current.delete(videoId)
       setDownloadableScheduledVideos(downloadableScheduledVideos =>
-        downloadableScheduledVideos.set(videoId, applyUpdate(downloadableScheduledVideos.get(videoId), scheduledVideoDownload))
+        withEntry(
+          downloadableScheduledVideos,
+          videoId,
+          applyUpdate(downloadableScheduledVideos.get(videoId), scheduledVideoDownload)
+        )
       )
     }
   }
@@ -172,8 +192,8 @@ const ScheduledVideos = () => {
       if (missedStreamEvents.current) {
         // The list missed whatever happened while disconnected, so reload it from the server.
         missedStreamEvents.current = false
-        finishedVideoIds.current = Set<string>()
-        streamUpdatedVideoIds.current = Set<string>()
+        finishedVideoIds.current = new Set()
+        streamUpdatedVideoIds.current = new Set()
         setReloadKey(key => key + 1)
       }
     } else if (connection === StreamConnection.Disconnected) {
@@ -264,14 +284,12 @@ const ScheduledVideos = () => {
         isLoading={isLoading}
         hasError={hasError}
         onRetry={retry}
-        endMessage={downloadableScheduledVideos.isEmpty() ? "Nothing is downloading" : undefined}
+        endMessage={downloadableScheduledVideos.size === 0 ? "Nothing is downloading" : undefined}
         className={styles.scheduledVideoGallery}
       >
         {
-          downloadableScheduledVideos
-            .sortBy((value) => value.scheduledAt.toMillis())
-            .toList()
-            .toArray()
+          [...downloadableScheduledVideos.values()]
+            .sort((a, b) => a.scheduledAt.toMillis() - b.scheduledAt.toMillis())
             .map((downloadableScheduledVideo) => (
                 <div key={downloadableScheduledVideo.videoMetadata.id} className={styles.scheduledVideoCard}>
                   <ScheduledVideoDownloadCard

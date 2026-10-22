@@ -28,7 +28,7 @@ const isAbortError = (error: unknown): boolean =>
  * The caller owns its accumulated data: `onResults` receives each fetched page
  * (and its page number) and is responsible for appending/merging it into state.
  * This keeps the hook agnostic to per-page bookkeeping (id de-duplication,
- * immutable maps, async per-item enrichment, etc.).
+ * keyed maps, async per-item enrichment, etc.).
  */
 export function usePaginatedFetch<T>(
   fetchPage: (pageNumber: number, signal: AbortSignal) => Promise<T[]>,
