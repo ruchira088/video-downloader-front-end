@@ -18,7 +18,9 @@ export default defineConfig({
       "**/build/**",
       "cdk-deploy/**",
       // Playwright specs, run by `npm run e2e`
-      "e2e/**"
+      "e2e/**",
+      // Agent git worktrees hold full copies of the test suite
+      ".claude/**"
     ],
     coverage: {
       provider: "v8",
@@ -36,10 +38,10 @@ export default defineConfig({
       // achieves, so a change that drops coverage fails CI. Raise them when real coverage
       // climbs; never lower them to make a build pass.
       thresholds: {
-        statements: 98,
+        statements: 98.5,
         branches: 94,
-        functions: 97,
-        lines: 98
+        functions: 97.5,
+        lines: 99
       }
     }
   },
