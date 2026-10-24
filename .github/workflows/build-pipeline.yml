@@ -53,7 +53,8 @@ jobs:
           format: markdown
           hide_complexity: true
           output: both
-          thresholds: "60 80"
+          # Badge colours by line coverage: red under 98, green from 99, the gate in vitest.config.ts.
+          thresholds: "98 99"
 
       - name: Write Coverage to Summary
         if: success() || failure()

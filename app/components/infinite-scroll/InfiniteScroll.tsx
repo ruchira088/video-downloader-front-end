@@ -99,7 +99,7 @@ const Status: FC<InfiniteScrollProps> = props => {
     if (props.isLoading) {
         return (
             <div className={styles.status}>
-                <CircularProgress size={24}/>
+                <CircularProgress size={24} aria-label="Loading more"/>
             </div>
         )
     }

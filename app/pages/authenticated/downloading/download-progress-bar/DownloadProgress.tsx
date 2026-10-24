@@ -29,8 +29,8 @@ const DownloadProgress: FC<ProgressValue> = ({completeValue, currentValue, sched
       </div>
       {
         maybePercentage.fold(
-          () => schedulingStatus === SchedulingStatus.Active ? <LinearProgress /> : null,
-          percentage => <LinearProgress variant="determinate" value={percentage} />
+          () => schedulingStatus === SchedulingStatus.Active ? <LinearProgress aria-label="Download progress" /> : null,
+          percentage => <LinearProgress variant="determinate" value={percentage} aria-label="Download progress" />
         )
       }
     </div>

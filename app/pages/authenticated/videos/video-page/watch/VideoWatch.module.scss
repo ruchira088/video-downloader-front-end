@@ -62,6 +62,27 @@
 .actionsSection {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 1em;
+}
+
+.resumePrompt {
+  align-self: center;
+}
+
+.shortcuts {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.25em 1em;
+  margin: 0;
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+  }
 }
 
 @media (width <= 43.75em) {

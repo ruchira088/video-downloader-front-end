@@ -1,5 +1,18 @@
 import React, { type FC, useEffect, useRef, useState } from "react"
-import { Button, Checkbox, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material"
+import {
+  Alert,
+  Button,
+  Checkbox,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Tooltip
+} from "@mui/material"
+import KeyboardIcon from "@mui/icons-material/Keyboard"
+import CloseIcon from "@mui/icons-material/Close"
 import { Video } from "~/models/Video"
 import { imageUrl, videoUrl } from "~/services/asset/AssetService"
 import { Snapshot } from "~/models/Snapshot"
@@ -19,6 +32,8 @@ import { translate } from "~/services/sanitize/SanitizationService"
 import { useApplicationConfiguration } from "~/providers/ApplicationConfigurationProvider"
 import { useNavigate } from "react-router"
 import { useNotification } from "~/providers/NotificationProvider"
+import { playbackPositionService } from "~/services/playback/PlaybackPositionService"
+import { PLAYER_SHORTCUTS, usePlayerShortcuts } from "./usePlayerShortcuts"
 
 type VideoDeleteDialogProps = {
   readonly isVisible: boolean
@@ -102,7 +117,7 @@ type MetadataProps = {
 
 const formatResolution = (resolution: Option<Resolution>): React.ReactNode =>
   resolution.fold<React.ReactNode>(
-    () => <CircularProgress size={16} />,
+    () => <CircularProgress size={16} aria-label="Loading resolution" />,
     ({ width, height }) => `${width}x${height}`
   )
 
@@ -128,6 +143,28 @@ const Metadata: FC<MetadataProps> = props => (
   </div>
 )
 
+// How far playback moves before the position is saved again; saving on every timeupdate (~4/s) is wasteful.
+const SAVE_INTERVAL_SECONDS = 5
+
+const ShortcutsHelp: FC = () => (
+  <Tooltip
+    title={
+      <dl className={styles.shortcuts}>
+        {PLAYER_SHORTCUTS.map(shortcut => (
+          <React.Fragment key={shortcut.keys}>
+            <dt>{shortcut.keys}</dt>
+            <dd>{shortcut.description}</dd>
+          </React.Fragment>
+        ))}
+      </dl>
+    }
+  >
+    <IconButton aria-label="Keyboard shortcuts">
+      <KeyboardIcon />
+    </IconButton>
+  </Tooltip>
+)
+
 type VideoWatchProps = {
   readonly video: Video
   readonly timestamp: Duration
@@ -143,6 +180,15 @@ const VideoWatch: FC<VideoWatchProps> = props => {
   const navigate = useNavigate()
 
   const timestampSeconds = props.timestamp.as("seconds")
+  const videoId = props.video.videoMetadata.id
+
+  // A link with an explicit ?timestamp= says where to start, so it isn't second-guessed.
+  const [resumePosition, setResumePosition] = useState<Option<Duration>>(() =>
+    timestampSeconds > 0 ? None.of() : playbackPositionService.savedPosition(videoId)
+  )
+  const lastSavedSeconds = useRef<number>(timestampSeconds)
+
+  usePlayerShortcuts(videoPlayer)
 
   useEffect(() => {
     void Option.fromNullable(videoPlayer.current)
@@ -159,6 +205,36 @@ const VideoWatch: FC<VideoWatchProps> = props => {
           height: videoElement.videoHeight
         }))
       })
+  }
+
+  const savePosition = (videoElement: HTMLVideoElement) => {
+    lastSavedSeconds.current = videoElement.currentTime
+    playbackPositionService.savePosition(
+      videoId,
+      Duration.fromObject({ seconds: videoElement.currentTime }),
+      Number.isFinite(videoElement.duration)
+        ? Duration.fromObject({ seconds: videoElement.duration })
+        : props.video.videoMetadata.duration
+    )
+  }
+
+  const handleTimeUpdate = (event: React.SyntheticEvent<HTMLVideoElement>) => {
+    if (Math.abs(event.currentTarget.currentTime - lastSavedSeconds.current) >= SAVE_INTERVAL_SECONDS) {
+      savePosition(event.currentTarget)
+    }
+  }
+
+  const handleEnded = () => {
+    playbackPositionService.clearPosition(videoId)
+    setResumePosition(None.of())
+  }
+
+  const resume = (position: Duration) => {
+    void Option.fromNullable(videoPlayer.current)
+      .forEach((videoElement: HTMLVideoElement) => {
+        videoElement.currentTime = position.as("seconds")
+      })
+    setResumePosition(None.of())
   }
 
   const onUpdateVideoTitle = async (title: string): Promise<void> => {
@@ -189,6 +265,24 @@ const VideoWatch: FC<VideoWatchProps> = props => {
         <Timestamp timestamp={props.video.createdAt} className={styles.timestamp}/>
         <Metadata video={props.video} resolution={resolution}/>
       </div>
+      {
+        resumePosition.map(position =>
+          <Alert
+            severity="info"
+            className={styles.resumePrompt}
+            action={
+              <>
+                <Button color="inherit" size="small" onClick={() => resume(position)}>Resume</Button>
+                <IconButton color="inherit" size="small" aria-label="Dismiss" onClick={() => setResumePosition(None.of())}>
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </>
+            }
+          >
+            You stopped at {shortHumanReadableDuration(position)}
+          </Alert>
+        ).toNullable()
+      }
       <div className={styles.videoContainer}>
         <video
           ref={videoPlayer}
@@ -197,12 +291,16 @@ const VideoWatch: FC<VideoWatchProps> = props => {
           poster={imageUrl(props.video.videoMetadata.thumbnail, safeMode)}
           className={styles.video}
           onLoadedMetadata={handleLoadedMetadata}
+          onTimeUpdate={handleTimeUpdate}
+          onPause={(event) => savePosition(event.currentTarget)}
+          onEnded={handleEnded}
         >
           <source src={videoUrl(props.video.fileResource)} />
         </video>
       </div>
       <VideoSnapshotsGallery snapshots={props.snapshots} />
       <div className={styles.actionsSection}>
+        <ShortcutsHelp />
         <Button color="error" variant="contained" onClick={() => setDeleteDialogVisibility(true)}>
           Delete
         </Button>

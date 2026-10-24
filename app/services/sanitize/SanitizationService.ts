@@ -1,16 +1,16 @@
 import {type AssetUrl} from "~/services/asset/AssetService"
 
-import image_01 from "~/images/safe-images/image-01.jpg"
-import image_02 from "~/images/safe-images/image-02.jpg"
-import image_03 from "~/images/safe-images/image-03.jpg"
-import image_04 from "~/images/safe-images/image-04.jpg"
-import image_05 from "~/images/safe-images/image-05.jpg"
-import image_06 from "~/images/safe-images/image-06.jpg"
-import image_07 from "~/images/safe-images/image-07.jpg"
-import image_08 from "~/images/safe-images/image-08.jpg"
-import image_09 from "~/images/safe-images/image-09.jpg"
-import image_10 from "~/images/safe-images/image-10.jpg"
-import image_11 from "~/images/safe-images/image-11.jpg"
+import image_01 from "~/images/safe-images/image-01.webp"
+import image_02 from "~/images/safe-images/image-02.webp"
+import image_03 from "~/images/safe-images/image-03.webp"
+import image_04 from "~/images/safe-images/image-04.webp"
+import image_05 from "~/images/safe-images/image-05.webp"
+import image_06 from "~/images/safe-images/image-06.webp"
+import image_07 from "~/images/safe-images/image-07.webp"
+import image_08 from "~/images/safe-images/image-08.webp"
+import image_09 from "~/images/safe-images/image-09.webp"
+import image_10 from "~/images/safe-images/image-10.webp"
+import image_11 from "~/images/safe-images/image-11.webp"
 
 const SAFE_IMAGES: AssetUrl[] = [
   image_01, image_02, image_03, image_04, image_05, image_06, image_07, image_08, image_09, image_10, image_11

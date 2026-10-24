@@ -4,18 +4,27 @@ import {LoadableComponent} from "~/components/hoc/loading/LoadableComponent"
 import {fetchVideoById, fetchVideoSnapshotsByVideoId} from "~/services/video/VideoService"
 import VideoWatch from "./watch/VideoWatch"
 import {Snapshot} from "~/models/Snapshot"
-import {useSearchParams} from "react-router"
+import {useNavigate, useSearchParams} from "react-router"
+import {Button} from "@mui/material"
 import {None, Option, Some} from "~/types/Option"
 import type {Route} from "./+types/VideoPage"
 import {Duration} from "luxon"
 import { reportError } from "~/services/ErrorReporting"
+import { httpStatusCode } from "~/services/http/HttpClient"
+
+import styles from "./VideoPage.module.scss"
+
+type LoadFailure = "not-found" | "error"
 
 const VideoPage = (props: Route.ComponentProps) => {
   const [queryParams] = useSearchParams()
   const videoId = props.params.videoId
   const [video, setVideo] = useState<Option<Video>>(None.of())
   const [videoSnapshots, setVideoSnapshots] = useState<Snapshot[]>([])
-  const [hasError, setHasError] = useState(false)
+  const [loadFailure, setLoadFailure] = useState<Option<LoadFailure>>(None.of())
+  // Bumped by Retry to rerun the fetch for the same `videoId`.
+  const [attempt, setAttempt] = useState(0)
+  const navigate = useNavigate()
 
   const timestamp: Duration = Duration.fromObject({
     seconds: Option.fromNullable(queryParams.get("timestamp"))
@@ -33,7 +42,7 @@ const VideoPage = (props: Route.ComponentProps) => {
     // oxlint-disable-next-line react/set-state-in-effect
     setVideo(None.of())
     setVideoSnapshots([])
-    setHasError(false)
+    setLoadFailure(None.of())
 
     const fetchVideo = async () => {
       try {
@@ -42,9 +51,15 @@ const VideoPage = (props: Route.ComponentProps) => {
         if (!cancelled) {
           setVideo(Some.of(video))
         }
-      } catch {
+      } catch (error) {
         if (!cancelled) {
-          setHasError(true)
+          // A 404 is a bad link, not a failure; anything else is worth a report and a retry.
+          const isNotFound = !httpStatusCode(error).filter(status => status === 404).isEmpty()
+          setLoadFailure(Some.of(isNotFound ? "not-found" : "error"))
+
+          if (!isNotFound) {
+            reportError("Failed to load video", error)
+          }
         }
       }
     }
@@ -69,10 +84,18 @@ const VideoPage = (props: Route.ComponentProps) => {
     return () => {
       cancelled = true
     }
-  }, [videoId])
+  }, [videoId, attempt])
 
-  if (hasError) {
-    return <div>Unable to load video</div>
+  const failure = loadFailure.toDefined()
+
+  if (failure !== undefined) {
+    return (
+      <div className={styles.errorContainer}>
+        <p>{failure === "error" ? "Unable to load video" : "Video not found"}</p>
+        {failure === "error" && <Button onClick={() => setAttempt(current => current + 1)}>Retry</Button>}
+        <Button onClick={() => void navigate("/")}>Back to Videos</Button>
+      </div>
+    )
   }
 
   return (

@@ -19,6 +19,14 @@ body {
   transition: background-color 0.5s ease, color 0.5s ease;
 }
 
+// Honour the OS "reduce motion" setting: hover lifts and theme fades become instant.
+// Spinners keep spinning, since a frozen one reads as a hung page.
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+  }
+}
+
 // Loading screen styles
 .loading-screen {
   position: fixed;

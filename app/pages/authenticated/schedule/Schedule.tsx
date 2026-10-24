@@ -76,7 +76,7 @@ const Schedule = () => {
         >
           Schedule Download
         </Button>
-        {isScheduling && <LinearProgress className={styles.schedulingProgress} />}
+        {isScheduling && <LinearProgress className={styles.schedulingProgress} aria-label="Scheduling" />}
         <ErrorMessages errors={errors} title="Scheduling failed" />
         {/* Don't ask the API to preview half-typed text. */}
         {isHttpUrl(trimmedUrl) && <Preview url={trimmedUrl} />}

@@ -5,6 +5,7 @@ import { Duration } from "luxon"
 import React from "react"
 import { buildVideo, type Json } from "../fixtures"
 import { withApplicationConfiguration } from "../helpers"
+import { playbackPositionService } from "~/services/playback/PlaybackPositionService"
 
 const createMockVideo = (overrides: Json = {}) =>
   buildVideo({
@@ -63,6 +64,7 @@ const renderWithContext = (
 describe("VideoWatch", () => {
   beforeEach(async () => {
     vi.clearAllMocks()
+    localStorage.clear()
 
     // Set here rather than in the vi.mock factory so the resolved value is a real parsed
     // Video rather than a hand-rolled stand-in.
@@ -410,5 +412,101 @@ describe("VideoWatch", () => {
     await waitFor(() => {
       expect(screen.getByText("0x0")).toBeInTheDocument()
     })
+  })
+
+  describe("resuming playback", () => {
+    // jsdom's media elements have no real playback; give the player a position to report.
+    const setPlayback = (videoElement: HTMLVideoElement, currentTime: number, duration = 330) => {
+      Object.defineProperty(videoElement, "currentTime", { configurable: true, writable: true, value: currentTime })
+      Object.defineProperty(videoElement, "duration", { configurable: true, writable: true, value: duration })
+    }
+
+    const savedSeconds = (videoId: string) =>
+      playbackPositionService.savedPosition(videoId).map(position => position.as("seconds")).toNullable()
+
+    test("should offer to resume from where the viewer stopped", () => {
+      const video = createMockVideo()
+      playbackPositionService.savePosition(video.videoMetadata.id, Duration.fromObject({ seconds: 154 }), Duration.fromObject({ seconds: 330 }))
+
+      const { container } = renderWithContext(video)
+      fireEvent.click(screen.getByRole("button", { name: "Resume" }))
+
+      expect(screen.queryByText("You stopped at 2:34")).not.toBeInTheDocument()
+      expect((container.querySelector("video") as HTMLVideoElement).currentTime).toBe(154)
+    })
+
+    test("should show the saved position and let the viewer dismiss it", () => {
+      const video = createMockVideo()
+      playbackPositionService.savePosition(video.videoMetadata.id, Duration.fromObject({ seconds: 154 }), Duration.fromObject({ seconds: 330 }))
+
+      renderWithContext(video)
+      expect(screen.getByText("You stopped at 2:34")).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole("button", { name: "Dismiss" }))
+      expect(screen.queryByText("You stopped at 2:34")).not.toBeInTheDocument()
+    })
+
+    test("should not offer to resume when the link gives a timestamp", () => {
+      const video = createMockVideo()
+      playbackPositionService.savePosition(video.videoMetadata.id, Duration.fromObject({ seconds: 154 }), Duration.fromObject({ seconds: 330 }))
+
+      renderWithContext(video, Duration.fromObject({ seconds: 60 }))
+
+      expect(screen.queryByRole("button", { name: "Resume" })).not.toBeInTheDocument()
+    })
+
+    test("should not offer to resume a video with no saved position", () => {
+      renderWithContext()
+
+      expect(screen.queryByRole("button", { name: "Resume" })).not.toBeInTheDocument()
+    })
+
+    test("should save the position every few seconds of playback, not on every update", () => {
+      const video = createMockVideo()
+      const { container } = renderWithContext(video)
+      const videoElement = container.querySelector("video") as HTMLVideoElement
+
+      setPlayback(videoElement, 3)
+      fireEvent.timeUpdate(videoElement)
+      expect(savedSeconds(video.videoMetadata.id)).toBeNull()
+
+      setPlayback(videoElement, 42)
+      fireEvent.timeUpdate(videoElement)
+      expect(savedSeconds(video.videoMetadata.id)).toBe(42)
+
+      setPlayback(videoElement, 44)
+      fireEvent.timeUpdate(videoElement)
+      expect(savedSeconds(video.videoMetadata.id)).toBe(42)
+    })
+
+    test("should save the position on pause, using the video's metadata duration until the player knows it", () => {
+      const video = createMockVideo()
+      const { container } = renderWithContext(video)
+      const videoElement = container.querySelector("video") as HTMLVideoElement
+
+      setPlayback(videoElement, 100, Number.NaN)
+      fireEvent.pause(videoElement)
+
+      expect(savedSeconds(video.videoMetadata.id)).toBe(100)
+    })
+
+    test("should forget the position once the video ends", () => {
+      const video = createMockVideo()
+      playbackPositionService.savePosition(video.videoMetadata.id, Duration.fromObject({ seconds: 154 }), Duration.fromObject({ seconds: 330 }))
+      const { container } = renderWithContext(video)
+
+      fireEvent.ended(container.querySelector("video") as HTMLVideoElement)
+
+      expect(savedSeconds(video.videoMetadata.id)).toBeNull()
+      expect(screen.queryByRole("button", { name: "Resume" })).not.toBeInTheDocument()
+    })
+  })
+
+  test("should list the keyboard shortcuts", async () => {
+    renderWithContext()
+
+    fireEvent.mouseOver(screen.getByRole("button", { name: "Keyboard shortcuts" }))
+
+    expect(await screen.findByText("Play or pause")).toBeInTheDocument()
   })
 })

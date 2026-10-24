@@ -89,7 +89,7 @@ const ServiceInformation = () => {
           <FrontendInformation frontendServiceInformation={frontendInformation}/>
         </div>
       </div>
-      <LoadableComponent loadingComponent={<div className={styles.loadingContainer}>Performing health checks...<CircularProgress size="2em"/></div>}>
+      <LoadableComponent loadingComponent={<div className={styles.loadingContainer}>Performing health checks...<CircularProgress size="2em" aria-label="Performing health checks"/></div>}>
         {
           healthCheckDetails.map((healthCheckDetails) =>
             <HealthCheckInformation

@@ -42,13 +42,15 @@ Requires Node 24 (`engines.node: ^24.0.0`) and npm.
 
 **Signed-in user & admin gating.** `useRedirectOnAuth` returns the `User` from its session check, and `AuthenticatedLayout` provides it through `AuthenticatedUserContext` (`app/providers/AuthenticatedUserProvider.tsx`). Use `useIsAdmin()` to hide controls whose endpoints are admin-only on the server (the service summary behind the Sites filter, the Duplicates and Admin tabs). Pausing downloads (`WorkerStatusButton`) and video scans live only on the Admin page, not in the header or on the Downloading page; Retry All stays on the Downloading page because `/schedule/retry-failed` is open to every user (it retries only their own downloads). The context defaults to `None`, so anything outside the layout is treated as a non-admin. Admin-only pages (`/admin`, `/duplicates`) sit under the `AdminLayout` route in `app/routes.ts`, which turns non-admins away before the page mounts.
 
-**Handled errors go through `reportError(operation, error)`** (`app/services/ErrorReporting.ts`), not `console.error`. It logs at warn level and sends a Sentry exception tagged with `operation`. It must not use `console.error`, because Sentry's `captureConsoleIntegration` would report the same failure again. `notifyError` calls it for you. Tests assert on the `console.warn` spy.
+**Handled errors go through `reportError(operation, error)`** (`app/services/ErrorReporting.ts`), not `console.error`. It logs at warn level and sends a Sentry exception tagged with `operation`. It must not use `console.error`, because Sentry's `captureConsoleIntegration` would report the same failure again. `notifyError` calls it for you. `shouldReport` keeps requests the app cancelled and 401s (already handled by the HTTP client) out of Sentry; they are still logged. Network errors and 5xx are reported. Tests assert on the `console.warn` spy.
 
 **Theme & settings** flow through `ApplicationConfigurationProvider`, which holds an `Option<ApplicationConfiguration>` (`safeMode` + `theme`), persists to localStorage, and drives both the MUI theme (`createTheme` color schemes) and the `data-theme` body attribute. Consume it via the `useApplicationConfiguration()` hook.
 
 **Real-time download progress** uses an `EventSource` stream (`scheduledVideoDownloadStream` in the scheduling service) feeding live updates into the `ScheduledVideos` page. The stream reports its `StreamConnection` (Connected / Reconnecting / Disconnected — the last when the browser gives up, e.g. on a 401); the page shows a banner while not connected and reloads the list from page 0 after any reconnect, since events sent while disconnected are lost.
 
 **Infinite scroll** is centralized in `usePaginatedFetch` (`app/components/infinite-scroll/usePaginatedFetch.ts`) paired with the `InfiniteScroll` component (IntersectionObserver-based). The hook owns page-number/loading/has-more state and per-page de-dup; callers supply `fetchPage` and an `onResults` accumulator. The `results.length < pageSize ⇒ hasMore = false` rule is the shared convention. Because IntersectionObserver only reports transitions, `InfiniteScroll` re-observes its sentinel each time a page settles (loading → idle, more to load, no error), so a sentinel still in view after a short or de-duplicated page asks for the next one. A failed page waits for an explicit `retry`: `loadMore` is a no-op while an error is pending, so scrolling cannot skip past the failed page.
+
+**Video player.** `VideoWatch` adds YouTube-style keyboard shortcuts through `usePlayerShortcuts` (keys aimed at inputs, buttons, dialogs or the native `<video>` controls are left alone, so nothing fires twice) and offers to resume where the viewer stopped. Positions live in localStorage via `PlaybackPositionService` (`app/services/playback/`), one map capped at the 200 most recent videos; the server's watch history records time watched, not position. A `?timestamp=` link skips the resume offer.
 
 **Styling** is SCSS modules (`*.module.scss`, co-located with components) plus MUI/Emotion.
 
@@ -67,7 +69,8 @@ Requires Node 24 (`engines.node: ^24.0.0`) and npm.
 
 **The committed smoke suite comes first.** `e2e/` holds a `@playwright/test` 1.64 suite (`playwright.config.ts`)
 covering sign-in/out with `?redirect=`, the videos list, infinite scroll and video page, the downloads page and its SSE
-stream, and a playlist create/add/reorder/delete round trip. `npm run e2e` builds the app with
+stream, a playlist create/add/reorder/delete round trip, and an axe-core WCAG 2.1 A/AA scan of each main page and a
+video page (`accessibility.spec.ts`, via `@axe-core/playwright` 4.13). `npm run e2e` builds the app with
 `VITE_API_URL=https://api.staging.video.dev.ruchij.com` and serves `build/client` through `e2e/static-server.mjs` (SPA
 fallback, port 4173) via Playwright's `webServer`. Run it with the "Video Downloader - Dev" 1Password credentials in
 `E2E_EMAIL` / `E2E_PASSWORD`, and never write them to a file.
@@ -81,6 +84,9 @@ fallback, port 4173) via Playwright's `webServer`. Run it with the "Video Downlo
 - Credentials are entered by `enterSecret` in `e2e/helpers.ts`, not `fill()`, because the HTML report records fill
   values and CI uploads it from a public repository. CI also turns off traces, videos and screenshots, which can
   record the session cookie or the email on the sign-in page. Keep both rules when adding specs.
+- The accessibility spec emulates `reducedMotion: "reduce"`, which `app/index.scss` honours by turning transitions off.
+  Without it axe measures contrast mid-way through the body's theme fade and reports the whole header. It waits for each
+  page's first API response rather than `networkidle`, which the downloads page's open event stream never reaches.
 - Playwright writes to `playwright-results/` and `playwright-report/`, not the default `test-results/`, which holds
   Vitest's JUnit output. Vitest excludes `e2e/**`. `npm run lint` and `npm run typecheck` both cover `e2e/`.
 - The `End-to-end Tests` CI job runs on branch pushes after `deploy-to-dev`, reading the `E2E_EMAIL` / `E2E_PASSWORD`

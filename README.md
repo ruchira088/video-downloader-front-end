@@ -31,7 +31,7 @@ A modern, full-featured React web application for downloading and managing video
 | **Drag & Drop** | dnd-kit |
 | **Error Monitoring** | Sentry |
 | **Linting** | oxlint (type-aware, via tsgolint) |
-| **Testing** | Vitest 5, jsdom; Playwright 1.64 (end-to-end) |
+| **Testing** | Vitest 5, jsdom; Playwright 1.64 (end-to-end), axe-core 4.13 (accessibility) |
 | **Deployment** | Docker, AWS CDK 2 |
 
 ## Prerequisites
@@ -188,7 +188,8 @@ Tests use Vitest with jsdom for DOM simulation. Test files are located in the `t
 
 The Playwright suite in `e2e/` signs in to the staging API (`https://api.staging.video.dev.ruchij.com`) with a real
 account and covers signing in and out (including `?redirect=`), browsing videos, the downloads page and its live-update
-stream, and a playlist create/add/reorder/delete round trip. It builds the app with `VITE_API_URL` pointed at staging
+stream, and a playlist create/add/reorder/delete round trip. `accessibility.spec.ts` also scans each main page and a
+video page with axe-core for WCAG 2.1 A/AA violations. It builds the app with `VITE_API_URL` pointed at staging
 and serves `build/client` with `e2e/static-server.mjs`.
 
 ```bash

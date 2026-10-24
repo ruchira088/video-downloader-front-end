@@ -12,7 +12,7 @@ export const LoadableComponent: FC<LoadableComponentProps> = props =>
   <div className={props.className}>
     {
       props.children.fold<ReactNode>(
-        () => props.loadingComponent ?? <CircularProgress size="5em"/>,
+        () => props.loadingComponent ?? <CircularProgress size="5em" aria-label="Loading"/>,
         reactNode => reactNode
       )
     }

@@ -61,7 +61,7 @@ const VideoScanButton: FC<VideoScanButtonProps> = props => {
       disabled={isScanInProgress}
       onClick={onClick}
       className={props.className}
-      startIcon={isScanInProgress ? <CircularProgress size={16} color="inherit" /> : undefined}
+      startIcon={isScanInProgress ? <CircularProgress size={16} color="inherit" aria-label="Scanning" /> : undefined}
     >
       {label}
     </Button>

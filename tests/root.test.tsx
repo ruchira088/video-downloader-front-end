@@ -55,6 +55,7 @@ describe("root", () => {
 
       expect(result).toContainEqual({ title: "Video Downloader" })
       expect(result).toContainEqual({ name: "description", content: "Download & play videos from various platforms" })
+      expect(result).toContainEqual({ name: "theme-color", content: "#222222" })
     })
   })
 
@@ -64,6 +65,13 @@ describe("root", () => {
 
       expect(result).toContainEqual({ rel: "preconnect", href: "https://fonts.googleapis.com" })
       expect(result.some(link => "rel" in link && link.rel === "stylesheet")).toBe(true)
+    })
+
+    test("should link the web app manifest and the home-screen icon", () => {
+      const result = links()
+
+      expect(result).toContainEqual({ rel: "manifest", href: "/manifest.webmanifest" })
+      expect(result).toContainEqual({ rel: "apple-touch-icon", href: "/apple-touch-icon.png" })
     })
   })
 

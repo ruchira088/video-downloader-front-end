@@ -18,10 +18,13 @@ export function meta(_args: Route.MetaArgs) {
   return [
     {title: "Video Downloader"},
     {name: "description", content: "Download & play videos from various platforms"},
+    {name: "theme-color", content: "#222222"},
   ]
 }
 
 export const links: Route.LinksFunction = () => [
+  { rel: "manifest", href: "/manifest.webmanifest" },
+  { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",

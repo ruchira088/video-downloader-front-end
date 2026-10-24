@@ -104,7 +104,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
   if (isLoading) {
     return (
       <div className={styles.loadingContainer}>
-        <CircularProgress />
+        <CircularProgress aria-label="Loading playlist" />
       </div>
     )
   }
@@ -140,7 +140,7 @@ const PlaylistDetail = (props: Route.ComponentProps) => {
                 variant="outlined"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingAlbumArt}
-                startIcon={isUploadingAlbumArt ? <CircularProgress size={16} /> : <AddPhotoAlternate />}
+                startIcon={isUploadingAlbumArt ? <CircularProgress size={16} aria-label="Uploading album art" /> : <AddPhotoAlternate />}
               >
                 {isUploadingAlbumArt ? "Uploading..." : "Add Album Art"}
               </Button>

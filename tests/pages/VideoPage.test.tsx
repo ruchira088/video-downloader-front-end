@@ -1,7 +1,8 @@
-import { describe, expect, test, vi, beforeEach } from "vitest"
+import { afterEach, describe, expect, test, vi, beforeEach } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { MemoryRouter } from "react-router"
+import { MemoryRouter, Route, Routes } from "react-router"
+import { AxiosError, AxiosHeaders } from "axios"
 import { Duration } from "luxon"
 import React from "react"
 import { buildVideo } from "../fixtures"
@@ -59,6 +60,11 @@ describe("VideoPage", () => {
     mockFetchVideoSnapshots.mockResolvedValue([])
   })
 
+  // Restores the console.warn spies the failure tests install.
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   test("shows the loading indicator until the video resolves", async () => {
     mockFetchVideoById.mockReturnValue(new Promise(() => {})) // never resolves
     mockFetchVideoSnapshots.mockReturnValue(new Promise(() => {}))
@@ -86,9 +92,11 @@ describe("VideoPage", () => {
   })
 
   test("shows an error message instead of the spinner when the video fetch fails", async () => {
-    mockFetchVideoById.mockRejectedValue(new Error("not found"))
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const error = new Error("server down")
+    mockFetchVideoById.mockRejectedValue(error)
 
-    renderVideoPage("missing-video", "/video/missing-video")
+    renderVideoPage("video-123", "/video/video-123")
 
     await waitFor(() => {
       expect(screen.getByText("Unable to load video")).toBeInTheDocument()
@@ -96,6 +104,62 @@ describe("VideoPage", () => {
 
     expect(screen.queryByRole("progressbar")).not.toBeInTheDocument()
     expect(screen.queryByTestId("video-watch")).not.toBeInTheDocument()
+    expect(consoleWarnSpy).toHaveBeenCalledWith("Failed to load video", error)
+  })
+
+  test("says the video was not found, without a retry or a report, on a 404", async () => {
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+    mockFetchVideoById.mockRejectedValue(new AxiosError("Not Found", "ERR_BAD_REQUEST", undefined, undefined, {
+      status: 404,
+      statusText: "Not Found",
+      headers: {},
+      config: { headers: new AxiosHeaders() },
+      data: undefined,
+    }))
+
+    renderVideoPage("missing-video", "/video/missing-video")
+
+    await waitFor(() => {
+      expect(screen.getByText("Video not found")).toBeInTheDocument()
+    })
+
+    expect(screen.queryByRole("button", { name: "Retry" })).not.toBeInTheDocument()
+    expect(consoleWarnSpy).not.toHaveBeenCalled()
+  })
+
+  test("refetches the video when Retry is clicked after a failure", async () => {
+    const user = userEvent.setup()
+    vi.spyOn(console, "warn").mockImplementation(() => {})
+    mockFetchVideoById.mockRejectedValueOnce(new Error("server down"))
+    mockFetchVideoById.mockResolvedValueOnce(buildVideo({ id: "video-123", title: "My Video" }))
+
+    renderVideoPage("video-123", "/video/video-123")
+
+    await user.click(await screen.findByRole("button", { name: "Retry" }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId("title")).toHaveTextContent("My Video")
+    })
+    expect(mockFetchVideoById).toHaveBeenCalledTimes(2)
+  })
+
+  test("goes back to the videos list from the error state", async () => {
+    const user = userEvent.setup()
+    vi.spyOn(console, "warn").mockImplementation(() => {})
+    mockFetchVideoById.mockRejectedValue(new Error("server down"))
+
+    render(
+      <MemoryRouter initialEntries={["/video/video-123"]}>
+        <Routes>
+          <Route path="/" element={<div>Videos list</div>} />
+          <Route path="/video/:videoId" element={<VideoPage {...({ params: { videoId: "video-123" } } as any)} />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    await user.click(await screen.findByRole("button", { name: "Back to Videos" }))
+
+    expect(screen.getByText("Videos list")).toBeInTheDocument()
   })
 
   test("still renders the video when only the snapshots fetch fails", async () => {

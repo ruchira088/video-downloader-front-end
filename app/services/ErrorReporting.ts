@@ -1,12 +1,19 @@
 import * as Sentry from "@sentry/react"
+import axios from "axios"
 
 /**
  * Decides whether a handled failure is worth a Sentry event. Every failure is still logged
  * to the console; this only filters out the noise that would otherwise drown real bugs.
  */
-export const shouldReport = (_error: unknown): boolean => {
-  // TODO(you): decide which handled failures are not worth a Sentry event.
-  return true
+export const shouldReport = (error: unknown): boolean => {
+  // A request the app aborted itself (navigation, a newer search) is not a failure.
+  if (axios.isCancel(error) || (error instanceof DOMException && error.name === "AbortError")) {
+    return false
+  }
+
+  // An expired session is expected; the HTTP client already signs the user out on a 401.
+  // Network errors stay reported: an unreachable API is exactly what Sentry should show.
+  return !(axios.isAxiosError(error) && error.response?.status === 401)
 }
 
 /**
