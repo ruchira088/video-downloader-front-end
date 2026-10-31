@@ -91,6 +91,10 @@ fallback, port 4173) via Playwright's `webServer`. Run it with the "Video Downlo
   Vitest's JUnit output. Vitest excludes `e2e/**`. `npm run lint` and `npm run typecheck` both cover `e2e/`.
 - The `End-to-end Tests` CI job runs on branch pushes after `deploy-to-dev`, reading the `E2E_EMAIL` / `E2E_PASSWORD`
   repository secrets, and uploads `playwright-report/` as an artifact.
+- On main, `Staging End-to-end Tests` runs after `deploy-to-staging` against
+  `E2E_BASE_URL=https://staging.videos.ruchij.com` with the staging API and the same repository secrets. It tests the
+  deployed artifact without a local build; `deploy-to-production` requires it to pass. Main pipeline runs are serialized
+  so staging cannot be replaced during verification or promotion. Its report artifact is `staging-playwright-report`.
 
 For a one-off check the suite does not cover, drive the app by hand:
 

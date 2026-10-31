@@ -202,7 +202,10 @@ E2E_EMAIL=... E2E_PASSWORD=... npm run e2e
 Credentials are read only from `E2E_EMAIL` / `E2E_PASSWORD`. Set `E2E_API_URL` to target another API, or `E2E_BASE_URL`
 to test an already-deployed front-end instead of a local build. The HTML report lands in `playwright-report/`. In CI the
 `End-to-end Tests` job runs the suite on branch pushes after the dev deploy, using the `E2E_EMAIL` / `E2E_PASSWORD`
-repository secrets, and uploads the report as an artifact.
+repository secrets, and uploads the report as an artifact. On main, `Staging End-to-end Tests` runs against
+`https://staging.videos.ruchij.com` after the staging deployment, without rebuilding locally. Production deployment
+requires that job to pass. Main pipeline runs are serialized to keep staging on the release being tested.
+The staging job uploads a separate `staging-playwright-report` artifact.
 
 ## Building for Production
 
