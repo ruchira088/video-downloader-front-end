@@ -31,7 +31,7 @@ A modern, full-featured React web application for downloading and managing video
 | **Drag & Drop** | dnd-kit |
 | **Error Monitoring** | Sentry |
 | **Linting** | oxlint (type-aware, via tsgolint) |
-| **Testing** | Vitest 5, jsdom; Playwright 1.64 (end-to-end), axe-core 4.13 (accessibility) |
+| **Testing** | Vitest 5, jsdom; Playwright 1.65 (end-to-end), axe-core 4.14 (accessibility) |
 | **Deployment** | Docker, AWS CDK 2 |
 
 ## Prerequisites

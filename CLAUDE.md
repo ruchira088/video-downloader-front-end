@@ -67,10 +67,10 @@ Requires Node 24 (`engines.node: ^24.0.0`) and npm.
 
 ## Verifying changes in a browser
 
-**The committed smoke suite comes first.** `e2e/` holds a `@playwright/test` 1.64 suite (`playwright.config.ts`)
+**The committed smoke suite comes first.** `e2e/` holds a `@playwright/test` 1.65 suite (`playwright.config.ts`)
 covering sign-in/out with `?redirect=`, the videos list, infinite scroll and video page, the downloads page and its SSE
 stream, a playlist create/add/reorder/delete round trip, and an axe-core WCAG 2.1 A/AA scan of each main page and a
-video page (`accessibility.spec.ts`, via `@axe-core/playwright` 4.13). `npm run e2e` builds the app with
+video page (`accessibility.spec.ts`, via `@axe-core/playwright` 4.14). `npm run e2e` builds the app with
 `VITE_API_URL=https://api.staging.video.dev.ruchij.com` and serves `build/client` through `e2e/static-server.mjs` (SPA
 fallback, port 4173) via Playwright's `webServer`. Run it with the "Video Downloader - Dev" 1Password credentials in
 `E2E_EMAIL` / `E2E_PASSWORD`, and never write them to a file.
