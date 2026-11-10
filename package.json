@@ -1,6 +1,6 @@
 {
   "name": "video-downloader-front-end",
-  "version": "1.4.113",
+  "version": "1.4.114",
   "private": true,
   "type": "module",
   "engines": {
@@ -19,12 +19,12 @@
     "@types/react-dom": "^19.3.0",
     "@vitest/coverage-v8": "^5.1.0",
     "jsdom": "^31.0.0",
-    "oxlint": "^1.92.0",
+    "oxlint": "^1.93.0",
     "oxlint-tsgolint": "^7.0.2006",
     "sass-embedded": "^1.108.1",
     "simple-git": "^4.0.2",
     "typescript": "^7.0.2",
-    "vite": "^8.3.6",
+    "vite": "^8.3.7",
     "vitest": "^5.1.0"
   },
   "dependencies": {
@@ -37,9 +37,9 @@
     "@mui/material": "^9.5.0",
     "@react-router/node": "^8.5.1",
     "@sentry/react": "^11.11.0",
-    "axios": "^1.21.0",
+    "axios": "^1.21.1",
     "classnames": "^2.5.1",
-    "isbot": "^5.2.2",
+    "isbot": "^5.2.3",
     "luxon": "^3.7.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
