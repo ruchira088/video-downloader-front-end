@@ -21,7 +21,7 @@
     "react/exhaustive-deps": "warn",
     // React Compiler rules added to the `correctness` category in oxlint 1.79. `set-state-in-effect`
     // cannot see through an `await`, so it flags every effect that kicks off an async load; those
-    // six sites carry a local disable with the reason. The remaining rules are clean.
+    // sites carry a local disable with the reason. The remaining rules are clean.
     "react/set-state-in-effect": "error",
     "react/refs": "error",
     "react/immutability": "error",

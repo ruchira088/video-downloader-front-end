@@ -21,10 +21,10 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "aws-cdk": "^2.1148.0",
+    "aws-cdk": "^2.1149.0",
     "react-app-cdk-deploy": "github:ruchira088/react-app-cdk-deploy#v1"
   },
   "allowScripts": {
-    "react-app-cdk-deploy@1.1.9": true
+    "react-app-cdk-deploy@1.1.10": true
   }
 }

@@ -1,4 +1,4 @@
-import { useCallback, type DependencyList, useEffect, useRef, useState } from "react"
+import { useCallback, type DependencyList, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { reportError } from "~/services/ErrorReporting"
 
 interface PaginatedFetch {
@@ -50,11 +50,14 @@ export function usePaginatedFetch<T>(
   const abortController = useRef(new AbortController())
 
   // Hold the latest callbacks in refs so the effects below don't need them as
-  // dependencies (which would re-trigger fetching on every render).
+  // dependencies (which would re-trigger fetching on every render). A layout effect keeps
+  // discarded renders from replacing them, and still runs before the effects that fetch.
   const fetchPageRef = useRef(fetchPage)
   const onResultsRef = useRef(onResults)
-  fetchPageRef.current = fetchPage
-  onResultsRef.current = onResults
+  useLayoutEffect(() => {
+    fetchPageRef.current = fetchPage
+    onResultsRef.current = onResults
+  })
 
   const setLoading = useCallback((value: boolean) => {
     isLoadingRef.current = value
@@ -127,6 +130,8 @@ export function usePaginatedFetch<T>(
     abortController.current = controller
     fetchedPages.current = new Set<number>()
     hasMoreRef.current = true
+    // Resets the pagination state for the new query, alongside aborting the old one.
+    // oxlint-disable-next-line react/set-state-in-effect
     setHasMore(true)
     setLoading(false)
     setError(false)
@@ -147,6 +152,8 @@ export function usePaginatedFetch<T>(
 
   // Load the next page whenever the page number advances.
   useEffect(() => {
+    // Kicks off an async load; its loading flag has to be set before the request starts.
+    // oxlint-disable-next-line react/set-state-in-effect
     void loadPage(pageNumber)
   }, [pageNumber, loadPage])
 
