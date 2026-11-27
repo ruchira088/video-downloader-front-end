@@ -11,7 +11,6 @@ A modern, full-featured React web application for downloading and managing video
 - **Watch History** - Track viewing progress with timestamp bookmarks
 - **Video Playback** - Stream videos with playback position persistence
 - **Playlists** - Create and manage playlists with drag-and-drop ordering
-- **Duplicate Detection** - Find and resolve duplicate videos in the library
 - **Metadata Management** - View and edit video metadata and thumbnails
 - **Theme Support** - Light and dark mode with smooth transitions
 - **Authentication** - Secure login with token-based authentication
@@ -167,7 +166,6 @@ video-downloader-front-end/
 | `/downloading` | Downloading | Monitor active downloads |
 | `/playlists` | Playlists | Browse and create playlists |
 | `/playlists/:playlistId` | Playlist Detail | View and reorder a playlist |
-| `/duplicates` | Duplicates | Find and resolve duplicate videos |
 | `/information` | Information | System status and info |
 | `/sign-in` | Login | User authentication |
 | `/sign-up` | Signup | User registration |
@@ -252,7 +250,7 @@ too. See [`cdk-deploy/README.md`](cdk-deploy/README.md) for the available script
 ### Services
 
 - **AuthenticationService** - Login/logout, token management
-- **VideoService** - Video CRUD operations, search, metadata, duplicate detection
+- **VideoService** - Video CRUD operations, search, metadata
 - **SchedulingService** - Download scheduling, real-time progress tracking, worker status
 - **PlaylistService** - Playlist CRUD and video ordering
 - **HistoryService** - Watch history and playback positions

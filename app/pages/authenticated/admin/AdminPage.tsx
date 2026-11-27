@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react"
-import { Link } from "react-router"
 import {
   Button,
   CircularProgress,
@@ -128,7 +127,6 @@ const AdminPage = () => (
     <section className={styles.section} aria-labelledby="maintenance-heading">
       <h2 id="maintenance-heading">Maintenance</h2>
       <div className={styles.actions}>
-        <Button component={Link} to="/duplicates" variant="contained">Review Duplicates</Button>
         <RequeueIncompleteDownloads />
       </div>
     </section>

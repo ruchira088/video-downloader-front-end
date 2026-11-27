@@ -6,7 +6,6 @@ import History from "@mui/icons-material/History"
 import PlaylistPlay from "@mui/icons-material/PlaylistPlay"
 import Schedule from "@mui/icons-material/Schedule"
 import Download from "@mui/icons-material/Download"
-import ContentCopy from "@mui/icons-material/ContentCopy"
 import Info from "@mui/icons-material/Info"
 import MoreHoriz from "@mui/icons-material/MoreHoriz"
 import AdminPanelSettings from "@mui/icons-material/AdminPanelSettings"
@@ -29,7 +28,6 @@ const navigationTabs: NavigationTab[] = [
   { label: "Playlists", path: "/playlists", icon: <PlaylistPlay /> },
   { label: "Schedule", path: "/schedule", icon: <Schedule /> },
   { label: "Downloading", path: "/downloading", icon: <Download /> },
-  { label: "Duplicates", path: "/duplicates", icon: <ContentCopy />, adminOnly: true },
   { label: "Information", path: "/information", icon: <Info /> },
   { label: "Admin", path: "/admin", icon: <AdminPanelSettings />, adminOnly: true }
 ]

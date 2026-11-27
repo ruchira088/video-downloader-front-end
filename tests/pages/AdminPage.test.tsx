@@ -36,7 +36,6 @@ const renderAdmin = (role: Role = Role.Admin, notifications: Parameters<typeof w
                 element: <AdminLayout />,
                 children: [
                   { path: "/admin", element: <AdminPage /> },
-                  { path: "/duplicates", element: <div>Duplicates page</div> },
                 ],
               },
             ],
@@ -100,13 +99,12 @@ describe("AdminPage", () => {
     expect(await screen.findByText("Unable to load the library summary.")).toBeInTheDocument()
   })
 
-  test("should offer the worker, scan and duplicates controls", () => {
+  test("should offer the worker and scan controls", () => {
     vi.mocked(videoServiceSummary).mockReturnValue(new Promise(() => {}))
     renderAdmin()
 
     expect(screen.getByRole("button", { name: "Pause Downloads" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Scan For Videos" })).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: "Review Duplicates" })).toHaveAttribute("href", "/duplicates")
   })
 
   test("should only re-queue incomplete downloads after confirmation", async () => {

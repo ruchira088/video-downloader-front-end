@@ -12,8 +12,7 @@ export default [
     route("/playlists", "pages/authenticated/playlists/Playlists.tsx"),
     route("/playlists/:playlistId", "pages/authenticated/playlists/PlaylistDetail.tsx"),
     layout("pages/authenticated/admin/AdminLayout.tsx", [
-      route("/admin", "pages/authenticated/admin/AdminPage.tsx"),
-      route("/duplicates", "pages/authenticated/duplicates/Duplicates.tsx")
+      route("/admin", "pages/authenticated/admin/AdminPage.tsx")
     ])
   ]),
   layout("pages/unauthenticated/UnauthenticatedLayout.tsx", [

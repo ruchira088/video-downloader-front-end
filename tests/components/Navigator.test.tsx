@@ -44,7 +44,6 @@ describe("Navigator", () => {
       expect(screen.getByText("Playlists")).toBeInTheDocument()
       expect(screen.getByText("Schedule")).toBeInTheDocument()
       expect(screen.getByText("Downloading")).toBeInTheDocument()
-      expect(screen.getByText("Duplicates")).toBeInTheDocument()
       expect(screen.getByText("Information")).toBeInTheDocument()
       expect(screen.getByText("Admin")).toBeInTheDocument()
     })
@@ -57,23 +56,21 @@ describe("Navigator", () => {
       expect(screen.getByRole("link", { name: "Playlists" })).toHaveAttribute("href", "/playlists")
       expect(screen.getByRole("link", { name: "Schedule" })).toHaveAttribute("href", "/schedule")
       expect(screen.getByRole("link", { name: "Downloading" })).toHaveAttribute("href", "/downloading")
-      expect(screen.getByRole("link", { name: "Duplicates" })).toHaveAttribute("href", "/duplicates")
       expect(screen.getByRole("link", { name: "Information" })).toHaveAttribute("href", "/information")
       expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute("href", "/admin")
     })
 
-    test("should render eight navigation tabs for an admin", () => {
+    test("should render seven navigation tabs for an admin", () => {
       renderWithRouter()
 
       const links = screen.getAllByRole("link")
-      expect(links).toHaveLength(8)
+      expect(links).toHaveLength(7)
     })
 
     test("should hide the admin-only tabs from other users", () => {
       renderWithRouter("/", Role.User)
 
       expect(screen.getAllByRole("link")).toHaveLength(6)
-      expect(screen.queryByRole("link", { name: "Duplicates" })).not.toBeInTheDocument()
       expect(screen.queryByRole("link", { name: "Admin" })).not.toBeInTheDocument()
     })
 
@@ -86,7 +83,6 @@ describe("Navigator", () => {
         "PlaylistPlayIcon",
         "ScheduleIcon",
         "DownloadIcon",
-        "ContentCopyIcon",
         "InfoIcon",
         "AdminPanelSettingsIcon"
       ]
@@ -165,7 +161,6 @@ describe("Navigator", () => {
       expect(screen.getByRole("button", { name: "More" })).toBeInTheDocument()
 
       expect(screen.queryByText("Schedule")).not.toBeInTheDocument()
-      expect(screen.queryByText("Duplicates")).not.toBeInTheDocument()
       expect(screen.queryByText("Information")).not.toBeInTheDocument()
     })
 
@@ -177,7 +172,6 @@ describe("Navigator", () => {
 
       const menu = screen.getByRole("menu")
       expect(within(menu).getByRole("menuitem", { name: "Schedule" })).toHaveAttribute("href", "/schedule")
-      expect(within(menu).getByRole("menuitem", { name: "Duplicates" })).toHaveAttribute("href", "/duplicates")
       expect(within(menu).getByRole("menuitem", { name: "Information" })).toHaveAttribute("href", "/information")
       expect(within(menu).getByRole("menuitem", { name: "Admin" })).toHaveAttribute("href", "/admin")
     })
@@ -210,7 +204,7 @@ describe("Navigator", () => {
     })
 
     test("should mark More active when on a page it holds", () => {
-      renderWithRouter("/duplicates")
+      renderWithRouter("/information")
 
       expect(screen.getByRole("button", { name: "More" }).className).toContain("isActive")
       expect(screen.getAllByRole("link").filter(link => link.className.includes("isActive"))).toHaveLength(0)

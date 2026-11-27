@@ -23,7 +23,6 @@ import {
   updateVideoTitle,
   videoServiceSummary,
   deleteVideo,
-  fetchDuplicateVideos,
   scanForVideos,
   fetchVideoScanStatus, queueIncompleteDownloads } from "~/services/video/VideoService"
 import { fileResourceJson, videoJson, videoMetadataJson } from "../fixtures"
@@ -262,32 +261,6 @@ describe("VideoService", () => {
           "delete-video-file": true,
         },
       })
-    })
-  })
-
-  describe("fetchDuplicateVideos", () => {
-    test("should call API with pagination params and return parsed groups", async () => {
-      const mockGroups = {
-        "group-1": [
-          {
-            videoId: "video-123",
-            duplicateGroupId: "group-1",
-            createdAt: "2024-01-15T10:00:00+00:00",
-          },
-        ],
-      }
-      mockAxiosGet.mockResolvedValue({ data: mockGroups })
-
-      const result = await fetchDuplicateVideos(2, 25)
-
-      expect(mockAxiosGet).toHaveBeenCalledWith("/videos/duplicates", {
-        params: {
-          "page-number": 2,
-          "page-size": 25,
-        },
-      })
-      expect(result["group-1"]).toHaveLength(1)
-      expect(result["group-1"][0].videoId).toBe("video-123")
     })
   })
 
